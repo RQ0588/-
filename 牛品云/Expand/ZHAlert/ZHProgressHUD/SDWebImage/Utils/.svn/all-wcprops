@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/tax580/!svn/ver/6/branches/TaxHelp_iOS/TaxHelp/Vendor/SDWebImage/Utils
+END
+SDWebImageDecoder.h
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/svn/tax580/!svn/ver/6/branches/TaxHelp_iOS/TaxHelp/Vendor/SDWebImage/Utils/SDWebImageDecoder.h
+END
+SDWebImagePrefetcher.h
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/svn/tax580/!svn/ver/6/branches/TaxHelp_iOS/TaxHelp/Vendor/SDWebImage/Utils/SDWebImagePrefetcher.h
+END
+SDWebImageDecoder.m
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/svn/tax580/!svn/ver/6/branches/TaxHelp_iOS/TaxHelp/Vendor/SDWebImage/Utils/SDWebImageDecoder.m
+END
+SDWebImageManager.h
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/svn/tax580/!svn/ver/6/branches/TaxHelp_iOS/TaxHelp/Vendor/SDWebImage/Utils/SDWebImageManager.h
+END
+SDWebImagePrefetcher.m
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/svn/tax580/!svn/ver/6/branches/TaxHelp_iOS/TaxHelp/Vendor/SDWebImage/Utils/SDWebImagePrefetcher.m
+END
+SDWebImageManager.m
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/svn/tax580/!svn/ver/6/branches/TaxHelp_iOS/TaxHelp/Vendor/SDWebImage/Utils/SDWebImageManager.m
+END
