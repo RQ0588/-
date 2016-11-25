@@ -11,6 +11,7 @@
 #import "NPYMessageViewController.h"
 #import "NPYSettingViewController.h"
 #import "NPYMyOrderViewController.h"
+#import "SDTimeLineTableViewController.h"
 
 @interface NPYMemberCenterPage () <UITableViewDelegate,UITableViewDataSource> {
     UITableView     *mainTableView;
@@ -19,10 +20,11 @@
     NSArray         *funNames;
 }
 
-@property (nonatomic, strong) NPYLoginViewController            *loginVC;
-@property (nonatomic, strong) NPYMessageViewController          *msgVC;
-@property (nonatomic, strong) NPYSettingViewController          *detailVC;
-@property (nonatomic, strong) NPYMyOrderViewController          *myOrderVC;
+@property (nonatomic, strong) NPYLoginViewController            *loginVC;//登录界面
+@property (nonatomic, strong) NPYMessageViewController          *msgVC;//右侧信息
+@property (nonatomic, strong) NPYSettingViewController          *detailVC;//设置
+@property (nonatomic, strong) NPYMyOrderViewController          *myOrderVC;//我的订单
+@property (nonatomic, strong) SDTimeLineTableViewController     *ttVC;//朋友圈
 
 @end
 
@@ -33,6 +35,9 @@
     
     UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:nil];
     self.navigationItem.backBarButtonItem = item;
+    
+    [self.navigationController.navigationBar setBackgroundImage:[UIImage new] forBarMetrics:UIBarMetricsDefault];
+    self.navigationController.navigationBar.shadowImage =[UIImage new];
     
 }
 
@@ -55,8 +60,7 @@
 }
 
 - (void)navigationViewLoad {
-    [self.navigationController.navigationBar setBackgroundImage:[UIImage new] forBarMetrics:UIBarMetricsDefault];
-    self.navigationController.navigationBar.shadowImage =[UIImage new];
+    
     //
     UIButton *setBtn = [[UIButton alloc] init];
     setBtn.frame = CGRectMake(0, 0, 40, 40);
@@ -194,6 +198,12 @@
         //我的订单
         self.myOrderVC = [[NPYMyOrderViewController alloc] init];
         [self.navigationController pushViewController:self.myOrderVC animated:YES];
+    }
+    if (indexPath.section == 2 && indexPath.row == 1) {
+        //朋友圈
+//        self.ttVC = [[SDTimeLineTableViewController alloc] init];
+        self.ttVC = [[SDTimeLineTableViewController alloc] initWithNibName:@"SDTimeLineTableViewController" bundle:nil];
+        [self.navigationController pushViewController:self.ttVC animated:YES];
     }
 }
 
