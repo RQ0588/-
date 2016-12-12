@@ -76,7 +76,7 @@
 {
     [super drawRect:rect];
     
-    if (self.state == MJRefreshStateWillRefresh) {
+    if (self.state == MJRefreshStateWillRefreshing) {
         // 预防view还没显示出来就调用了beginRefreshing
         self.state = MJRefreshStateRefreshing;
     }
@@ -154,7 +154,7 @@
     } else {
         // 预防正在刷新中时，调用本方法使得header inset回置失败
         if (self.state != MJRefreshStateRefreshing) {
-            self.state = MJRefreshStateWillRefresh;
+            self.state = MJRefreshStateWillRefreshing;
             // 刷新(预防从另一个控制器回到这个控制器的情况，回来要重新刷新一下)
             [self setNeedsDisplay];
         }
@@ -184,7 +184,7 @@
 #pragma mark 是否正在刷新
 - (BOOL)isRefreshing
 {
-    return self.state == MJRefreshStateRefreshing || self.state == MJRefreshStateWillRefresh;
+    return self.state == MJRefreshStateRefreshing || self.state == MJRefreshStateWillRefreshing;
 }
 
 #pragma mark 自动切换透明度

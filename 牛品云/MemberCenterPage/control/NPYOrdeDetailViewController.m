@@ -9,6 +9,7 @@
 #import "NPYOrdeDetailViewController.h"
 #import "NPYBaseConstant.h"
 #import "NPYLogisticsViewController.h"
+#import "NPYDiscusViewController.h"
 
 @interface NPYOrdeDetailViewController () <UITableViewDelegate,UITableViewDataSource> {
     UILabel *totalMoneyL;   //总计金额
@@ -28,7 +29,9 @@
 @property (nonatomic, strong) UITableView *mainTView;
 @property (nonatomic, strong) UIView *bottomView;
 
-@property (nonatomic, strong) NPYLogisticsViewController    *logisticsVC;
+@property (nonatomic, strong) NPYLogisticsViewController    *logisticsVC;//登录
+
+@property (nonatomic, strong) NPYDiscusViewController       *discusVC;  //评论页
 
 @end
 
@@ -405,6 +408,8 @@
 - (void)payButtonPressed:(UIButton *)btn {
     //    NSLog(@"继续支付");
     
+    self.discusVC = [[NPYDiscusViewController alloc] init];
+    [self.navigationController pushViewController:self.discusVC animated:YES];
 }
 
 - (void)didReceiveMemoryWarning {

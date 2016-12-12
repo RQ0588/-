@@ -10,6 +10,9 @@
 #import "NPYBaseConstant.h"
 #import "NPYRegisterViewController.h"
 #import "NPYRetrievePWViewController.h"
+#import "NPYLoginMode.h"
+
+#define LoginUrl    @"/app/login/index"
 
 @interface NPYLoginViewController () {
     UITextField *name,*pw;
@@ -38,6 +41,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
+    
     self.view.backgroundColor = [UIColor whiteColor];
     
     [self navigateViewLoad];
@@ -48,16 +52,6 @@
 - (void)navigateViewLoad {
     self.navigationItem.title = @"登录牛品云";
     
-//    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:nil];
-//    self.navigationItem.backBarButtonItem = item;
-    
-    UIButton *backBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 100, 30)];
-    [backBtn addTarget:self action:@selector(backButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
-    [backBtn setTitleColor:[UIColor grayColor] forState:UIControlStateNormal];
-    [backBtn setTitle:@"回到首页" forState:UIControlStateNormal];
-    
-//    UIBarButtonItem *backItem = [[UIBarButtonItem alloc] initWithCustomView:backBtn];
-//    self.navigationItem.leftBarButtonItem = backItem;
 }
 
 - (void)subViewLoad {
@@ -73,7 +67,7 @@
     
     name = [[UITextField alloc] initWithFrame:CGRectMake(CGRectGetMaxX(nameL.frame), CGRectGetMinY(nameL.frame), WIDTH_SCREEN - 40 - CGRectGetWidth(nameL.frame) - 10, CGRectGetHeight(nameL.frame))];
     [self.view addSubview:name];
-    name.text = @"15888888888";
+    name.text = @"13133333333";
     name.placeholder = @"请输入手机号";
     name.textColor = [UIColor blackColor];
     name.borderStyle = UITextBorderStyleNone;
@@ -84,7 +78,7 @@
     
     pw = [[UITextField alloc] initWithFrame:CGRectMake(CGRectGetMinX(name.frame), CGRectGetMinY(pwL.frame), CGRectGetWidth(name.frame), CGRectGetHeight(name.frame))];
     [self.view addSubview:pw];
-//    pw.text = @"123456";
+    pw.text = @"123456";
     pw.placeholder = @"请输入密码";
     pw.borderStyle = UITextBorderStyleNone;
     pw.secureTextEntry = YES;
@@ -127,10 +121,35 @@
     
 }
 
-//登录
+//登录 (http://npy.cq-vip.com/app/login/index?data={"name":"13133333333","pwd":"123456"})
 - (void)loginButtonPressed:(UIButton *)btn {
+    NSDictionary *requestDic = [NSDictionary dictionaryWithObjectsAndKeys:name.text,@"name",pw.text,@"pwd", nil];
+    NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:requestDic] forKey:@"data"];
+    
+    [[NPYHttpRequest sharedInstance] getWithUrlString:[NSString stringWithFormat:@"%@%@",BASE_URL,LoginUrl] parameters:paremes success:^(id responseObject) {
+        NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+        if ([dataDict[@"r"] intValue] == 1) {
+            //成功
+            [ZHProgressHUD showMessage:@"登录成功" inView:self.view];
+            NPYLoginMode *model = [NPYLoginMode mj_objectWithKeyValues:dataDict[@"data"]];
+            model.r = dataDict[@"r"];
+            model.sign = dataDict[@"sign"];
+            
+            [NPYSaveGlobalVariable saveValueAtLocal:dataDict withKey:LoginData_Local];
+            [NPYSaveGlobalVariable saveValueAtLocal:dataDict[@"r"] withKey:LoginState];
+            
+        } else {
+            //用户账号不存在
+            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+        }
+        
+    } failure:^(NSError *error) {
+        NSLog(@"%@",error);
+        
+    }];
     
 }
+
 //注册
 - (void)registerButtonPressed:(UIButton *)btn {
     self.registerVC = [[NPYRegisterViewController alloc] init];

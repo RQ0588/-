@@ -14,19 +14,21 @@
 #import "UIScrollView+MJRefresh.h"
 #import "NSBundle+MJRefresh.h"
 
+#import "MJRefreshBaseView.h"
+
 /** 刷新控件的状态 */
-typedef NS_ENUM(NSInteger, MJRefreshState) {
-    /** 普通闲置状态 */
-    MJRefreshStateIdle = 1,
-    /** 松开就可以进行刷新的状态 */
-    MJRefreshStatePulling,
-    /** 正在刷新中的状态 */
-    MJRefreshStateRefreshing,
-    /** 即将刷新的状态 */
-    MJRefreshStateWillRefresh,
-    /** 所有数据加载完毕，没有更多的数据了 */
-    MJRefreshStateNoMoreData
-};
+//typedef NS_ENUM(NSInteger, MJRefreshState) {
+//    /** 普通闲置状态 */
+//    MJRefreshStateIdle = 1,
+//    /** 松开就可以进行刷新的状态 */
+//    MJRefreshStatePulling,
+//    /** 正在刷新中的状态 */
+//    MJRefreshStateRefreshing,
+//    /** 即将刷新的状态 */
+//    MJRefreshStateWillRefresh,
+//    /** 所有数据加载完毕，没有更多的数据了 */
+//    MJRefreshStateNoMoreData
+//};
 
 /** 进入刷新状态的回调 */
 typedef void (^MJRefreshComponentRefreshingBlock)();

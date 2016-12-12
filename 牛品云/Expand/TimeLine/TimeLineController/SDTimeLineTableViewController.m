@@ -44,6 +44,8 @@
 
 #import "NPYReleaseViewController.h"
 
+#import "AppDelegate.h"
+
 #define kTimeLineTableViewCellId @"SDTimeLineCell"
 
 static CGFloat textFieldH = 40;
@@ -74,9 +76,11 @@ static CGFloat textFieldH = 40;
     UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:nil];
     self.navigationItem.backBarButtonItem = item;
     
-//    self.tabBarController.tabBar.hidden = YES;
+    self.tabBarController.tabBar.hidden = NO;
     
     self.view.backgroundColor = [UIColor colorWithRed:226/255.0 green:227/255.0 blue:229/255. alpha:1.0];
+    
+    self.navigationItem.title = @"朋友圈";
     
 }
 
@@ -86,6 +90,15 @@ static CGFloat textFieldH = 40;
     self.tabBarController.tabBar.hidden = NO;
     
     [_textField resignFirstResponder];
+}
+
+- (void)navigationViewLoad {
+    UIBarButtonItem *backItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(backItemPressed:)];
+    self.navigationItem.leftBarButtonItem = backItem;
+}
+
+- (void)backItemPressed:(UIBarButtonItem *)backItem {
+    [(AppDelegate *)[UIApplication sharedApplication].delegate switchRootViewControllerWithIdentifier:@"NPYMain"];
 }
 
 - (void)viewDidLoad
@@ -106,6 +119,8 @@ static CGFloat textFieldH = 40;
 //    });
     
     //为self.view 添加背景颜色设置
+    
+    [self navigationViewLoad];
     
     self.view.lee_theme
     .LeeAddBackgroundColor(DAY , [UIColor whiteColor])

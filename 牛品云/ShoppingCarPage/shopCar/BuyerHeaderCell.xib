@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="10117" systemVersion="15G31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="11201" systemVersion="15G31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="10085"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11161"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
@@ -11,73 +12,66 @@
             <rect key="frame" x="0.0" y="0.0" width="375" height="50"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
-                <rect key="frame" x="0.0" y="0.0" width="375" height="49"/>
+                <frame key="frameInset" width="375" height="49"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="YmH-JI-RV5">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="49"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="HVR-vm-4CQ">
-                                <rect key="frame" x="0.0" y="0.0" width="35" height="49"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="35" id="stz-5l-sAS"/>
                                 </constraints>
-                                <state key="normal" image="checkbox_0"/>
-                                <state key="selected" image="checkbox_1"/>
+                                <state key="normal" image="xuanze_wei"/>
+                                <state key="selected" image="xuanze_yi"/>
                                 <connections>
                                     <action selector="clickBuyerSelcted:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="VVj-Z7-SF3"/>
                                 </connections>
                             </button>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="KXC-gm-ZAb">
-                                <rect key="frame" x="35" y="5" width="39" height="39"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="39" id="QvE-VL-gwM"/>
                                 </constraints>
                             </imageView>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ofO-Uu-bDr">
-                                <rect key="frame" x="84" y="0.0" width="231" height="49"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7Ra-ys-ytD">
-                                        <rect key="frame" x="0.0" y="17" width="33" height="16"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="13"/>
-                                        <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                        <color key="textColor" red="0.20000000000000001" green="0.20000000000000001" blue="0.20000000000000001" alpha="1" colorSpace="calibratedRGB"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="arrow_right" translatesAutoresizingMaskIntoConstraints="NO" id="EJl-p3-aFN">
-                                        <rect key="frame" x="38" y="19" width="7" height="11"/>
+                                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="jiantou_jiru" translatesAutoresizingMaskIntoConstraints="NO" id="EJl-p3-aFN">
                                         <constraints>
-                                            <constraint firstAttribute="width" constant="7" id="eB8-ID-pfs"/>
-                                            <constraint firstAttribute="height" constant="11" id="tvF-Pu-1lG"/>
+                                            <constraint firstAttribute="width" constant="8" id="eB8-ID-pfs"/>
+                                            <constraint firstAttribute="height" constant="13" id="tvF-Pu-1lG"/>
                                         </constraints>
                                     </imageView>
                                 </subviews>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
                                     <constraint firstItem="7Ra-ys-ytD" firstAttribute="centerY" secondItem="ofO-Uu-bDr" secondAttribute="centerY" id="60M-QI-yKu"/>
                                     <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="EJl-p3-aFN" secondAttribute="trailing" constant="10" id="EzW-Gv-x99"/>
                                     <constraint firstItem="EJl-p3-aFN" firstAttribute="leading" secondItem="7Ra-ys-ytD" secondAttribute="trailing" constant="5" id="Yce-sL-JCR"/>
-                                    <constraint firstItem="EJl-p3-aFN" firstAttribute="centerY" secondItem="ofO-Uu-bDr" secondAttribute="centerY" id="jQY-Zc-Epc"/>
+                                    <constraint firstItem="EJl-p3-aFN" firstAttribute="centerY" secondItem="ofO-Uu-bDr" secondAttribute="centerY" constant="1" id="jQY-Zc-Epc"/>
                                     <constraint firstItem="7Ra-ys-ytD" firstAttribute="leading" secondItem="ofO-Uu-bDr" secondAttribute="leading" id="kN1-1Q-BXd"/>
                                 </constraints>
                             </view>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="HeU-Dj-tVV">
-                                <rect key="frame" x="315" y="0.0" width="60" height="49"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="60" id="h9u-wQ-he3"/>
                                 </constraints>
-                                <fontDescription key="fontDescription" type="boldSystem" pointSize="16"/>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="14"/>
                                 <state key="normal" title="编辑">
-                                    <color key="titleColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                    <color key="titleColor" red="0.26666666666666666" green="0.26666666666666666" blue="0.26666666666666666" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <state key="selected" title="完成">
-                                    <color key="titleColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                    <color key="titleColor" red="0.26666666666666666" green="0.26666666666666666" blue="0.26666666666666666" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <connections>
                                     <action selector="clickBuyerEditing:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="zYC-Mu-8mb"/>
                                 </connections>
                             </button>
                         </subviews>
-                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="KXC-gm-ZAb" firstAttribute="top" secondItem="YmH-JI-RV5" secondAttribute="top" constant="5" id="1iY-qX-IuE"/>
                             <constraint firstAttribute="bottom" secondItem="HeU-Dj-tVV" secondAttribute="bottom" id="8u6-Sa-OkD"/>
@@ -102,7 +96,7 @@
                     <constraint firstAttribute="trailing" secondItem="YmH-JI-RV5" secondAttribute="trailing" id="v0b-TM-Maf"/>
                 </constraints>
             </tableViewCellContentView>
-            <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+            <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
             <connections>
                 <outlet property="buyerImageView" destination="KXC-gm-ZAb" id="7UQ-K6-Btb"/>
                 <outlet property="buyerNameBackView" destination="ofO-Uu-bDr" id="Sas-t7-bbm"/>
@@ -114,8 +108,8 @@
         </tableViewCell>
     </objects>
     <resources>
-        <image name="arrow_right" width="7" height="11"/>
-        <image name="checkbox_0" width="18" height="18"/>
-        <image name="checkbox_1" width="18" height="18"/>
+        <image name="jiantou_jiru" width="8" height="13"/>
+        <image name="xuanze_wei" width="17" height="17"/>
+        <image name="xuanze_yi" width="17" height="17"/>
     </resources>
 </document>

@@ -24,6 +24,9 @@
 
 
 @interface MKJShoppingCartViewController () <UITableViewDelegate,UITableViewDataSource,ShoppingCartCellDelegate,UIAlertViewDelegate,UICollectionViewDelegate,UICollectionViewDataSource,UICollectionViewDelegateFlowLayout>
+
+@property (weak, nonatomic) IBOutlet UIView *emptyCar;
+
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 @property (nonatomic,strong) NSMutableArray *buyerLists;
 @property (nonatomic,strong) UIButton *rightButton;
@@ -102,7 +105,9 @@ static NSString *relatedHeaderID = @"RelatedHeaderCollectionReusableView";
     [self.view addSubview:self.bottomView];
     self.editBottomRightView.hidden = YES;
     
-    self.rightView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 100, 40)];
+    [self.view addSubview:self.emptyCar];
+    
+    self.rightView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 80, 40)];
     UIBarButtonItem *rightItem = [[UIBarButtonItem alloc] initWithCustomView:self.rightView];
     self.navigationItem.rightBarButtonItem = rightItem;
     
@@ -110,34 +115,30 @@ static NSString *relatedHeaderID = @"RelatedHeaderCollectionReusableView";
     self.rightButton = [UIButton buttonWithType:UIButtonTypeCustom];
     self.rightButton.frame = CGRectMake(0, 0, 40, 40);
     [self.rightButton setTitle:@"编辑" forState:UIControlStateNormal];
-    [self.rightButton setTitleColor:[UIColor blueColor] forState:UIControlStateNormal];
+    [self.rightButton setTitleColor:XNColor(102, 102, 102, 1) forState:UIControlStateNormal];
     [self.rightButton setTitle:@"完成" forState:UIControlStateSelected];
-    [self.rightButton setTitleColor:[UIColor blueColor] forState:UIControlStateSelected];
+    [self.rightButton setTitleColor:XNColor(102, 102, 102, 1) forState:UIControlStateSelected];
     
     [self.rightButton setTitle:@"编辑" forState:UIControlStateDisabled];
-    [self.rightButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
+    [self.rightButton setTitleColor:XNColor(102, 102, 102, 1) forState:UIControlStateDisabled];
     
     [self.rightButton addTarget:self action:@selector(clickAllEdit:) forControlEvents:UIControlEventTouchUpInside];
-//    UIBarButtonItem *batbutton = [[UIBarButtonItem alloc] initWithCustomView:self.rightButton];
-//    self.navigationItem.rightBarButtonItem = batbutton;
     [self.rightView addSubview:self.rightButton];
-    self.rightButton.titleLabel.font = [UIFont systemFontOfSize:13.0];
+    self.rightButton.titleLabel.font = [UIFont systemFontOfSize:14.0];
     
-    self.lineImgView = [[UIImageView alloc] initWithFrame:CGRectMake(CGRectGetMaxX(self.rightButton.frame) + 10, 0, 1, 15)];
-    self.lineImgView.backgroundColor = [UIColor grayColor];
-    self.lineImgView.center = CGPointMake(50, CGRectGetMidY(self.rightButton.frame));
+    self.lineImgView = [[UIImageView alloc] initWithFrame:CGRectMake(40, 0, 1, 16)];
+    self.lineImgView.image = [UIImage imageNamed:@"32huixian"];
+    self.lineImgView.center = CGPointMake(40, CGRectGetMidY(self.rightButton.frame));
     [self.rightView addSubview:self.lineImgView];
     
     // 右上角消息
     self.msgButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    self.msgButton.frame = CGRectMake(60, 0, 40, 40);
+    self.msgButton.frame = CGRectMake(40, 0, 40, 40);
     [self.msgButton setTitle:@"消息" forState:UIControlStateNormal];
-    [self.msgButton setTitleColor:[UIColor grayColor] forState:UIControlStateNormal];
+    [self.msgButton setTitleColor:XNColor(102, 102, 102, 1) forState:UIControlStateNormal];
     [self.msgButton addTarget:self action:@selector(clickMessage:) forControlEvents:UIControlEventTouchUpInside];
-//    UIBarButtonItem *msgBarItem = [[UIBarButtonItem alloc] initWithCustomView:msgButton];
-//    self.navigationItem.rightBarButtonItem = msgBarItem;
     [self.rightView addSubview:self.msgButton];
-    self.msgButton.titleLabel.font = [UIFont systemFontOfSize:13.0];
+    self.msgButton.titleLabel.font = [UIFont systemFontOfSize:14.0];
     
     [self.tableView registerNib:[UINib nibWithNibName:shoppongID bundle:nil] forCellReuseIdentifier:shoppongID];
     [self.tableView registerNib:[UINib nibWithNibName:shoppingHeaderID bundle:nil] forCellReuseIdentifier:shoppingHeaderID];
@@ -152,6 +153,8 @@ static NSString *relatedHeaderID = @"RelatedHeaderCollectionReusableView";
     self.tableView.mj_header = header;
     
     [self.tableView.mj_header beginRefreshing];
+    
+//    [self refreshData];
 }
 
 #pragma mark - 点击全部编辑按钮
@@ -186,6 +189,14 @@ static NSString *relatedHeaderID = @"RelatedHeaderCollectionReusableView";
        // buyer Array
         [weakSelf.buyerLists removeAllObjects];
         weakSelf.buyerLists = (NSMutableArray *)obj;
+        
+        if (weakSelf.buyerLists.count != 0) {
+            weakSelf.emptyCar.hidden = YES;
+            
+        } else {
+            weakSelf.emptyCar.hidden = NO;
+        }
+        
         [weakSelf.tableView reloadData];
 
         [weakSelf.tableView.mj_header endRefreshing];

@@ -18,24 +18,28 @@
                 <subviews>
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ZwQ-SP-YFG">
                         <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="EhU-R4-X6Q">
-                                <fontDescription key="fontDescription" type="boldSystem" pointSize="13"/>
-                                <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" misplaced="YES" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="EhU-R4-X6Q">
+                                <frame key="frameInset" width="1000" height="1000"/>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="15"/>
+                                <color key="textColor" red="0.13725490196078433" green="0.13725490196078433" blue="0.14901960784313725" alpha="1" colorSpace="calibratedRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Uoh-Vn-h0g">
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" misplaced="YES" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Uoh-Vn-h0g">
+                                <frame key="frameInset" width="1000" height="1000"/>
                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="13"/>
                                 <color key="textColor" red="0.59999999999999998" green="0.59999999999999998" blue="0.59999999999999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="XyN-ef-CmT">
-                                <fontDescription key="fontDescription" type="boldSystem" pointSize="13"/>
-                                <color key="textColor" red="0.75820574659999995" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" misplaced="YES" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="XyN-ef-CmT">
+                                <frame key="frameInset" width="1000" height="1000"/>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="18"/>
+                                <color key="textColor" red="0.97254901960784312" green="0.12156862745098039" blue="0.12156862745098039" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="a9L-4X-Fdh">
-                                <fontDescription key="fontDescription" type="boldSystem" pointSize="13"/>
-                                <color key="textColor" red="0.99607843137254903" green="0.76078431372549016" blue="0.0039215686274509803" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" misplaced="YES" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="a9L-4X-Fdh">
+                                <frame key="frameInset" width="1000" height="1000"/>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="14"/>
+                                <color key="textColor" red="0.59999999999999998" green="0.59999999999999998" blue="0.59999999999999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
                         </subviews>
@@ -63,7 +67,7 @@
                                     <constraint firstAttribute="height" constant="50" id="aZp-uU-avj"/>
                                     <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="50" id="z8N-Vx-0jj"/>
                                 </constraints>
-                                <state key="normal" image="count_min_0"/>
+                                <state key="normal" image="jian_icom"/>
                                 <connections>
                                     <action selector="plusOrMinus:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="DfP-tc-AQ5"/>
                                 </connections>
@@ -82,7 +86,7 @@
                                 <constraints>
                                     <constraint firstAttribute="height" constant="50" id="3gC-ah-Xih"/>
                                 </constraints>
-                                <state key="normal" image="count_plus_0"/>
+                                <state key="normal" image="jia_icon"/>
                                 <connections>
                                     <action selector="plusOrMinus:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="B28-Yf-fi6"/>
                                 </connections>
@@ -91,10 +95,10 @@
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ssc-jL-sXb">
                                         <fontDescription key="fontDescription" type="system" pointSize="13"/>
-                                        <color key="textColor" red="0.94117647058823528" green="0.094117647058823528" blue="0.47556627516778521" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <color key="textColor" red="0.59999999999999998" green="0.59999999999999998" blue="0.59999999999999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="downArrow" translatesAutoresizingMaskIntoConstraints="NO" id="Uhy-A6-ID1">
+                                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="jiantou_xia" translatesAutoresizingMaskIntoConstraints="NO" id="Uhy-A6-ID1">
                                         <constraints>
                                             <constraint firstAttribute="width" constant="12" id="iJA-rC-wde"/>
                                         </constraints>
@@ -110,8 +114,9 @@
                                 </constraints>
                             </view>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="PtA-ek-oWe">
-                                <color key="backgroundColor" red="0.84783976510000003" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <state key="normal" image="delete"/>
+                                <state key="normal" title="删除" backgroundImage="shanchu_hk">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
                                 <connections>
                                     <action selector="clickGarbage:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="VZl-DB-cG0"/>
                                 </connections>
@@ -142,8 +147,8 @@
                         <constraints>
                             <constraint firstAttribute="width" constant="35" id="AH2-e0-VcS"/>
                         </constraints>
-                        <state key="normal" image="checkbox_0"/>
-                        <state key="selected" image="checkbox_1"/>
+                        <state key="normal" image="xuanze_wei"/>
+                        <state key="selected" image="xuanze_yi"/>
                         <connections>
                             <action selector="clickSelected:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="sIe-kf-Np6"/>
                         </connections>
@@ -192,11 +197,11 @@
         </tableViewCell>
     </objects>
     <resources>
-        <image name="checkbox_0" width="18" height="18"/>
-        <image name="checkbox_1" width="18" height="18"/>
-        <image name="count_min_0" width="11" height="4"/>
-        <image name="count_plus_0" width="12" height="13"/>
-        <image name="delete" width="14" height="18"/>
-        <image name="downArrow" width="12" height="7"/>
+        <image name="jia_icon" width="23" height="20"/>
+        <image name="jian_icom" width="23" height="20"/>
+        <image name="jiantou_xia" width="11" height="7"/>
+        <image name="shanchu_hk" width="50" height="108"/>
+        <image name="xuanze_wei" width="17" height="17"/>
+        <image name="xuanze_yi" width="17" height="17"/>
     </resources>
 </document>

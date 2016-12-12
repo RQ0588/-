@@ -31,3 +31,20 @@ NSString *const MJRefreshBackFooterNoMoreDataText = @"MJRefreshBackFooterNoMoreD
 NSString *const MJRefreshHeaderLastTimeText = @"MJRefreshHeaderLastTimeText";
 NSString *const MJRefreshHeaderDateTodayText = @"MJRefreshHeaderDateTodayText";
 NSString *const MJRefreshHeaderNoneLastDateText = @"MJRefreshHeaderNoneLastDateText";
+
+const CGFloat MJRefreshViewHeight = 44.0;//64.0 //BG - 后改 修改时间 : 2016/1/7 14:11
+const CGFloat MJRefreshAnimationDuration = 0.25;
+
+NSString *const MJRefreshBundleName = @"MJRefresh.bundle";
+
+NSString *const MJRefreshFooterPullToRefresh = @"上拉可以加载更多数据";
+NSString *const MJRefreshFooterReleaseToRefresh = @"松开立即加载更多数据";
+NSString *const MJRefreshFooterRefreshing = @"标哥正在帮你加载数据...";
+
+NSString *const MJRefreshHeaderPullToRefresh = @"下拉,返回宝贝详情";
+NSString *const MJRefreshHeaderReleaseToRefresh = @"释放,返回宝贝详情";
+NSString *const MJRefreshHeaderRefreshing = @"返回";
+NSString *const MJRefreshHeaderTimeKey = @"MJRefreshHeaderView";
+
+NSString *const MJRefreshContentOffset = @"contentOffset";
+NSString *const MJRefreshContentSize = @"contentSize";

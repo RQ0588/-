@@ -7,6 +7,7 @@
 //
 
 #import "NPYFeatureStoreTVCell.h"
+#import "NPYBaseConstant.h"
 
 @interface NPYFeatureStoreTVCell () {
     UIImageView *logIcon;
@@ -28,8 +29,8 @@
         self.contentView.backgroundColor = [UIColor clearColor];
         self.selectionStyle = UITableViewCellSelectionStyleNone;
         height_Space = 5.0;
-        width_LogIcon = 30.0;
-        width_ShopName = 100.0;
+        width_LogIcon = 38.0;
+        width_ShopName = 200;
         
     }
     
@@ -48,31 +49,38 @@
     [self.contentView addSubview:backgroundView];
     //log
     logIcon = [[UIImageView alloc] init];
-    logIcon.frame = CGRectMake(height_Space , height_Space, width_LogIcon, width_LogIcon);
+    logIcon.frame = CGRectMake(14 , 10, width_LogIcon, width_LogIcon);
+//    logIcon.layer.borderWidth = 0.5;
+//    logIcon.layer.borderColor = GRAY_BG.CGColor;
     logIcon.image = [UIImage imageNamed:@"placeholder"];
     [self.contentView addSubview:logIcon];
     //name
     shopName = [[UIButton alloc] init];
-    shopName.frame = CGRectMake(CGRectGetMaxX(logIcon.frame) + 5, height_Space, width_ShopName, width_LogIcon);
+    shopName.frame = CGRectMake(CGRectGetMaxX(logIcon.frame) + 5, 10, width_ShopName, width_LogIcon);
     [shopName setTitle:@"店铺名称" forState:0];
-    [shopName setTitleColor:[UIColor blackColor] forState:0];
+    shopName.titleEdgeInsets = UIEdgeInsetsMake(0, -width_ShopName + width_LogIcon * 2, 0, 0);
+    [shopName setTitleColor:XNColor(0, 0, 0, 1) forState:0];
+    shopName.titleLabel.font = XNFont(15.0);
     [shopName setTag:300];
     [shopName addTarget:self action:@selector(detailButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     [self.contentView addSubview:shopName];
+    
+//    shopName.backgroundColor = [UIColor blueColor];
     //rightIntoButton
     rightIntoBtn = [[UIButton alloc] init];
-    rightIntoBtn.frame = CGRectMake(CGRectGetMaxX(self.contentView.frame) - width_ShopName - height_Space, height_Space, 60, 20);
+    rightIntoBtn.frame = CGRectMake(CGRectGetMaxX(self.contentView.frame) - 70, 15, 56, 20);
+    [rightIntoBtn setBackgroundImage:[UIImage imageNamed:@"hongkuang"] forState:UIControlStateNormal];
     [rightIntoBtn setTitle:@"进入店铺" forState:0];
     [rightIntoBtn setTitleColor:[UIColor redColor] forState:0];
     [rightIntoBtn setTag:301];
-    rightIntoBtn.layer.borderColor = [UIColor orangeColor].CGColor;
-    rightIntoBtn.layer.borderWidth = 1.0;
     rightIntoBtn.titleLabel.font = [UIFont systemFontOfSize:10.0];
     [rightIntoBtn addTarget:self action:@selector(detailButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     [self.contentView addSubview:rightIntoBtn];
     //product
     product1 = [[UIButton alloc] init];
-    product1.frame = CGRectMake(height_Space / 2, CGRectGetMaxY(logIcon.frame) + height_Space, width_LogIcon + width_ShopName, CGRectGetMaxY(backgroundView.frame) - height_Space * 2 - CGRectGetMaxY(logIcon.frame) );
+    product1.frame = CGRectMake(10, CGRectGetMaxY(logIcon.frame) + height_Space, width_LogIcon + width_ShopName, CGRectGetMaxY(backgroundView.frame) - height_Space * 2 - CGRectGetMaxY(logIcon.frame) );
+    product1.layer.borderColor = GRAY_BG.CGColor;
+    product1.layer.borderWidth = 0.5;
     [product1 setImage:[UIImage imageNamed:@"placeholder"] forState:0];
     [product1 setTag:302];
     [product1 addTarget:self action:@selector(detailButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
@@ -80,6 +88,8 @@
     
     product2 = [[UIButton alloc] init];
     product2.frame = CGRectMake(CGRectGetMaxX(product1.frame) + height_Space, CGRectGetMaxY(logIcon.frame) + height_Space, CGRectGetWidth(backgroundView.frame) - CGRectGetMaxX(product1.frame) - height_Space * 2, (CGRectGetHeight(product1.frame) - height_Space) / 2);
+    product2.layer.borderColor = GRAY_BG.CGColor;
+    product2.layer.borderWidth = 0.5;
     [product2 setImage:[UIImage imageNamed:@"placeholder"] forState:0];
     [product2 setTag:303];
     [product2 addTarget:self action:@selector(detailButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
@@ -87,6 +97,8 @@
     
     product3 = [[UIButton alloc] init];
     product3.frame = CGRectMake(CGRectGetMaxX(product1.frame) + height_Space, CGRectGetMaxY(product2.frame) + height_Space, CGRectGetWidth(backgroundView.frame) - CGRectGetMaxX(product1.frame) - height_Space * 2, (CGRectGetHeight(product1.frame) - height_Space) / 2);
+    product3.layer.borderColor = GRAY_BG.CGColor;
+    product3.layer.borderWidth = 0.5;
     [product3 setImage:[UIImage imageNamed:@"placeholder"] forState:0];
     [product3 setTag:304];
     [product3 addTarget:self action:@selector(detailButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
