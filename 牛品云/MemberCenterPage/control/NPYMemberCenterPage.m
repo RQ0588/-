@@ -147,16 +147,15 @@
     headPortrait.layer.masksToBounds = YES;
     [headerView addSubview:headPortrait];
     
-    headPortrait.badgeBgColor = [UIColor blueColor];
-    headPortrait.badgeTextColor = [UIColor whiteColor];
-    headPortrait.badgeFont = [UIFont boldSystemFontOfSize:11];
-    headPortrait.badgeMaximumBadgeNumber = 99;
-    headPortrait.badgeCenterOffset = CGPointMake(5, 0);
-    [headPortrait showBadgeWithStyle:WBadgeStyleNumber value:100 animationType:WBadgeAnimTypeScale];
-    
     UIButton *btn = [[UIButton alloc] initWithFrame:headPortrait.frame];
     [headerView addSubview:btn];
-    [btn addTarget:self action:@selector(loginButtonPressed2:) forControlEvents:7];
+//    btn.badgeBgColor = [UIColor blueColor];
+//    btn.badgeTextColor = [UIColor whiteColor];
+//    btn.badgeFont = [UIFont boldSystemFontOfSize:11];
+//    btn.badgeMaximumBadgeNumber = 99;
+//    btn.badgeCenterOffset = CGPointMake(5, 0);
+//    [btn showBadgeWithStyle:WBadgeStyleNumber value:100 animationType:WBadgeAnimTypeScale];
+//    [btn addTarget:self action:@selector(loginButtonPressed2:) forControlEvents:7];
     
     //会员名
     userName = [[UILabel alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(headPortrait.frame) + 15, 100, 20)];
