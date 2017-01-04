@@ -46,16 +46,26 @@
 
 #import "AppDelegate.h"
 
+#import "NPYBaseConstant.h"
+
 #define kTimeLineTableViewCellId @"SDTimeLineCell"
+
+#define Moments_Url @"/index.php/app/Moments/get"
 
 static CGFloat textFieldH = 40;
 
-@interface SDTimeLineTableViewController () <SDTimeLineCellDelegate, UITextFieldDelegate>
+@interface SDTimeLineTableViewController () <SDTimeLineCellDelegate, UITextFieldDelegate> {
+    UIImageView *headerIcon;
+    UILabel     *headerNotic;
+    int         noticCount;
+    int         refreshNumber;
+}
 
 @property (nonatomic, strong) UITextField *textField;
 @property (nonatomic, assign) BOOL isReplayingComment;
 @property (nonatomic, strong) NSIndexPath *currentEditingIndexthPath;
 @property (nonatomic, copy) NSString *commentToUser;
+@property (nonatomic, copy) NSString *commentToUserName;
 
 @end
 
@@ -71,14 +81,17 @@ static CGFloat textFieldH = 40;
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     
-    [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"daohaglan_bg"] forBarMetrics:UIBarMetricsDefault];
+    [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"hk_dingbu"] forBarMetrics:UIBarMetricsDefault];
     
-    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:nil];
-    self.navigationItem.backBarButtonItem = item;
+    UIButton *backBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 18, 18)];
+    [backBtn setImage:[UIImage imageNamed:@"icon_fanhui"] forState:0];
+    [backBtn addTarget:self action:@selector(backItem:) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithCustomView:backBtn];
+    self.navigationItem.leftBarButtonItem = item;
     
     self.tabBarController.tabBar.hidden = NO;
     
-    self.view.backgroundColor = [UIColor colorWithRed:226/255.0 green:227/255.0 blue:229/255. alpha:1.0];
+    self.view.backgroundColor = GRAY_BG;
     
     self.navigationItem.title = @"朋友圈";
     
@@ -92,21 +105,21 @@ static CGFloat textFieldH = 40;
     [_textField resignFirstResponder];
 }
 
-- (void)navigationViewLoad {
-    UIBarButtonItem *backItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(backItemPressed:)];
-    self.navigationItem.leftBarButtonItem = backItem;
-}
-
-- (void)backItemPressed:(UIBarButtonItem *)backItem {
-    [(AppDelegate *)[UIApplication sharedApplication].delegate switchRootViewControllerWithIdentifier:@"NPYMain"];
-}
-
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     //LEETheme 分为两种模式 , 独立设置模式 JSON设置模式 , 朋友圈demo展示的是独立设置模式的使用 , 微信聊天demo 展示的是JSON模式的使用
     
-    UIBarButtonItem *rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"发布" style:UIBarButtonItemStyleDone target:self action:@selector(rightBarButtonItemAction:)];
+    UIButton *rightBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 80, 80)];
+    [rightBtn setTitleColor:XNColor(51, 51, 51, 1) forState:0];
+    [rightBtn setTitle:@"发布" forState:0];
+    rightBtn.titleLabel.font = XNFont(16.0);
+    [rightBtn addTarget:self action:@selector(rightBarButtonItemAction:) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *rightItem = [[UIBarButtonItem alloc] initWithCustomView:rightBtn];
+    
+    self.navigationItem.rightBarButtonItem = rightItem;
+    
+//    UIBarButtonItem *rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"发布" style:UIBarButtonItemStyleDone target:self action:@selector(rightBarButtonItemAction:)];
     
 //    rightBarButtonItem.lee_theme
 //    .LeeAddCustomConfig(DAY , ^(UIBarButtonItem *item){
@@ -120,47 +133,90 @@ static CGFloat textFieldH = 40;
     
     //为self.view 添加背景颜色设置
     
-    [self navigationViewLoad];
+//    [self navigationViewLoad];
     
     self.view.lee_theme
     .LeeAddBackgroundColor(DAY , [UIColor whiteColor])
     .LeeAddBackgroundColor(NIGHT , [UIColor blackColor]);
     
-    self.navigationItem.rightBarButtonItem = rightBarButtonItem;
+//    self.navigationItem.rightBarButtonItem = rightBarButtonItem;
     
     self.automaticallyAdjustsScrollViewInsets = NO;
     
     self.edgesForExtendedLayout = UIRectEdgeTop;
     
-    [self.dataArray addObjectsFromArray:[self creatModelsWithCount:10]];
+//    [self.dataArray addObjectsFromArray:[self creatModelsWithCount:10]];
     
-    __weak typeof(self) weakSelf = self;
+    self.dataArray = [NSMutableArray new];
     
+#pragma mark -
     
-    // 上拉加载
-    _refreshFooter = [SDTimeLineRefreshFooter refreshFooterWithRefreshingText:@"正在加载数据..."];
-    __weak typeof(_refreshFooter) weakRefreshFooter = _refreshFooter;
-    [_refreshFooter addToScrollView:self.tableView refreshOpration:^{
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            [weakSelf.dataArray addObjectsFromArray:[weakSelf creatModelsWithCount:10]];
-            
-            /**
-             [weakSelf.tableView reloadDataWithExistedHeightCache]
-             作用等同于
-             [weakSelf.tableView reloadData]
-             只是“reloadDataWithExistedHeightCache”刷新tableView但不清空之前已经计算好的高度缓存，用于直接将新数据拼接在旧数据之后的tableView刷新
-             */
-            [weakSelf.tableView reloadDataWithExistedHeightCache];
-            
-            [weakRefreshFooter endRefreshing];
-        });
-    }];
+    NSDictionary *dic = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+    NPYLoginMode *model = [NPYLoginMode mj_objectWithKeyValues:dic[@"data"]];
+    
+    NSDictionary *requeatDict = [NSDictionary dictionaryWithObjectsAndKeys:[dic valueForKey:@"sign"],@"sign",model.user_id,@"user_id",@"0",@"num", nil];
+    [self requestMomentDataWithUrlString:Moments_Url withParame:requeatDict];
+
+    
+//    __weak typeof(self) weakSelf = self;
+//    
+////     上拉加载
+//    _refreshFooter = [SDTimeLineRefreshFooter refreshFooterWithRefreshingText:@"正在加载数据..."];
+//    __weak typeof(_refreshFooter) weakRefreshFooter = _refreshFooter;
+//    [_refreshFooter addToScrollView:self.tableView refreshOpration:^{
+//        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+//            [weakSelf.dataArray addObjectsFromArray:[weakSelf creatModelsWithCount:10]];
+//            
+//            NSDictionary *dic = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+//            NPYLoginMode *model = [NPYLoginMode mj_objectWithKeyValues:dic[@"data"]];
+//            
+//            NSDictionary *requeatDict = [NSDictionary dictionaryWithObjectsAndKeys:[dic valueForKey:@"sign"],@"sign",model.user_id,@"user_id",[NSString stringWithFormat:@"%i",refreshNumber+1],@"num", nil];
+//            [weakSelf requestMomentDataWithUrlString:Moments_Url withParame:requeatDict];
+//            
+//            /**
+//             [weakSelf.tableView reloadDataWithExistedHeightCache]
+//             作用等同于
+//             [weakSelf.tableView reloadData]
+//             只是“reloadDataWithExistedHeightCache”刷新tableView但不清空之前已经计算好的高度缓存，用于直接将新数据拼接在旧数据之后的tableView刷新
+//             */
+//            [weakSelf.tableView reloadDataWithExistedHeightCache];
+//            
+//            [weakRefreshFooter endRefreshing];
+//        });
+//    }];
     
 //    SDTimeLineTableHeaderView *headerView = [SDTimeLineTableHeaderView new];
 //    headerView.frame = CGRectMake(0, 0, 0, 260);
 //    self.tableView.tableHeaderView = headerView;
     
-    UIView *headView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 0, 70)];
+    UIView *headView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 0, 130)];
+    
+    UIView *bgView = [[UIView alloc] initWithFrame:CGRectMake(0, 60, WIDTH_SCREEN, 60)];
+    bgView.backgroundColor = [UIColor whiteColor];
+    [headView addSubview:bgView];
+    
+    UIImageView *bgImgView = [[UIImageView alloc] initWithFrame:CGRectMake((WIDTH_SCREEN - 126)/2, 15, 126, 31)];
+    bgImgView.image = [UIImage imageNamed:@"圆角矩形-1"];
+    [bgView addSubview:bgImgView];
+    
+    headerIcon = [[UIImageView alloc] initWithFrame:CGRectMake(CGRectGetMinX(bgImgView.frame)+12, CGRectGetMinY(bgImgView.frame) + 5, 21, 21)];
+    headerIcon.layer.cornerRadius = 21/2;
+    headerIcon.layer.masksToBounds = YES;
+    headerIcon.image = [UIImage imageNamed:@"0.jpg"];
+    [bgView addSubview:headerIcon];
+
+    headerNotic = [[UILabel alloc] initWithFrame:CGRectMake(CGRectGetMaxX(headerIcon.frame)+10, CGRectGetMinY(headerIcon.frame), 75, 21)];
+    noticCount = 99;
+    headerNotic.text = [NSString stringWithFormat:@"%i条新消息",noticCount];
+    headerNotic.textColor = XNColor(51, 51, 51, 1);
+    headerNotic.font = XNFont(15.0);
+    headerNotic.adjustsFontSizeToFitWidth = YES;
+    [bgView addSubview:headerNotic];
+    
+    UIButton *noticBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, WIDTH_SCREEN, 60)];
+    [noticBtn addTarget:self action:@selector(noticButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
+    [bgView addSubview:noticBtn];
+    
     self.tableView.tableHeaderView = headView;
     
     self.tableView.showsVerticalScrollIndicator = NO;
@@ -175,32 +231,50 @@ static CGFloat textFieldH = 40;
     
     [self setupTextField];
     
+    self.tableView.tableFooterView = [UIView new];
+    
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardNotification:) name:UIKeyboardWillChangeFrameNotification object:nil];
+    
+    self.tableView.mj_header = [MJRefreshNormalHeader headerWithRefreshingBlock:^{
+        NSDictionary *dic = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+        NPYLoginMode *model = [NPYLoginMode mj_objectWithKeyValues:dic[@"data"]];
+        
+        NSDictionary *requeatDict = [NSDictionary dictionaryWithObjectsAndKeys:[dic valueForKey:@"sign"],@"sign",model.user_id,@"user_id",@"0",@"num", nil];
+        [self requestMomentDataWithUrlString:Moments_Url withParame:requeatDict];
+    }];
+    
 }
 
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
     
-    if (!_refreshHeader.superview) {
-        
-        _refreshHeader = [SDTimeLineRefreshHeader refreshHeaderWithCenter:CGPointMake(40, 45)];
-        _refreshHeader.scrollView = self.tableView;
-        __weak typeof(_refreshHeader) weakHeader = _refreshHeader;
-        __weak typeof(self) weakSelf = self;
-        [_refreshHeader setRefreshingBlock:^{
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                weakSelf.dataArray = [[weakSelf creatModelsWithCount:10] mutableCopy];
-                [weakHeader endRefreshing];
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [weakSelf.tableView reloadData];
-                });
-            });
-        }];
-        [self.tableView.superview addSubview:_refreshHeader];
-    } else {
-        [self.tableView.superview bringSubviewToFront:_refreshHeader];
-    }
+//    if (!_refreshHeader.superview) {
+//        
+//        _refreshHeader = [SDTimeLineRefreshHeader refreshHeaderWithCenter:CGPointMake(40, 45)];
+//        _refreshHeader.scrollView = self.tableView;
+//        __weak typeof(_refreshHeader) weakHeader = _refreshHeader;
+//        __weak typeof(self) weakSelf = self;
+//        [_refreshHeader setRefreshingBlock:^{
+//            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+////                weakSelf.dataArray = [[weakSelf creatModelsWithCount:10] mutableCopy];
+//                
+////                NSDictionary *dic = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+////                NPYLoginMode *model = [NPYLoginMode mj_objectWithKeyValues:dic[@"data"]];
+////                
+////                NSDictionary *requeatDict = [NSDictionary dictionaryWithObjectsAndKeys:[dic valueForKey:@"sign"],@"sign",model.user_id,@"user_id",@"0",@"num", nil];
+////                [weakSelf requestMomentDataWithUrlString:Moments_Url withParame:requeatDict];
+//                
+//                [weakHeader endRefreshing];
+//                dispatch_async(dispatch_get_main_queue(), ^{
+//                    [weakSelf.tableView reloadData];
+//                });
+//            });
+//        }];
+//        [self.tableView.superview addSubview:_refreshHeader];
+//    } else {
+//        [self.tableView.superview bringSubviewToFront:_refreshHeader];
+//    }
 }
 
 - (void)dealloc
@@ -228,7 +302,7 @@ static CGFloat textFieldH = 40;
     .LeeAddTextColor(DAY , [UIColor blackColor])
     .LeeAddTextColor(NIGHT , [UIColor grayColor])
     .LeeAddCustomConfig(DAY , ^(UITextField *item){
-        
+    
         item.keyboardAppearance = UIKeyboardAppearanceDefault;
         if ([item isFirstResponder]) {
             [item resignFirstResponder];
@@ -246,6 +320,8 @@ static CGFloat textFieldH = 40;
     _textField.frame = CGRectMake(0, [UIScreen mainScreen].bounds.size.height, self.view.width, textFieldH);
     [[UIApplication sharedApplication].keyWindow addSubview:_textField];
     
+    _textField.backgroundColor = [UIColor whiteColor];
+    
     [_textField becomeFirstResponder];
     [_textField resignFirstResponder];
 }
@@ -262,7 +338,11 @@ static CGFloat textFieldH = 40;
 //        [LEETheme startTheme:DAY];
 //    }
     //发布按钮
+    NSDictionary *dic = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+    NPYLoginMode *model = [NPYLoginMode mj_objectWithKeyValues:dic[@"data"]];
     NPYReleaseViewController *releaseVC = [[NPYReleaseViewController alloc] init];
+    releaseVC.sign = [dic valueForKey:@"sign"];
+    releaseVC.userID = model.user_id;
     [self.navigationController pushViewController:releaseVC animated:YES];
 //    [self presentViewController:releaseVC animated:YES completion:nil];
 }
@@ -390,12 +470,13 @@ static CGFloat textFieldH = 40;
             [weakSelf.tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
         }];
         
-        [cell setDidClickCommentLabelBlock:^(NSString *commentId, CGRect rectInWindow, NSIndexPath *indexPath) {
-            weakSelf.textField.placeholder = [NSString stringWithFormat:@"  回复：%@", commentId];
+        [cell setDidClickCommentLabelBlock:^(NSString *commentId, NSString *commentName,CGRect rectInWindow, NSIndexPath *indexPath) {
+            weakSelf.textField.placeholder = [NSString stringWithFormat:@"  回复：%@", commentName];
             weakSelf.currentEditingIndexthPath = indexPath;
             [weakSelf.textField becomeFirstResponder];
             weakSelf.isReplayingComment = YES;
             weakSelf.commentToUser = commentId;
+            weakSelf.commentToUserName = commentName;
             [weakSelf adjustTableViewToFitKeyboardWithRect:rectInWindow];
         }];
         
@@ -515,23 +596,37 @@ static CGFloat textFieldH = 40;
     if (textField.text.length) {
         [_textField resignFirstResponder];
         
+#pragma mark - 评论
+        NSString *urlStr = @"/index.php/app/Moments/reply";
+        
+        NSDictionary *userDict = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+        NPYLoginMode *userModel = [NPYLoginMode mj_objectWithKeyValues:userDict[@"data"]];
+        
         SDTimeLineCellModel *model = self.dataArray[_currentEditingIndexthPath.row];
         NSMutableArray *temp = [NSMutableArray new];
         [temp addObjectsFromArray:model.commentItemsArray];
         SDTimeLineCellCommentItemModel *commentItemModel = [SDTimeLineCellCommentItemModel new];
         
         if (self.isReplayingComment) {
-            commentItemModel.firstUserName = @"GSD_iOS";
-            commentItemModel.firstUserId = @"GSD_iOS";
-            commentItemModel.secondUserName = self.commentToUser;
+            commentItemModel.firstUserName = userModel.user_name;
+            commentItemModel.firstUserId = userModel.user_id;
+            commentItemModel.secondUserName = self.commentToUserName;
             commentItemModel.secondUserId = self.commentToUser;
             commentItemModel.commentString = textField.text;
             
+            NSDictionary *requestDict = [NSDictionary dictionaryWithObjectsAndKeys:[userDict valueForKey:@"sign"],@"sign",userModel.user_id,@"user_id",model.moments_id,@"moments_id",commentItemModel.secondUserId,@"be_user_id",_textField.text,@"text", nil];
+            
+            [self requestReplyMomentsWithUrlString:urlStr withParames:requestDict];
+            
             self.isReplayingComment = NO;
         } else {
-            commentItemModel.firstUserName = @"GSD_iOS";
+            commentItemModel.firstUserName = userModel.user_name;
             commentItemModel.commentString = textField.text;
-            commentItemModel.firstUserId = @"GSD_iOS";
+            commentItemModel.firstUserId = userModel.user_id;
+            
+            NSDictionary *requestDict = [NSDictionary dictionaryWithObjectsAndKeys:[userDict valueForKey:@"sign"],@"sign",userModel.user_id,@"user_id",model.moments_id,@"moments_id",model.user_id,@"be_user_id",_textField.text,@"text", nil];
+            
+            [self requestReplyMomentsWithUrlString:urlStr withParames:requestDict];
         }
         [temp addObject:commentItemModel];
         model.commentItemsArray = [temp copy];
@@ -539,6 +634,7 @@ static CGFloat textFieldH = 40;
         
         _textField.text = @"";
         _textField.placeholder = nil;
+
         
         return YES;
     }
@@ -574,6 +670,100 @@ static CGFloat textFieldH = 40;
     bottom.backgroundColor = [UIColor whiteColor];
     bottom.layer.borderColor = [UIColor colorWithRed:226/255.0 green:227/255.0 blue:229/255. alpha:1.0].CGColor;
     bottom.layer.borderWidth = 0.5;
+}
+
+- (void)noticButtonPressed:(UIButton *)sender {
+    [ZHProgressHUD showMessage:@"查看通知消息" inView:self.tableView];
+    
+}
+
+- (void)backItem:(UIButton *)sender {
+    [(AppDelegate *)[UIApplication sharedApplication].delegate switchRootViewControllerWithIdentifier:@"NPYMain"];
+}
+
+#pragma mark - 
+
+- (void)requestMomentDataWithUrlString:(NSString *)urlStr withParame:(NSDictionary *)parame {
+    NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:parame] forKey:@"data"];
+    
+    [[NPYHttpRequest sharedInstance] getWithUrlString:[NSString stringWithFormat:@"%@%@",BASE_URL,urlStr] parameters:paremes success:^(id responseObject) {
+        NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+        if ([dataDict[@"r"] intValue] == 1) {
+            //成功
+            [ZHProgressHUD showMessage:@"网络请求成功" inView:self.view];
+            NSArray *tpDataArr = [NSArray arrayWithArray:dataDict[@"data"]];
+            /*moments_id，朋友圈id  text，朋友圈内容  img1，朋友圈图片  reply_json，该条的评论*/
+            [self.dataArray removeAllObjects];
+            for (int i = 0; i < tpDataArr.count; i++) {
+                NSDictionary *tpDict = tpDataArr[i];
+                //发布信息模型
+                SDTimeLineCellModel *model = [SDTimeLineCellModel new];
+                model.moments_id = [tpDict valueForKey:@"moments_id"];
+                model.user_id = [tpDict valueForKey:@"user_id"];
+                model.name = [tpDict valueForKey:@"user_name"];
+                model.iconName = [tpDict valueForKey:@"user_portrait"];
+                model.msgContent = [tpDict valueForKey:@"text"];
+                model.picNamesArray = [NSArray arrayWithObjects:[tpDict valueForKey:@"img1"],[tpDict valueForKey:@"img2"],[tpDict valueForKey:@"img3"], nil];
+                model.time = [tpDict valueForKey:@"time"];
+                
+                NSArray *commentArr = [tpDict valueForKey:@"reply_json"];
+                NSMutableArray *tempComments = [NSMutableArray new];
+                for (int i = 0; i < commentArr.count; i++) {
+                    NSDictionary *commentDict = commentArr[i];
+                    //评论模型
+                    SDTimeLineCellCommentItemModel *commentItemModel = [SDTimeLineCellCommentItemModel new];
+                    commentItemModel.firstUserId = [commentDict valueForKey:@"user_id"];
+                    commentItemModel.firstUserName = [commentDict valueForKey:@"user_name"];
+                    commentItemModel.commentString = [commentDict valueForKey:@"text"];
+                    commentItemModel.secondUserId = [commentDict valueForKey:@"be_user_id"];
+                    commentItemModel.secondUserName = [commentDict valueForKey:@"be_user_name"];
+                    
+                    [tempComments addObject:commentItemModel];
+                }
+                
+                model.commentItemsArray = [tempComments copy];
+                
+                [self.dataArray addObject:model];
+            }
+            
+            [self.tableView.mj_header endRefreshing];
+            
+            [self.tableView reloadData];
+            
+        } else {
+            //请求失败
+            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+        }
+        
+        
+    } failure:^(NSError *error) {
+        NSLog(@"%@",error);
+        
+    }];
+    
+}
+
+- (void)requestReplyMomentsWithUrlString:(NSString *)urlStr withParames:(NSDictionary *)parame {
+    NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:parame] forKey:@"data"];
+    
+    [[NPYHttpRequest sharedInstance] getWithUrlString:[NSString stringWithFormat:@"%@%@",BASE_URL,urlStr] parameters:paremes success:^(id responseObject) {
+        NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+        
+        if ([dataDict[@"r"] intValue] == 1) {
+            //成功
+            [ZHProgressHUD showMessage:@"网络请求成功" inView:self.view];
+            
+        } else {
+            //请求失败
+            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+        }
+        
+        
+    } failure:^(NSError *error) {
+        NSLog(@"%@",error);
+        
+    }];
+    
 }
 
 @end

@@ -14,6 +14,7 @@
 @interface RightSlidetableViewCell ()
 @property (nonatomic, strong) UILabel *verticalLabel1 ;//竖线
 @property (nonatomic, strong) UILabel *verticalLabel2 ;//竖线
+@property (nonatomic, strong) UILabel *horizontalLabel;//横线
 @property (nonatomic, strong) UIButton *circleView; //圈
 @property (nonatomic, strong) UILabel *titleLabel; //标题
 @property (nonatomic, strong) UILabel *detailLabel; //描述
@@ -34,32 +35,38 @@
 {
     //竖线
     self.verticalLabel1 = [[UILabel alloc]init];
-    self.verticalLabel1.backgroundColor = [UIColor colorWithRed:172/255.0 green:173/255.0 blue:174/255.0 alpha:1.0];
+    self.verticalLabel1.backgroundColor = [UIColor colorWithRed:221/255.0 green:221/255.0 blue:221/255.0 alpha:1.0];
     [self.contentView addSubview:self.verticalLabel1];
     
     self.verticalLabel2 = [[UILabel alloc]init];
-    self.verticalLabel2.backgroundColor = [UIColor colorWithRed:172/255.0 green:173/255.0 blue:174/255.0 alpha:1.0];
+    self.verticalLabel2.backgroundColor = [UIColor colorWithRed:221/255.0 green:221/255.0 blue:221/255.0 alpha:1.0];
     [self.contentView addSubview:self.verticalLabel2];
+    
+    //横线
+//    self.horizontalLabel = [[UILabel alloc] init];
+//    self.horizontalLabel.backgroundColor = [UIColor colorWithRed:230/255.0 green:230/255.0 blue:230/255.0 alpha:1.0];
+//    [self.contentView addSubview:self.horizontalLabel];
     
     //圆圈
     self.circleView = [UIButton buttonWithType:UIButtonTypeCustom];
-    self.circleView.backgroundColor = [UIColor whiteColor];
-    self.circleView.layer.borderColor = [UIColor redColor].CGColor;
+    self.circleView.backgroundColor = [UIColor colorWithRed:248/255.0 green:31/255.0 blue:31/255.0 alpha:1.0];
+    self.circleView.layer.borderColor = [UIColor colorWithRed:221/255.0 green:221/255.0 blue:221/255.0 alpha:1.0].CGColor;
     self.circleView.layer.cornerRadius = 8;
-    self.circleView.layer.borderWidth = 3;
+    self.circleView.layer.borderWidth = 1;
+//    [self.circleView setImage:[UIImage imageNamed:@""] forState:0];
     [self.contentView addSubview:self.circleView];
     
     //标题
     self.titleLabel = [[UILabel alloc]init];
-    self.titleLabel.font = [UIFont systemFontOfSize:13];
-    self.titleLabel.textColor = [UIColor colorWithRed:172/255.0 green:173/255.0 blue:174/255.0 alpha:1.0];
+    self.titleLabel.font = [UIFont systemFontOfSize:14.0];
+    self.titleLabel.textColor = [UIColor colorWithRed:153/255.0 green:153/255.0 blue:153/255.0 alpha:1.0];
     self.titleLabel.numberOfLines = 0;
     [self.contentView addSubview:self.titleLabel];
     
     //时间
     self.timeLabel = [[UILabel alloc]init];
-    self.timeLabel.font = [UIFont systemFontOfSize:13];
-    self.timeLabel.textColor = [UIColor colorWithRed:172/255.0 green:173/255.0 blue:174/255.0 alpha:1.0];
+    self.timeLabel.font = [UIFont systemFontOfSize:12.0];
+    self.timeLabel.textColor = [UIColor colorWithRed:153/255.0 green:153/255.0 blue:153/255.0 alpha:1.0];
     [self.contentView addSubview:self.timeLabel];
     
     //描述
@@ -106,6 +113,12 @@
     .leftSpaceToView(self.verticalLabel2,PADDING_OF_LEFT_RIGHT)
     .widthIs(WIDTH_OF_PROCESS_LABLE)
     .heightIs(30);
+    
+//    self.horizontalLabel.sd_layout
+//    .topSpaceToView(self.timeLabel,9)
+//    .leftSpaceToView(self.verticalLabel2,PADDING_OF_LEFT_RIGHT)
+//    .heightIs(1)
+//    .widthIs(WIDTH_OF_PROCESS_LABLE);
 }
 //赋值
 -(void)setModel:(TimeModel *)model
@@ -116,6 +129,27 @@
     if (model.isTop) {
         //是开头的不显示最上端的竖线
         self.verticalLabel1.hidden = YES;
+        
+        self.circleView.sd_layout
+        .centerXEqualToView(self.verticalLabel1)
+        .centerYIs(13)
+        .heightIs(15)
+        .widthIs(15);
+        self.circleView.backgroundColor = [UIColor colorWithRed:248/255.0 green:31/255.0 blue:31/255.0 alpha:1.0];
+        self.circleView.layer.borderColor = [UIColor colorWithRed:221/255.0 green:221/255.0 blue:221/255.0 alpha:1.0].CGColor;
+        self.circleView.layer.cornerRadius = 8;
+        self.circleView.layer.borderWidth = 1;
+        
+    } else {
+        self.circleView.sd_layout
+        .centerXEqualToView(self.verticalLabel1)
+        .centerYIs(13)
+        .heightIs(10)
+        .widthIs(10);
+        self.circleView.backgroundColor = [UIColor colorWithRed:221/255.0 green:221/255.0 blue:221/255.0 alpha:1.0];
+        self.circleView.layer.borderColor = [UIColor colorWithRed:221/255.0 green:221/255.0 blue:221/255.0 alpha:1.0].CGColor;
+        self.circleView.layer.cornerRadius = 5;
+        self.circleView.layer.borderWidth = 1;
     }
     
     if (model.isEnd) {
@@ -125,7 +159,7 @@
     
     if (model.titleStr.length > 1) {
         //描述lab隐藏
-        NSDictionary *fontDic = @{NSFontAttributeName:[UIFont systemFontOfSize:13]};
+        NSDictionary *fontDic = @{NSFontAttributeName:[UIFont systemFontOfSize:14.0]};
         CGSize size1 = CGSizeMake(WIDTH_OF_PROCESS_LABLE,0);
         CGSize titleStrSize = [model.titleStr boundingRectWithSize:size1 options:NSStringDrawingTruncatesLastVisibleLine | NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading   attributes:fontDic context:nil].size;
         self.titleLabel.sd_layout

@@ -10,4 +10,6 @@
 
 @interface NPYRecommendTableViewCell : UITableViewCell 
 
+@property (nonatomic, strong) NSString *goodsID;
+
 @end

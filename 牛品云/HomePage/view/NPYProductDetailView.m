@@ -29,7 +29,7 @@
 - (void)layoutSubviews {
     imgView = [[UIImageView alloc] initWithFrame:CGRectMake(5, 5, CGRectGetWidth(self.frame) - 10, CGRectGetHeight(self.frame))];
     imgView.contentMode = UIViewContentModeScaleAspectFit;
-    [imgView sd_setImageWithURL:[NSURL URLWithString:self.imgName] placeholderImage:[UIImage imageNamed:@"placeholder"]];
+    [imgView sd_setImageWithURL:[NSURL URLWithString:self.imgName] placeholderImage:[UIImage imageNamed:@"tiantu_icon"]];
     [self addSubview:imgView];
     imgView.backgroundColor = [UIColor whiteColor];
 }

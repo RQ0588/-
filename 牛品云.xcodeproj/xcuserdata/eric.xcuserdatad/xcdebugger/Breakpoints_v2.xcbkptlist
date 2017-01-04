@@ -2,4 +2,102 @@
 <Bucket
    type = "1"
    version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "&#x725b;&#x54c1;&#x4e91;/HomePage/GoodsAndBuyViewController/ViewController/NPYSpecViewController.m"
+            timestampString = "504589487.467632"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "235"
+            endingLineNumber = "235"
+            landmarkName = "-requestAddGoodsToShoppingCarUrl:withParemes:"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "&#x725b;&#x54c1;&#x4e91;/HomePage/GoodsAndBuyViewController/ViewController/NPYSpecViewController.m"
+            timestampString = "504589489.039167"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "238"
+            endingLineNumber = "238"
+            landmarkName = "-requestAddGoodsToShoppingCarUrl:withParemes:"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "&#x725b;&#x54c1;&#x4e91;/LoginPage/control/NPYLoginViewController.m"
+            timestampString = "505037535.683775"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "244"
+            endingLineNumber = "244"
+            landmarkName = "-backButtonPressed:"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "&#x725b;&#x54c1;&#x4e91;/HomePage/control/NPYAddressDetailViewController.m"
+            timestampString = "505201649.089636"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "373"
+            endingLineNumber = "373"
+            landmarkName = "-requestUpdataAddressInfoWithUrlString:withParames:"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "-[NPYAddressDetailViewController requestUpdataAddressInfoWithUrlString:withParames:]"
+                  moduleName = "&#x725b;&#x54c1;&#x4e91;"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/eric/Desktop/%E7%89%9B%E5%93%81%E4%BA%91/%E7%89%9B%E5%93%81%E4%BA%91/%E7%89%9B%E5%93%81%E4%BA%91/HomePage/control/NPYAddressDetailViewController.m"
+                  timestampString = "505207445.844249"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "373"
+                  endingLineNumber = "373"
+                  offsetFromSymbolStart = "176">
+               </Location>
+               <Location
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "__84-[NPYAddressDetailViewController requestUpdataAddressInfoWithUrlString:withParames:]_block_invoke"
+                  moduleName = "&#x725b;&#x54c1;&#x4e91;"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/eric/Desktop/%E7%89%9B%E5%93%81%E4%BA%91/%E7%89%9B%E5%93%81%E4%BA%91/%E7%89%9B%E5%93%81%E4%BA%91/HomePage/control/NPYAddressDetailViewController.m"
+                  timestampString = "505207445.846326"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "374"
+                  endingLineNumber = "374"
+                  offsetFromSymbolStart = "57">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
 </Bucket>

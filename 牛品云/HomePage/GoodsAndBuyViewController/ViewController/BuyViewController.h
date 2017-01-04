@@ -7,7 +7,10 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "NPYBaseConstant.h"
 
 @interface BuyViewController : UIViewController
+
+@property (nonatomic, strong) NPYHomeGoodsModel *goodsModel;
 
 @end

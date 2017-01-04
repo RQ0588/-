@@ -15,6 +15,16 @@
     // Initialization code
 }
 
+- (void)layoutSubviews {
+    UIImageView *tm = [UIImageView new];
+    [tm sd_setImageWithURL:[NSURL URLWithString:self.imgUrlStr]];
+    
+    _imgView.frame = CGRectMake(CGRectGetMinX(_imgView.frame), CGRectGetMinY(_imgView.frame), CGRectGetWidth(_imgView.frame), tm.image.size.height);
+    
+    [_imgView sd_setImageWithURL:[NSURL URLWithString:self.imgUrlStr] placeholderImage:[UIImage imageNamed:@"tiantu_icon"]];
+    
+}
+
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {
     [super setSelected:selected animated:animated];
 

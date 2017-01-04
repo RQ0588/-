@@ -28,7 +28,7 @@
 
 - (UILabel *)title_label {
     if (_title_label == nil) {
-        _title_label = [[UILabel alloc] initWithFrame:CGRectMake(10, 10, 80, 30)];
+        _title_label = [[UILabel alloc] initWithFrame:CGRectMake(14, 10, 80, 30)];
         _title_label.textAlignment = NSTextAlignmentLeft;
         _title_label.textColor = [UIColor colorWithRed:8/255.0 green:8/255.0 blue:8/255.0 alpha:1.0];
         _title_label.text = @"满意度:";
@@ -41,7 +41,7 @@
 -(UIImageView *)starImageView1{
     
     if (_starImageView1 == nil) {
-        _starImageView1 = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"StarUnSelect"]];
+        _starImageView1 = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"huixing_fabiao"]];
         _starImageView1.frame = CGRectMake(star_X, star_topspace, star_width, star_width);
     }
     
@@ -50,7 +50,7 @@
 
 -(UIImageView *)starImageView2{
     if (_starImageView2 == nil) {
-        _starImageView2 = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"StarUnSelect"]];
+        _starImageView2 = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"huixing_fabiao"]];
         _starImageView2.frame = CGRectMake(star_width*2 + star_X, star_topspace, star_width, star_width);
     }
     return _starImageView2;
@@ -58,7 +58,7 @@
 
 -(UIImageView *)starImageView3{
     if (_starImageView3 == nil) {
-        _starImageView3 = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"StarUnSelect"]];
+        _starImageView3 = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"huixing_fabiao"]];
         _starImageView3.frame = CGRectMake(star_width*4 +star_X, star_topspace, star_width, star_width);
     }
     return _starImageView3;
@@ -66,7 +66,7 @@
 
 -(UIImageView *)starImageView4{
     if (_starImageView4 == nil) {
-        _starImageView4 = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"StarUnSelect"]];
+        _starImageView4 = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"huixing_fabiao"]];
         _starImageView4.frame = CGRectMake(star_width*6 + star_X, star_topspace, star_width, star_width);
     }
     return _starImageView4;
@@ -74,7 +74,7 @@
 
 -(UIImageView *)starImageView5{
     if (_starImageView5 == nil) {
-        _starImageView5 = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"StarUnSelect"]];
+        _starImageView5 = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"huixing_fabiao"]];
         _starImageView5.frame = CGRectMake(star_width*8 + star_X, star_topspace, star_width, star_width);
     }
     return _starImageView5;
@@ -206,7 +206,7 @@
     count = count + [self changeImg:point.x image:self.starImageView5];
     if(count==0){
         count = 0;
-        [self.starImageView1 setImage:[UIImage imageNamed:@"StarUnSelect"]];
+        [self.starImageView1 setImage:[UIImage imageNamed:@"huixing_fabiao"]];
         self.number_label.text = @"0分";
         self.fell_label.text = @"很差，不推荐";
     }
@@ -222,10 +222,10 @@
 -(NSInteger)changeImg:(float)x image:(UIImageView*)img{
     
     if(x > img.frame.origin.x){
-        [img setImage:[UIImage imageNamed:@"StarSelected"]];
+        [img setImage:[UIImage imageNamed:@"hongixing_fabiao-"]];
         return 1;
     }else{
-        [img setImage:[UIImage imageNamed:@"StarUnSelect"]];
+        [img setImage:[UIImage imageNamed:@"huixing_fabiao"]];
         return 0;
     }
 }

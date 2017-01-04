@@ -7,19 +7,19 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "NPYMyOrderModel.h"
 
 @interface NPYTableViewCell : UITableViewCell
+
+@property (nonatomic, strong) NPYMyOrderModel *model;
 
 @property (weak, nonatomic) IBOutlet UIImageView *shopIcon;
 @property (weak, nonatomic) IBOutlet UILabel *shopName;
 @property (weak, nonatomic) IBOutlet UILabel *orderState;
 @property (weak, nonatomic) IBOutlet UIImageView *goodsImg;
 @property (weak, nonatomic) IBOutlet UILabel *goodsName;
-@property (weak, nonatomic) IBOutlet UILabel *goodsDetail;
 @property (weak, nonatomic) IBOutlet UILabel *buyNumber;
 @property (weak, nonatomic) IBOutlet UILabel *goddsPrice;
-@property (weak, nonatomic) IBOutlet UILabel *specifications;
-@property (weak, nonatomic) IBOutlet UILabel *numberL;
 @property (weak, nonatomic) IBOutlet UIButton *delOrderBtn;
 @property (weak, nonatomic) IBOutlet UIButton *buyBtn;
 

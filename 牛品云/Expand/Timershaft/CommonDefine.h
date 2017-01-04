@@ -11,7 +11,7 @@
 
 #define ScreenHeight  [UIScreen mainScreen].bounds.size.height
 #define ScreenWidth   [UIScreen mainScreen].bounds.size.width
-#define PADDING_OF_LEFT_STEP_LINE 50
-#define PADDING_OF_LEFT_RIGHT 15
+#define PADDING_OF_LEFT_STEP_LINE 30
+#define PADDING_OF_LEFT_RIGHT 30
 #define WIDTH_OF_PROCESS_LABLE (300 *[UIScreen mainScreen].bounds.size.width / 375)
 #endif /* CommonDefine_h */

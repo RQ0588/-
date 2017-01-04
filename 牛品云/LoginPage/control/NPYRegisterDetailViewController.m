@@ -8,6 +8,7 @@
 
 #import "NPYRegisterDetailViewController.h"
 #import "NPYBaseConstant.h"
+#import "NPYLoginMode.h"
 
 @interface NPYRegisterDetailViewController () {
     UITextField *nameT,*pwT,*confirmPWT;
@@ -18,6 +19,9 @@
 
 @implementation NPYRegisterDetailViewController
 
+- (void)backItem:(UIButton *)sender {
+    [self.navigationController popViewControllerAnimated:YES];
+}
 
 
 - (void)viewDidLoad {
@@ -28,11 +32,19 @@
     
     self.navigationItem.title = @"帐号注册";
     
+    [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"hk_dingbu"] forBarMetrics:UIBarMetricsDefault];
+    
+    UIButton *backBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 18, 18)];
+    [backBtn setImage:[UIImage imageNamed:@"icon_fanhui"] forState:0];
+    [backBtn addTarget:self action:@selector(backItem:) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithCustomView:backBtn];
+    self.navigationItem.leftBarButtonItem = item;
+    
     [self mainViewLoad];
 }
 
 - (void)mainViewLoad {
-    UILabel *nameL = [[UILabel alloc] initWithFrame:CGRectMake(20, 80, 80, 20)];
+    UILabel *nameL = [[UILabel alloc] initWithFrame:CGRectMake(20, 120, 80, 20)];
     [self.view addSubview:nameL];
     nameL.text = @"账号";
     nameL.textColor = [UIColor blackColor];
@@ -100,7 +112,41 @@
         return;
     }
     
-    [self.navigationController popToRootViewControllerAnimated:YES];
+    NSDictionary *requestDic = [NSDictionary dictionaryWithObjectsAndKeys:@"npy_we874646sf",@"key",nameT.text,@"name",pwT.text,@"pwd",self.phoneNumber,@"phone",self.verifyCode,@"code",self.refereesPhone,@"recommend", nil];
+    [self requestDataWithUrlString:Register_url withKeyValueParemes:requestDic];
+    
+}
+
+- (void)requestDataWithUrlString:(NSString *)url withKeyValueParemes:(NSDictionary *)pareme {
+    
+    NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:pareme] forKey:@"data"];
+    
+    [[NPYHttpRequest sharedInstance] getWithUrlString:[NSString stringWithFormat:@"%@%@",BASE_URL,url] parameters:paremes success:^(id responseObject) {
+        NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+        
+        if ([dataDict[@"r"] intValue] == 1) {
+            //成功
+            [ZHProgressHUD showMessage:@"请求成功" inView:self.view];
+            
+            NPYLoginMode *model = [NPYLoginMode mj_objectWithKeyValues:dataDict[@"data"]];
+            model.r = dataDict[@"r"];
+            model.sign = dataDict[@"sign"];
+            
+            [NPYSaveGlobalVariable saveValueAtLocal:dataDict withKey:LoginData_Local];
+            [NPYSaveGlobalVariable saveValueAtLocal:dataDict[@"r"] withKey:LoginState];
+            
+            [self.navigationController popToRootViewControllerAnimated:YES];
+            
+        } else {
+            //失败
+            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+        }
+        
+    } failure:^(NSError *error) {
+        NSLog(@"%@",error);
+        
+    }];
+    
 }
 
 - (void)didReceiveMemoryWarning {

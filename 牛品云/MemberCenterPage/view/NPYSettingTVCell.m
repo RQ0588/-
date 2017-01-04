@@ -14,9 +14,9 @@
 - (void)drawRect:(CGRect)rect
 {
     [super drawRect:rect];
-    self.headPortrait.layer.cornerRadius = 20;
+    self.headPortrait.layer.cornerRadius = (CGRectGetWidth(self.headPortrait.frame) / 2);
     self.headPortrait.layer.masksToBounds = YES;
-    self.headPortrait.layer.borderColor = XNColor(252, 216, 216, 1).CGColor;
+    self.headPortrait.layer.borderColor = XNColor(253, 220, 220, 1).CGColor;
     self.headPortrait.layer.borderWidth = 2.0;
 }
 

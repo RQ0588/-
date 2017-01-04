@@ -31,7 +31,8 @@
 @interface SDContactModel : NSObject
 
 @property (nonatomic, copy) NSString *name;
-@property (nonatomic, copy) NSString *wxId;
+@property (nonatomic, copy) NSString *friend_id;
+@property (nonatomic, copy) NSString *firend_img;
 
 @property (nonatomic, copy) NSString *imageName;
 

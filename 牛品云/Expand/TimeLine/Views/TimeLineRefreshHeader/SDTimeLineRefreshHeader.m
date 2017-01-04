@@ -56,10 +56,10 @@ static const CGFloat criticalY = -60.f;
 {
     self.backgroundColor = [UIColor clearColor];
     
-    UIImageView *imageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"AlbumReflashIcon"]];
-    self.bounds = imageView.bounds;
-//    imageView.hidden = YES;
-    [self addSubview:imageView];
+//    UIImageView *imageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"AlbumReflashIcon"]];
+//    self.bounds = imageView.bounds;
+////    imageView.hidden = YES;
+//    [self addSubview:imageView];
     
     _rotateAnimation = [[CABasicAnimation alloc] init];
     _rotateAnimation.keyPath = @"transform.rotation.z";

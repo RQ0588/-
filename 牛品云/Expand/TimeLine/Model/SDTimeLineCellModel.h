@@ -32,6 +32,10 @@
 
 @interface SDTimeLineCellModel : NSObject
 
+@property (nonatomic, copy) NSString *moments_id;//朋友圈id
+@property (nonatomic, copy) NSString *user_id;//用户id
+
+@property (nonatomic, copy) NSString *time;
 @property (nonatomic, copy) NSString *iconName;
 @property (nonatomic, copy) NSString *name;
 @property (nonatomic, copy) NSString *msgContent;

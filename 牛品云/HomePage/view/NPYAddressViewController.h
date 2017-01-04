@@ -8,6 +8,14 @@
 
 #import <UIKit/UIKit.h>
 
+@protocol AddressValueToSuperViewDelegate <NSObject>
+
+- (void)popValue:(NSDictionary *)dic;
+
+@end
+
 @interface NPYAddressViewController : UIViewController
+
+@property (nonatomic, weak) id<AddressValueToSuperViewDelegate>delegate;
 
 @end

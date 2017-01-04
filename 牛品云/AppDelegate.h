@@ -12,7 +12,16 @@
 
 @property (strong, nonatomic) UIWindow *window;
 
+@property (nonatomic, strong) UITabBarController *tabBarC;
+
+@property (nonatomic, assign) BOOL iSNEEDLOGIN;
+
+//切换朋友圈和购物商城
 - (void)switchRootViewControllerWithIdentifier:(NSString *)identifier;
+//验证登录状态是否过期
+- (void)verifyLoginWithViewController:(UIViewController *)viewController;
+
+- (BOOL)isNeedLogin;
 
 @end
 

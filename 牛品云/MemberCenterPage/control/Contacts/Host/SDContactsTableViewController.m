@@ -36,6 +36,8 @@
 
 #import "GlobalDefines.h"
 
+#import "NPYBaseConstant.h"
+
 @interface SDContactsTableViewController () <UISearchBarDelegate>
 
 @property (nonatomic, strong) UISearchController *searchController;
@@ -53,33 +55,65 @@
     
     self.navigationItem.title = @"好友";
     
-    self.searchController = [[UISearchController alloc] initWithSearchResultsController:[SDContactsSearchResultController new]];
-    self.searchController.view.backgroundColor = [[UIColor whiteColor] colorWithAlphaComponent:0.95];
+    self.tableView.backgroundColor = GRAY_BG;
     
-    UISearchBar *bar = self.searchController.searchBar;
-    bar.barStyle = UIBarStyleDefault;
-    bar.translucent = YES;
-    bar.barTintColor = Global_mainBackgroundColor;
-    bar.tintColor = Global_tintColor;
-    UIImageView *view = [[[bar.subviews objectAtIndex:0] subviews] firstObject];
-    view.layer.borderColor = Global_mainBackgroundColor.CGColor;
-    view.layer.borderWidth = 1;
+    UIButton *backBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 18, 18)];
+    [backBtn setImage:[UIImage imageNamed:@"icon_fanhui"] forState:0];
+    [backBtn addTarget:self action:@selector(backItem:) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithCustomView:backBtn];
+    self.navigationItem.leftBarButtonItem = item;
     
-    bar.layer.borderColor = [UIColor redColor].CGColor;
+//    self.searchController = [[UISearchController alloc] initWithSearchResultsController:[SDContactsSearchResultController new]];
+//    self.searchController.view.backgroundColor = [[UIColor whiteColor] colorWithAlphaComponent:0.95];
     
-    bar.showsBookmarkButton = YES;
-    [bar setImage:[UIImage imageNamed:@"VoiceSearchStartBtn"] forSearchBarIcon:UISearchBarIconBookmark state:UIControlStateNormal];
-    bar.delegate = self;
-    CGRect rect = bar.frame;
-    rect.size.height = 44;
-    bar.frame = rect;
+//    UISearchBar *bar = self.searchController.searchBar;
+//    bar.barStyle = UIBarStyleDefault;
+//    bar.translucent = YES;
+//    bar.barTintColor = Global_mainBackgroundColor;
+//    bar.tintColor = Global_tintColor;
+//    UIImageView *view = [[[bar.subviews objectAtIndex:0] subviews] firstObject];
+//    view.layer.borderColor = Global_mainBackgroundColor.CGColor;
+//    view.layer.borderWidth = 1;
+//    
+//    bar.layer.borderColor = [UIColor redColor].CGColor;
+//    
+//    bar.showsBookmarkButton = YES;
+//    [bar setImage:[UIImage imageNamed:@"VoiceSearchStartBtn"] forSearchBarIcon:UISearchBarIconBookmark state:UIControlStateNormal];
+//    bar.delegate = self;
+//    CGRect rect = bar.frame;
+//    rect.size.height = 44;
+//    bar.frame = rect;
 //    self.tableView.tableHeaderView = bar;
     self.tableView.rowHeight = [SDContactsTableViewCell fixedHeight];
     self.tableView.sectionIndexColor = [UIColor lightGrayColor];
     self.tableView.sectionIndexBackgroundColor = [UIColor clearColor];
-    [self genDataWithCount:30];
-    
+//    [self genDataWithCount:30];
+    self.tableView.tableHeaderView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.tableView.frame.size.width, 10)];
+    self.tableView.separatorColor = GRAY_BG;
     self.tableView.sectionHeaderHeight = 25;
+    
+    self.tableView.mj_header = [MJRefreshNormalHeader headerWithRefreshingTarget:self refreshingAction:@selector(loadNewData)];
+    [self.tableView.mj_header beginRefreshing];
+    
+    NSDictionary *dic = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+    NPYLoginMode *model = [NPYLoginMode mj_objectWithKeyValues:dic[@"data"]];
+    
+    NSString *urlStr = @"/index.php/app/Moments/get_friends";
+    
+    NSDictionary *requestDict = [NSDictionary dictionaryWithObjectsAndKeys:[dic valueForKey:@"sign"],@"sign",model.user_id,@"user_id", nil];
+    [self requestMomentsFriendsInfoWithUrlString:urlStr withParames:requestDict];
+    
+}
+
+- (void)loadNewData {
+    NSDictionary *dic = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+    NPYLoginMode *model = [NPYLoginMode mj_objectWithKeyValues:dic[@"data"]];
+    
+    NSString *urlStr = @"/index.php/app/Moments/get_friends";
+    
+    NSDictionary *requestDict = [NSDictionary dictionaryWithObjectsAndKeys:[dic valueForKey:@"sign"],@"sign",model.user_id,@"user_id", nil];
+    [self requestMomentsFriendsInfoWithUrlString:urlStr withParames:requestDict];
+    
 }
 
 - (void)genDataWithCount:(NSInteger)count
@@ -102,8 +136,6 @@
 //        model.imageName = [SDAnalogDataGenerator randomIconImageName];
         [self.dataArray addObject:model];
     }
-    
-    
     
     [self setUpTableSection];
 }
@@ -145,12 +177,9 @@
     [newSectionArray removeObjectsInArray:temp];
     
     NSMutableArray *operrationModels = [NSMutableArray new];
-//    NSArray *dicts = @[@{@"name" : @"新的朋友", @"imageName" : @"plugins_FriendNotify"},
-//                       @{@"name" : @"群聊", @"imageName" : @"add_friend_icon_addgroup"},
-//                       @{@"name" : @"标签", @"imageName" : @"Contact_icon_ContactTag"},
-//                       @{@"name" : @"公众号", @"imageName" : @"add_friend_icon_offical"}];
-    NSArray *dicts = @[@{@"name" : @"我的二维码", @"imageName" : @"1.jpg"},
-                       @{@"name" : @"扫一扫加好友", @"imageName" : @"2.jpg"}];
+    
+    NSArray *dicts = @[@{@"name" : @"我的二维码", @"imageName" : @"erweima_pyq"},
+                       @{@"name" : @"扫一扫加好友", @"imageName" : @"jiahaoyou_pyq"}];
     for (NSDictionary *dict in dicts) {
         SDContactModel *model = [SDContactModel new];
         model.name = dict[@"name"];
@@ -163,6 +192,7 @@
     
     self.sectionArray = newSectionArray;
     
+    [self.tableView reloadData];
 }
 
 #pragma mark - tableview delegate and datasource
@@ -194,17 +224,86 @@
     return [self.sectionTitlesArray objectAtIndex:section];
 }
 
-
 - (NSArray<NSString *> *)sectionIndexTitlesForTableView:(UITableView *)tableView{
     return self.sectionTitlesArray;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
     
 }
 
+#pragma mark - 更改tableView的分割线顶格显示
+- (void)viewDidLayoutSubviews
+{
+    if ([self.tableView respondsToSelector:@selector(setSeparatorInset:)]) {
+        [self.tableView setSeparatorInset:UIEdgeInsetsMake(0,14,0,0)];
+    }
+    
+    if ([self.tableView respondsToSelector:@selector(setLayoutMargins:)]) {
+        [self.tableView setLayoutMargins:UIEdgeInsetsMake(0,0,0,0)];
+    }
+}
 
+//- (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath
+//{
+//    if ([cell respondsToSelector:@selector(setSeparatorInset:)]) {
+//        [cell setSeparatorInset:UIEdgeInsetsZero];
+//    }
+//    
+//    if ([cell respondsToSelector:@selector(setLayoutMargins:)]) {
+//        [cell setLayoutMargins:UIEdgeInsetsZero];
+//    }
+//}
 
+- (void)tableView:(UITableView *)tableView willDisplayHeaderView:(UIView *)view forSection:(NSInteger)section {
+    UITableViewHeaderFooterView *header = (UITableViewHeaderFooterView *)view;
+    header.textLabel.textColor = XNColor(149, 149, 153, 1);
+    
+}
+
+- (void)backItem:(UIButton *)sender {
+    [(AppDelegate *)[UIApplication sharedApplication].delegate switchRootViewControllerWithIdentifier:@"NPYMain"];
+}
+
+- (void)requestMomentsFriendsInfoWithUrlString:(NSString *)urlStr withParames:(NSDictionary *)parame {
+    NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:parame] forKey:@"data"];
+    
+    [[NPYHttpRequest sharedInstance] getWithUrlString:[NSString stringWithFormat:@"%@%@",BASE_URL,urlStr] parameters:paremes success:^(id responseObject) {
+        NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+        
+        if ([dataDict[@"r"] intValue] == 1) {
+            //成功
+            [ZHProgressHUD showMessage:@"请求成功" inView:self.view];
+            
+            [self.dataArray removeAllObjects];
+            
+            NSArray *tpArr = dataDict[@"data"];
+            
+            for (int i = 0; i < tpArr.count; i++) {
+                NSDictionary *tpDict = tpArr[i];
+                SDContactModel *model = [SDContactModel new];
+                model.name = [tpDict valueForKey:@"friend_name"];
+                model.firend_img = [tpDict valueForKey:@"friend_img"];
+                model.friend_id = [tpDict valueForKey:@"friend_user_id"];
+                [self.dataArray addObject:model];
+            }
+            [self setUpTableSection];
+            
+            [self.tableView.mj_header endRefreshing];
+            
+        } else {
+            //失败
+            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+        }
+        
+        
+    } failure:^(NSError *error) {
+        NSLog(@"%@",error);
+        
+    }];
+
+}
 
 #pragma mark - UISearchBarDelegate
 

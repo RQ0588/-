@@ -26,8 +26,8 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
-    msgNames = @[@"优惠消息",@"通知消息",@"订单消息",@"物流消息"];
-    imges = @[@"placeholder",@"placeholder",@"placeholder",@"placeholder"];
+    msgNames = @[@"优惠消息",@"通知消息"];
+    imges = @[@"youhui_xiaoxi",@"tongzhi_xiaoxi"];
     
     
     [self navigationViewLoad];
@@ -38,6 +38,10 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     
+     [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"hk_dingbu"] forBarMetrics:UIBarMetricsDefault];
+    
+    self.navigationController.navigationBar.translucent = NO;
+    
     self.tabBarController.tabBar.hidden = YES;
 }
 
@@ -47,33 +51,36 @@
     self.tabBarController.tabBar.hidden = NO;
 }
 
+- (void)backItem:(UIButton *)sender {
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
 - (void)navigationViewLoad {
     self.navigationItem.title = @"消息";
     self.view.backgroundColor = GRAY_BG;
     
-    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:nil];
-    self.navigationItem.backBarButtonItem = item;
-    
-//    self.navigationController.navigationBar.backgroundColor = [UIColor whiteColor];
-    
-//    [self.navigationController.navigationBar setBackgroundImage:[UIImage new] forBarMetrics:UIBarMetricsDefault];
-//
-//    self.navigationController.navigationBar.shadowImage =[UIImage new];
+    UIButton *backBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 18, 18)];
+    [backBtn setImage:[UIImage imageNamed:@"icon_fanhui"] forState:0];
+    [backBtn addTarget:self action:@selector(backItem:) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithCustomView:backBtn];
+    self.navigationItem.leftBarButtonItem = item;
     
 }
 
 - (void)mainViewLoad {
-    mainTableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, WIDTH_SCREEN, HEIGHT_SCREEN) style:UITableViewStylePlain];
+    mainTableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 1, WIDTH_SCREEN, HEIGHT_SCREEN) style:UITableViewStylePlain];
     [self.view addSubview:mainTableView];
     
     mainTableView.delegate = self;
     mainTableView.dataSource = self;
     mainTableView.showsVerticalScrollIndicator = NO;
-    
+    mainTableView.backgroundColor = GRAY_BG;
+    mainTableView.separatorColor = GRAY_BG;
+    mainTableView.tableFooterView = [[UIView alloc] initWithFrame:CGRectZero];
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return 4;
+    return 2;
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -93,11 +100,16 @@
     
     mainCell.selectionStyle = UITableViewCellSelectionStyleNone;
     
+    mainCell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+    
+    mainCell.textLabel.font = XNFont(16.0);
+    
     return mainCell;
 }
-//跳转（优惠、通知、订单、物流）
+//跳转（优惠、通知）
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     self.msgDetailVC = [[NPYMsgDetailViewController alloc] init];
+    self.msgDetailVC.titleName = msgNames[indexPath.row];
     [self.navigationController pushViewController:self.msgDetailVC animated:YES];
     
 }

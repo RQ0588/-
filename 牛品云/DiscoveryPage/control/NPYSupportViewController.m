@@ -10,15 +10,15 @@
 #import "NPYSupporTopTableViewCell.h"
 #import "NPYSupporMidTableViewCell.h"
 #import "NPYBaseConstant.h"
-#import "NPYAddressDetailViewController.h"
+#import "NPYAddressViewController.h"
 
-@interface NPYSupportViewController () <UITableViewDelegate,UITableViewDataSource,passValueToBackDeleagate> {
+@interface NPYSupportViewController () <UITableViewDelegate,UITableViewDataSource> {
     UILabel *freightL;      //运费
 }
 
 @property (nonatomic, strong) NPYSupporTopTableViewCell *topCell;
 @property (nonatomic, strong) NPYSupporMidTableViewCell *midCell;
-@property (nonatomic, strong) NPYAddressDetailViewController *addressVC;
+@property (nonatomic, strong) NPYAddressViewController  *addressVC;
 
 @end
 
@@ -45,14 +45,21 @@ static NSString *midCell = @"NPYSupporMidTableViewCell";
 - (void)navigationViewLoad {
     self.navigationItem.title = @"我要支持";
     
-    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:nil];
-    self.navigationItem.backBarButtonItem = item;
+    UIButton *backBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 18, 18)];
+    [backBtn setImage:[UIImage imageNamed:@"icon_fanhui"] forState:0];
+    [backBtn addTarget:self action:@selector(backItem:) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithCustomView:backBtn];
+    self.navigationItem.leftBarButtonItem = item;
+
 }
 
 - (void)addMainViewToSelf {
     self.mainTableView.estimatedRowHeight = 100;
     self.mainTableView.rowHeight = UITableViewAutomaticDimension;
     self.mainTableView.showsVerticalScrollIndicator = NO;
+    self.mainTableView.backgroundColor = GRAY_BG;
+    
+    self.mainTableView.separatorColor = GRAY_BG;
     
     self.mainTableView.tableFooterView = [UIView new];
     
@@ -88,14 +95,17 @@ static NSString *midCell = @"NPYSupporMidTableViewCell";
         if (!cell) {
             cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:@"threeCell"];
             cell.textLabel.text = @"运费";
+            cell.textLabel.font = XNFont(14.0);
+            cell.textLabel.textColor = XNColor(17, 17, 17, 1);
             
             freightL = [[UILabel alloc] init];
             freightL.frame = CGRectMake(WIDTH_SCREEN - 140, 10, 100, 30);
-            freightL.textColor = [UIColor grayColor];
+            freightL.textColor = XNColor(170, 170, 170, 1);
+            freightL.font = XNFont(16.0);
             freightL.text = @"免邮";
             freightL.textAlignment = NSTextAlignmentRight;
             [cell.contentView addSubview:freightL];
-            cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+            cell.accessoryType = UITableViewCellAccessoryNone;
         }
         
         return cell;
@@ -109,24 +119,26 @@ static NSString *midCell = @"NPYSupporMidTableViewCell";
     
 }
 
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
+    return 10;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section {
+    return 0.1;
+}
+
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     if (indexPath.section == 0) {
-        self.addressVC = [[NPYAddressDetailViewController alloc] init];
-        self.addressVC.delegate = self;
+        self.addressVC = [[NPYAddressViewController alloc] init];
+//        self.addressVC.delegate = self;
         [self.navigationController pushViewController:self.addressVC animated:YES];
         
     }
 }
 
-#pragma mark - passValueToBackDeleagate 
-
-- (void)passValueToParentView:(NSInteger)index andValue:(NSDictionary *)dic {
-    
-}
-
-- (void)passDeleteIndexToParentView:(NSInteger)index {
-    
+- (void)backItem:(UIButton *)sender {
+    [self.navigationController popViewControllerAnimated:YES];
 }
 
 - (void)didReceiveMemoryWarning {

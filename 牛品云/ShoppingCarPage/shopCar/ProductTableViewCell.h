@@ -10,6 +10,7 @@
 #import "SKTagView.h"
 
 @interface ProductTableViewCell : UITableViewCell
+
 @property (weak, nonatomic) IBOutlet UILabel *leftTitleLabel;
 @property (weak, nonatomic) IBOutlet SKTagView *tagView;
 

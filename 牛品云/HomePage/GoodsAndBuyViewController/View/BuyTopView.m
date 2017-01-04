@@ -19,6 +19,8 @@
 @property (weak, nonatomic) IBOutlet BGCenterLineLabel *oldPrice_lab;//原价
 @property (weak, nonatomic) IBOutlet UIButton *collect_Btn;//收藏按钮
 @property (weak, nonatomic) IBOutlet UILabel *sales_lab;//月销售量
+@property (weak, nonatomic) IBOutlet UILabel *inventory_lab;
+
 @property (weak, nonatomic) IBOutlet UICollectionView *detailView;
 
 
@@ -40,6 +42,16 @@
     self.detailView.collectionViewLayout = layout;
     
     self.detailView.showsHorizontalScrollIndicator = NO;
+    
+}
+
+- (void)setGoodsModel:(NPYHomeGoodsModel *)goodsModel {
+    _goodsModel = goodsModel;
+    self.name_lab.text = self.goodsModel.goods_name;
+    self.nowPrice_lab.text = [NSString stringWithFormat:@"￥%@",self.goodsModel.promotion_price];
+    self.oldPrice_lab.text = [NSString stringWithFormat:@"￥%@",self.goodsModel.goods_price];
+    self.sales_lab.text = [NSString stringWithFormat:@"%@件",self.goodsModel.sold];
+    self.inventory_lab.text = [NSString stringWithFormat:@"库存：%@",self.goodsModel.inventory];
 }
 
 -(void)dealloc{

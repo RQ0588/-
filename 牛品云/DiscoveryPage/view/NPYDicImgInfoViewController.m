@@ -18,6 +18,10 @@
 
 @implementation NPYDicImgInfoViewController
 
+- (void)backItem:(UIButton *)sender {
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
@@ -26,8 +30,12 @@
     
     self.navigationItem.title = @"项目详情";
     
-    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:nil];
-    self.navigationItem.backBarButtonItem = item;
+    UIButton *backBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 18, 18)];
+    [backBtn setImage:[UIImage imageNamed:@"icon_fanhui"] forState:0];
+    [backBtn addTarget:self action:@selector(backItem:) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithCustomView:backBtn];
+    self.navigationItem.leftBarButtonItem = item;
+
     
     
     self.scrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, WIDTH_SCREEN, HEIGHT_SCREEN)];
@@ -39,7 +47,7 @@
     
     self.infoImgView = [[UIImageView alloc] initWithFrame:self.scrollView.frame];
     
-    [self.infoImgView sd_setImageWithURL:[NSURL URLWithString:self.imageStr] placeholderImage:[UIImage imageNamed:@"bottleBkg"]];
+    [self.infoImgView sd_setImageWithURL:[NSURL URLWithString:self.imageStr] placeholderImage:[UIImage imageNamed:@"tiantu_icon"]];
     
     UIImage *img = self.infoImgView.image;
     self.infoImgView.frame = CGRectMake(0, 0, WIDTH_SCREEN, img.size.height);

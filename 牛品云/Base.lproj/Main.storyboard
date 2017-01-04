@@ -395,7 +395,7 @@
         <scene sceneID="hSo-HP-a2f">
             <objects>
                 <navigationController id="473-bM-KbS" sceneMemberID="viewController">
-                    <tabBarItem key="tabBarItem" title="好友" id="Ena-oq-ZWq"/>
+                    <tabBarItem key="tabBarItem" title="好友" image="weijihuo_haoyou" id="Ena-oq-ZWq"/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="7yj-pJ-elz">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -412,7 +412,7 @@
         <scene sceneID="2fV-qQ-RQ3">
             <objects>
                 <navigationController id="fF5-03-2G4" sceneMemberID="viewController">
-                    <tabBarItem key="tabBarItem" title="朋友圈" id="UYG-Rm-A0y"/>
+                    <tabBarItem key="tabBarItem" title="朋友圈" image="weijihuo_pyq" id="UYG-Rm-A0y"/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="zov-wL-TZZ">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -429,10 +429,10 @@
         <scene sceneID="eyh-cN-PON">
             <objects>
                 <tabBarController storyboardIdentifier="NPYFriend" id="tbr-kJ-Eb8" sceneMemberID="viewController">
-                    <tabBar key="tabBar" contentMode="scaleToFill" id="SD5-1c-Oe1" customClass="NPYBaseTabBar">
+                    <tabBar key="tabBar" contentMode="scaleToFill" shadowImage="caidanlan" id="SD5-1c-Oe1" customClass="NPYBaseTabBar">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="49"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <color key="tintColor" red="1" green="0.074743433489999997" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                         <userDefinedRuntimeAttributes>
                             <userDefinedRuntimeAttribute type="color" keyPath="TabBartintColor">
@@ -480,6 +480,8 @@
         <image name="home_xz" width="19" height="19"/>
         <image name="huiyuan_wxz" width="19" height="19"/>
         <image name="huiyuan_xz" width="19" height="19"/>
+        <image name="weijihuo_haoyou" width="18" height="18"/>
+        <image name="weijihuo_pyq" width="18" height="18"/>
         <image name="xuanze_wei" width="17" height="17"/>
         <image name="xuanze_yi" width="17" height="17"/>
     </resources>

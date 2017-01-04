@@ -10,31 +10,43 @@
 #import "NPYBaseConstant.h"
 #import "NPYDicTopDetailTableViewCell.h"
 #import "NPYDicMainDetailTableViewCell.h"
+#import "NPYDicDetailExpandTableViewCell.h"
 #import "NPYDicMainCellModel.h"
 #import "NPYDicImgInfoViewController.h"
 #import "NPYSupportViewController.h"
 
+#define ExpandCount 1
+
+#define ManyDetail_Url @"/index.php/app/Many/get_details"
+
 @interface NPYDicDetailViewController () <UITableViewDelegate,UITableViewDataSource,lookImageInfoDelegate,DicMainDetailCellDelegate> {
-    NSArray *selecArr;
+    NSMutableArray *selecArr;
+    BOOL isOpenCell;
+    NSIndexPath *selectedIndexPath;
+    
+    NSUInteger CellCount;
+    
+    NSMutableArray *dataArr;
 }
 
-@property (nonatomic, strong) NPYDicTopDetailTableViewCell  *topCell;
-@property (nonatomic, strong) NPYDicMainDetailTableViewCell *mainCell;
-@property (nonatomic, strong) NPYDicMainCellModel           *mainModel;
-@property (nonatomic, strong) NPYDicImgInfoViewController   *imgInfo;
-@property (nonatomic, strong) NPYSupportViewController      *supportVC;
+@property (nonatomic, strong) NPYDicTopDetailTableViewCell      *topCell;
+@property (nonatomic, strong) NPYDicMainDetailTableViewCell     *mainCell;
+@property (nonatomic, strong) NPYDicMainCellModel               *detailModel;
+@property (nonatomic, strong) NPYDicImgInfoViewController       *imgInfo;
+@property (nonatomic, strong) NPYSupportViewController          *supportVC;
 
-@property (weak, nonatomic) IBOutlet UITableView *mainTableView;
-@property (weak, nonatomic) IBOutlet UIView *bottomView;
-@property (weak, nonatomic) IBOutlet UIButton *collectionBtn;
-@property (weak, nonatomic) IBOutlet UIButton *supportBtn;
+@property (weak, nonatomic) IBOutlet UITableView    *mainTableView;
+@property (weak, nonatomic) IBOutlet UIView         *bottomView;
+@property (weak, nonatomic) IBOutlet UIButton       *collectionBtn;
+@property (weak, nonatomic) IBOutlet UIButton       *supportBtn;
 
 - (IBAction)collectionButtonPressed:(id)sender;
 - (IBAction)supportButtonPressed:(id)sender;
 
 @end
 
-static NSString *dicMainCell = @"NPYDicMainDetailTableViewCell";
+static NSString *dicMainCell = @"First";
+static NSString *dicOpenMainCell = @"Expand";
 
 @implementation NPYDicDetailViewController
 
@@ -49,29 +61,49 @@ static NSString *dicMainCell = @"NPYDicMainDetailTableViewCell";
     [super viewDidLoad];
     // Do any additional setup after loading the view from its nib.
     
-    selecArr = [NSArray arrayWithObjects:@"YES",@"NO",@"YES",@"NO",@"NO", nil];
+    self.view.backgroundColor = GRAY_BG;
+    
+    selecArr = [NSMutableArray arrayWithObjects:@"YES",@"NO",@"YES",@"NO",@"NO", nil];
+    
+    dataArr = [NSMutableArray new];
     
     [self navigationViewLoad];
     
     [self mainViewLoad];
+    
+    NSDictionary *requestDict = [NSDictionary dictionaryWithObjectsAndKeys:@"npy_we874646sf",@"key",self.homeModel.many_id,@"many_id", nil];
+    [self requestManyDetailInfoWithUrlString:ManyDetail_Url withParames:requestDict];
     
 }
 
 - (void)navigationViewLoad {
     self.navigationItem.title = @"众筹详情";
     
-    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:nil];
-    self.navigationItem.backBarButtonItem = item;
+    UIButton *backBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 18, 18)];
+    [backBtn setImage:[UIImage imageNamed:@"icon_fanhui"] forState:0];
+    [backBtn addTarget:self action:@selector(backItem:) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithCustomView:backBtn];
+    self.navigationItem.leftBarButtonItem = item;
+    
+    UIButton *shareBtn = [[UIButton alloc] init];
+    [shareBtn setFrame:CGRectMake(0, 0, 18, 18)];
+    [shareBtn setImage:[UIImage imageNamed:@"share_icon"] forState:UIControlStateNormal];
+    [shareBtn addTarget:self
+     
+                  action:@selector(shareButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
+    
+    UIBarButtonItem *rightBtnItem = [[UIBarButtonItem alloc] initWithCustomView:shareBtn];
+    self.navigationItem.rightBarButtonItem = rightBtnItem;
 }
 
 - (void)mainViewLoad {
     self.mainTableView.estimatedRowHeight = 100;
     self.mainTableView.rowHeight = UITableViewAutomaticDimension;
     self.mainTableView.showsVerticalScrollIndicator = NO;
-    
+    self.mainTableView.backgroundColor = [UIColor clearColor];
     self.mainTableView.tableFooterView = [UIView new];
+    self.mainTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     
-    [self.mainTableView registerNib:[UINib nibWithNibName:dicMainCell bundle:nil] forCellReuseIdentifier:dicMainCell];
 }
 
 #pragma mark - UITableView
@@ -82,18 +114,38 @@ static NSString *dicMainCell = @"NPYDicMainDetailTableViewCell";
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     if (section == 1) {
-        return 5;
+        if (isOpenCell) {
+            return CellCount + ExpandCount;
+        }
+        return CellCount;
     }
     return 1;
 }
 
 - (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
     if (section == 0) {
-        
-        
+       //
     } else if (section == 1) {
-        UIView *headView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, WIDTH_SCREEN, 20)];
-        headView.backgroundColor = [UIColor redColor];
+        UIView *headView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, WIDTH_SCREEN, 40)];
+        headView.backgroundColor = [UIColor whiteColor];
+        
+        UIImage *img1 = [UIImage imageNamed:@"huibao_zhongchou"];
+        UIImageView *icon1 = [[UIImageView alloc] initWithImage:img1];
+        icon1.frame = CGRectMake(14, 0, img1.size.width, img1.size.height);
+        icon1.center = CGPointMake(CGRectGetMidX(icon1.frame), 20);
+        [headView addSubview:icon1];
+        
+        UILabel *title2 = [[UILabel alloc] init];
+        title2.frame = CGRectMake(CGRectGetMaxX(icon1.frame) + 10, CGRectGetMinY(icon1.frame), 200, img1.size.height);
+        title2.text = @"选择众筹回报";
+        title2.font = XNFont(14.0);
+        title2.textColor = XNColor(51, 51, 51, 1);
+        [headView addSubview:title2];
+        
+        UIImageView *huiLine = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"750huixian_88"]];
+        huiLine.frame = CGRectMake(0, 40, WIDTH_SCREEN, 0.5);
+        [headView addSubview:huiLine];
+        
         return headView;
         
     }
@@ -101,43 +153,47 @@ static NSString *dicMainCell = @"NPYDicMainDetailTableViewCell";
     return nil;
 }
 
-/**
-    static NSString *CellIdentifier = @"Cell";
-    BOOL nibsRegistered = NO;
-    if (!nibsRegistered) {
-    UINib *nib = [UINib nibWithNibName:NSStringFromClass([Cell class]) bundle:nil];
-    [tableView registerNib:nib forCellReuseIdentifier:CellIdentifier];
-    nibsRegistered = YES;
-    }
-    Cell *cell = (Cell *)[tableView dequeueReusableCellWithIdentifier:CellIdentifier];
-    cell.titleLabel.text = [self.dataList objectAtIndex:indexPath.row];
-    return cell;
- */
-
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     
     if (indexPath.section == 0) {
-//        static NSString *CellIdentifier = @"Cell";
-//        self.topCell = (NPYDicTopDetailTableViewCell *)[tableView dequeueReusableCellWithIdentifier:CellIdentifier];
         self.topCell = [[[NSBundle mainBundle] loadNibNamed:@"NPYDicTopDetailTableViewCell" owner:nil options:nil] firstObject];
         self.topCell.delegate = self;
+        self.topCell.homeModel = self.homeModel;
         self.topCell.selectionStyle = UITableViewCellSelectionStyleNone;
         return self.topCell;
         
     } else if (indexPath.section == 1) {
         
-        NPYDicMainDetailTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:dicMainCell forIndexPath:indexPath];
-        cell.path = indexPath;
-        cell.delegate = self;
-        NPYDicMainCellModel *model = [[NPYDicMainCellModel alloc] init];
-        model.isSelected = [selecArr[indexPath.row] boolValue];
+        NSInteger idx = indexPath.row;
         
-        UIImageView *img = [cell viewWithTag:1001];
-        img.hidden = model.isSelected;
+        if (isOpenCell) {
+            idx -= idx;
+        }
         
-        [self configCell:cell indexPath:indexPath];
-        
-        return cell;
+        if (isOpenCell && selectedIndexPath.row < indexPath.row && indexPath.row <= selectedIndexPath.row + ExpandCount) {
+            NPYDicDetailExpandTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:dicOpenMainCell];
+            if (cell == nil) {
+                cell = [[[NSBundle mainBundle] loadNibNamed:@"NPYDicDetailExpandTableViewCell" owner:nil options:nil] firstObject];
+            }
+            
+            cell.model = dataArr[idx];
+            
+            return cell;
+            
+        } else {
+            NPYDicMainDetailTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:dicMainCell ];
+            if (cell == nil) {
+                cell= (NPYDicMainDetailTableViewCell *)[[[NSBundle  mainBundle]  loadNibNamed:@"NPYDicMainDetailTableViewCell" owner:self options:nil]  firstObject];
+            }
+            cell.delegate = self;
+            cell.path = indexPath;
+            cell.YQGImg.hidden = YES;
+            
+            cell.detailModel = dataArr[idx];
+            
+            [self configCell:cell indexPath:indexPath];
+            return cell;
+        }
         
     }
     
@@ -147,8 +203,15 @@ static NSString *dicMainCell = @"NPYDicMainDetailTableViewCell";
 
 - (void)configCell:(NPYDicMainDetailTableViewCell *)cell indexPath:(NSIndexPath *)indexPath {
     
-    cell.price.text = selecArr[indexPath.row];
-    cell.price.hidden = [selecArr[indexPath.row] boolValue];
+    NSInteger idx = indexPath.row;
+    
+    if (isOpenCell) {
+        idx -= idx;
+    }
+    
+//    cell.YQGImg.hidden = YES;
+//    cell.price.text = selecArr[idx];
+//    cell.price.hidden = [selecArr[idx] boolValue];
     
 }
 
@@ -157,7 +220,7 @@ static NSString *dicMainCell = @"NPYDicMainDetailTableViewCell";
         return 0.1;
         
     } else if (section == 1) {
-        return 20;
+        return 40;
         
     }
     
@@ -177,6 +240,13 @@ static NSString *dicMainCell = @"NPYDicMainDetailTableViewCell";
 #pragma mark - 更改tableView的分割线顶格显示
 - (void)viewDidLayoutSubviews
 {
+    
+    [self.collectionBtn setImageEdgeInsets:UIEdgeInsetsMake(0, -8, 0, 0)];
+    [self.collectionBtn setTitleEdgeInsets:UIEdgeInsetsMake(0, 8, 0, 0)];
+    
+    [self.supportBtn setImageEdgeInsets:UIEdgeInsetsMake(0, -8, 0, 0)];
+    [self.supportBtn setTitleEdgeInsets:UIEdgeInsetsMake(0, 8, 0, 0)];
+    
     if ([self.mainTableView respondsToSelector:@selector(setSeparatorInset:)]) {
         [self.mainTableView setSeparatorInset:UIEdgeInsetsMake(0,0,0,0)];
     }
@@ -203,6 +273,7 @@ static NSString *dicMainCell = @"NPYDicMainDetailTableViewCell";
 
 - (void)pushToImageInfoViewController {
     self.imgInfo = [[NPYDicImgInfoViewController alloc] init];
+    self.imgInfo.imageStr = self.homeModel.text_img;
     [self.navigationController pushViewController:self.imgInfo animated:YES];
 }
 
@@ -228,16 +299,53 @@ static NSString *dicMainCell = @"NPYDicMainDetailTableViewCell";
 - (void)openSubDetailViewWithIndexPath:(NSIndexPath *)path withIsOpen:(BOOL)open {
     NPYDicMainDetailTableViewCell *cell = [self.mainTableView cellForRowAtIndexPath:path];
     cell.path = path;
-    
-    if (open) {
-        //展开
+    cell.sepImg.hidden = !cell.sepImg.hidden;
+    cell.openBtn.selected = !cell.openBtn.selected;
+    if (!selectedIndexPath) {
+        isOpenCell = YES;
+        selectedIndexPath = path;
+        [self.mainTableView beginUpdates];
+        [self.mainTableView insertRowsAtIndexPaths:[self indexPathsForExpandRow:path.row] withRowAnimation:UITableViewRowAnimationTop];
+        [self.mainTableView endUpdates];
         
-    } else {
-        //收起
+    } else if (isOpenCell) {
+        if (selectedIndexPath == path) {
+            isOpenCell = NO;
+            [self.mainTableView beginUpdates];
+            [self.mainTableView deleteRowsAtIndexPaths:[self indexPathsForExpandRow:path.row] withRowAnimation:UITableViewRowAnimationTop];
+            [self.mainTableView endUpdates];
+            selectedIndexPath = nil;
+            
+        } else if (selectedIndexPath.row < path.row && path.row <= selectedIndexPath.row + ExpandCount) {
+            NSLog(@".......");
+            
+        } else {
+            
+            isOpenCell = NO;
+            [self.mainTableView beginUpdates];
+            [self.mainTableView deleteRowsAtIndexPaths:[self indexPathsForExpandRow:selectedIndexPath.row] withRowAnimation:UITableViewRowAnimationTop];
+            [self.mainTableView endUpdates];
+            selectedIndexPath = nil;
+            
+        }
+        
         
     }
     
-    [self.mainTableView reloadData];
+}
+
+- (NSArray *)indexPathsForExpandRow:(NSInteger)row {
+    NSMutableArray *indexPaths = [NSMutableArray array];
+    for (int i = 0; i <= ExpandCount; i++) {
+        NSIndexPath *idxPth = [NSIndexPath indexPathForRow:row + 1 inSection:1];
+        [indexPaths addObject:idxPth];
+        
+    }
+    return [indexPaths copy];
+}
+
+- (void)backItem:(UIButton *)btn {
+    [self.navigationController popViewControllerAnimated:YES];
 }
 
 #pragma mark - 懒加载
@@ -247,6 +355,43 @@ static NSString *dicMainCell = @"NPYDicMainDetailTableViewCell";
     _bottomView.layer.borderWidth = 0.5;
     
     return _bottomView;
+}
+
+#pragma mark - 网络请求
+
+- (void)requestManyDetailInfoWithUrlString:(NSString *)urlStr withParames:(NSDictionary *)parame {
+    NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:parame] forKey:@"data"];
+    
+    [[NPYHttpRequest sharedInstance] getWithUrlString:[NSString stringWithFormat:@"%@%@",BASE_URL,urlStr] parameters:paremes success:^(id responseObject) {
+        NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+        if ([dataDict[@"r"] intValue] == 1) {
+            //成功
+            [ZHProgressHUD showMessage:@"网络请求成功" inView:self.view];
+            NSDictionary *tpDict = [NSDictionary dictionaryWithDictionary:dataDict[@"data"]];
+            
+            self.homeModel = [NPYDicHomeModel mj_objectWithKeyValues:tpDict[@"many"]];
+            
+            for (NSDictionary *dict in tpDict[@"repay"]) {
+                self.detailModel = [NPYDicMainCellModel mj_objectWithKeyValues:dict];
+                
+                [dataArr addObject:self.detailModel];
+            }
+            
+            CellCount = dataArr.count;
+            
+            [self.mainTableView reloadData];
+            
+        } else {
+            //请求失败
+            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+        }
+        
+        
+    } failure:^(NSError *error) {
+        NSLog(@"%@",error);
+        
+    }];
+    
 }
 
 - (void)didReceiveMemoryWarning {
@@ -264,9 +409,16 @@ static NSString *dicMainCell = @"NPYDicMainDetailTableViewCell";
 }
 */
 
+- (void)shareButtonPressed:(UIButton *)sender {
+    //分享
+    NSLog(@"..分享..");
+}
+
 - (IBAction)collectionButtonPressed:(id)sender {
+    
 }
 
 - (IBAction)supportButtonPressed:(id)sender {
+    
 }
 @end

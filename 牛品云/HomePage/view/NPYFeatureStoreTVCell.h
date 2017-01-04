@@ -7,14 +7,19 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "NPYShopModel.h"
 
 @protocol PassMainTableViewValueDelegate <NSObject>
 
-- (void)passButtonTag:(NSInteger)tag withButtonTitle:(NSString *)title;
+- (void)passButtonTag:(NSInteger)index withPressedButtonTag:(NSInteger)tag;
 
 @end
 
 @interface NPYFeatureStoreTVCell : UITableViewCell
+
+@property (nonatomic, assign) NSInteger index;
+
+@property (nonatomic, strong) NPYShopModel *model;
 
 @property (nonatomic, retain) id<PassMainTableViewValueDelegate> delegate;
 

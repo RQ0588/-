@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "NPYHomeGoodsModel.h"
 
 @interface NPYRecommendedView : UIView      //牛品推荐
 

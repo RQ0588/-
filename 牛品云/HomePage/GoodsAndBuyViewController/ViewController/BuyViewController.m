@@ -20,19 +20,43 @@
 #import "NPYParameterTableViewCell.h"
 #import "NPYImageTextTableViewCell.h"
 #import "NPYRecommendTableViewCell.h"
+#import "NPYSpecViewController.h"
 
 #import "NPYBaseConstant.h"
 #import "NPYOrderViewController.h"
 
-#define TopViewH 380
-#define MiddleViewH 195
+#import "NPYGoodsSpecModel.h"
+#import "NPYAppraiseModel.h"
+
+#import "NPYAutotrophy.h"
+
+#define TopViewH 417
+#define MiddleViewH 160
 #define BottomH 52
 #define TopTabBarH [global pxTopt:100]
 #define NaviBarH 64.0
 
-@interface BuyViewController ()<UIScrollViewDelegate,UITableViewDataSource,UITableViewDelegate,MyOrderTopTabBarDelegate> {
+@interface BuyViewController ()<UIScrollViewDelegate,UITableViewDataSource,UITableViewDelegate,MyOrderTopTabBarDelegate,MidViewDelegate,popValueToSuperViewDelegate> {
     
     NSInteger selectedTag;
+    UIButton *oneBtn,*twoBtn;
+    
+    NPYLoginMode *userModel;
+//    NPYHomeGoodsModel *goodsModel;
+    NPYShopModel *shopModel;
+    NPYGoodsSpecModel *sepcModel;
+    
+    NSMutableArray *appraiseArr;
+    
+    NSMutableArray *titleImgs,*detailImgs;
+    
+    int addGoodsNumber;
+    
+    NSDictionary *selectedSpecDict;
+    
+    BOOL isCollection;
+    
+    NSInteger cellHeight;
 }
 
 @property(nonatomic,weak)MyOrderTopTabBar* TopTabBar;
@@ -44,7 +68,6 @@
 @property (weak, nonatomic) BuyBottomView* bottomView;
 @property (weak, nonatomic) UITableView* detailTableview;
 @property (weak, nonatomic) MJRefreshHeaderView* header;
-//@property (assign, nonatomic)float TopViewScale;
 
 @property (nonatomic, strong) NPYImageTextTableViewCell     *oneCell;
 @property (nonatomic, strong) NPYParameterTableViewCell     *twoCell;
@@ -54,6 +77,8 @@
 @property (nonatomic, strong) UIView *bottom;
 @property (nonatomic, strong) NPYOrderViewController    *orderVC;
 
+@property (nonatomic, strong) NPYAutotrophy     *shopVC;
+
 @end
 
 @implementation BuyViewController
@@ -61,16 +86,35 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     
-    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:nil];
-    self.navigationItem.backBarButtonItem = item;
+    UIButton *backBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 32, 32)];
+    [backBtn setImage:[UIImage imageNamed:@"fanhui_goumai"] forState:0];
+    [backBtn addTarget:self action:@selector(backItem) forControlEvents:UIControlEventTouchUpInside];
+    oneBtn = backBtn;
+    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithCustomView:backBtn];
+    self.navigationItem.leftBarButtonItem = item;
+    
+    UIButton *shareBtn = [[UIButton alloc] init];
+    [shareBtn setFrame:CGRectMake(0, 0, 32, 32)];
+    [shareBtn setImage:[UIImage imageNamed:@"share_gouwu-"] forState:UIControlStateNormal];
+    [shareBtn addTarget:self
+     
+                 action:@selector(shareButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
+    twoBtn = shareBtn;
+    UIBarButtonItem *rightBtnItem = [[UIBarButtonItem alloc] initWithCustomView:shareBtn];
+    self.navigationItem.rightBarButtonItem = rightBtnItem;
+    
     [self.navigationController.navigationBar setBackgroundImage:[UIImage new] forBarMetrics:UIBarMetricsDefault];
     self.navigationController.navigationBar.shadowImage =[UIImage new];
+    
+    self.navigationController.navigationBar.translucent = YES;
     
     self.tabBarController.tabBar.hidden = YES;
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
+    
+    self.navigationController.navigationBar.translucent = NO;
     
 //    self.tabBarController.tabBar.hidden = NO;
 }
@@ -80,6 +124,17 @@
     //self.TopViewScale = 1.0;
     [self initView];
     [self addNavBarView];//提示,要在最后添加
+    
+    NSDictionary *userDict = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+    userModel = [NPYLoginMode mj_objectWithKeyValues:userDict[@"data"]];
+    userModel.sign = [userDict valueForKey:@"sign"];
+    //主页面网络请求
+    NSDictionary *requestDic = [NSDictionary dictionaryWithObjectsAndKeys:@"npy_we874646sf",@"key",self.goodsModel.goods_id,@"goods_id",userModel.user_id,@"user_id", nil];
+    [self requestHomeDataWithUrlString:GoodsDetail_url withKeyValueParemes:requestDic];
+    
+    //评论页网络请求
+    NSDictionary *appraiseDic = [NSDictionary dictionaryWithObjectsAndKeys:@"npy_we874646sf",@"key",self.goodsModel.goods_id,@"goods_id",@"1",@"num", nil];
+    [self requestGoodsAppraiseDataWithUrlString:GoodsAppraise_url withGoodsID:appraiseDic];
 }
 
 /**
@@ -124,55 +179,102 @@
     [self.view addSubview:self.bottom];
     //
     NSArray *btnNames = @[@"店铺",@"收藏",@"加入购物车"];
-    NSArray *btnImges = @[@"CreditCard_ShoppingBag",@"commidity_collection",@"shoppingCart"];
+    NSArray *btnImges = @[@"dianpu_gouwu",@"shoucang_gouwu",@"gouwuche_gouwu"];
+    NSArray *selImges = @[@"dianpu_gouwu",@"yishoucang_gouwu",@"gouwuche_gouwu"];
     for (int i = 0; i < 3; i++) {
         //
         UIButton *btn = [[UIButton alloc] init];
-        //        btn.backgroundColor = [UIColor orangeColor];
         btn.frame = CGRectMake(i * 80, 0, 80, CGRectGetHeight(self.bottom.frame));
         btn.tag = 3010 + i;
         UIImage *imgA = [UIImage imageNamed:btnImges[i]];
+        UIImage *imgB = [UIImage imageNamed:selImges[i]];
         [btn setImage:imgA forState:UIControlStateNormal];
-        [btn setImage:imgA forState:UIControlStateSelected];
+        [btn setImage:imgB forState:UIControlStateSelected];
         [btn setTitle:btnNames[i] forState:UIControlStateNormal];
-        [btn setTitleColor:[UIColor grayColor] forState:UIControlStateNormal];
-        btn.titleLabel.font = [UIFont systemFontOfSize:8.0];
+        [btn setTitleColor:XNColor(102, 102, 102, 1) forState:UIControlStateNormal];
+        btn.titleLabel.font = [UIFont systemFontOfSize:11.0];
         
         btn.contentHorizontalAlignment = UIControlContentHorizontalAlignmentCenter;
         btn.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
-        btn.contentMode = UIViewContentModeScaleAspectFit;
-        [btn setTitleEdgeInsets:UIEdgeInsetsMake(25, -imgA.size.width, 0.0, 0.0)];
-        [btn setImageEdgeInsets:UIEdgeInsetsMake(0.0, 0.0, 15, -btn.titleLabel.bounds.size.width)];
+        if (i == 2) {
+            btn.titleEdgeInsets = UIEdgeInsetsMake(20, -imgA.size.width, 0.0, 0.0);
+            btn.imageEdgeInsets = UIEdgeInsetsMake(5, 0, 20, -imgA.size.width - 36);
+        } else {
+            btn.titleEdgeInsets = UIEdgeInsetsMake(20, -imgA.size.width, 0.0, 0.0);
+            btn.imageEdgeInsets = UIEdgeInsetsMake(5, 0, 20, -imgA.size.width - 6);
+        }
+        
+        btn.selected = isCollection;
         
         [btn addTarget:self action:@selector(bottomViewEvent:) forControlEvents:UIControlEventTouchUpInside];
         [self.bottom addSubview:btn];
     }
     
-    UIButton *buyBtn = [[UIButton alloc] initWithFrame:CGRectMake(240, 0, WIDTH_SCREEN - 240, CGRectGetHeight(self.bottomView.frame))];
+    UIButton *buyBtn = [[UIButton alloc] initWithFrame:CGRectMake(240, 0, WIDTH_SCREEN - 240, 40)];
     [buyBtn setTag:3013];
     [buyBtn setTitle:@"立即购买" forState:UIControlStateNormal];
     [buyBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [buyBtn setBackgroundColor:[UIColor redColor]];
+    buyBtn.contentHorizontalAlignment = UIControlContentHorizontalAlignmentCenter;
+    buyBtn.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
+    buyBtn.titleLabel.font = XNFont(20.0);
     [buyBtn addTarget:self action:@selector(bottomViewEvent:) forControlEvents:UIControlEventTouchUpInside];
     [self.bottom addSubview:buyBtn];
     
 }
 
+- (void)popValue:(NSDictionary *)dataDict withNumber:(int)number{
+    selectedSpecDict = [NSDictionary dictionaryWithDictionary:dataDict];
+    addGoodsNumber = number;
+    
+    self.middleView.showSelectedSpec.text = [NSString stringWithFormat:@"已选择 %@ 规格",[dataDict valueForKey:@"name"]];
+}
+
 //底部按钮点击
 //tag (3010 - 3013)
 - (void)bottomViewEvent:(UIButton *)btn {
-    NSLog(@"底部按钮点击%li",(long)btn.tag);
+//    NSLog(@"底部按钮点击%li",(long)btn.tag);
+    //主页面网络请求
+    if (addGoodsNumber == 0) {
+        addGoodsNumber = 1;
+    }
+    if (selectedSpecDict == nil && btn.tag != 3010) {
+        [ZHProgressHUD showMessage:@"选择规格和数量" inView:self.view];
+        return;
+    }
+    
+    NSString *specID = [selectedSpecDict valueForKey:@"id"];
+    NSString *buyNumber = [NSString stringWithFormat:@"%i",addGoodsNumber];
+    
+    NSDictionary *requestDic = [NSDictionary dictionaryWithObjectsAndKeys:userModel.sign,@"sign",
+                                self.goodsModel.goods_id,@"goods_id",
+                                userModel.user_id,@"user_id",
+                                specID,@"spec_id",
+                                buyNumber,@"num", nil];
+    
+    NSDictionary *setCollection = [NSDictionary dictionaryWithObjectsAndKeys:userModel.sign,@"sign",
+                                   self.goodsModel.goods_id,@"goods_id",
+                                   userModel.user_id,@"user_id", nil];
+    
     switch (btn.tag) {
         case 3010:
             //跳转到店铺
+            self.shopVC = [[NPYAutotrophy alloc] init];
+            self.shopVC.isAutrophy = NO;
+            self.shopVC.shopID = shopModel.shop_id;
+            [self.navigationController pushViewController:self.shopVC animated:YES];
             break;
             
         case 3011:
             //收藏
+            [self requestAddGoodsToCollectListUrl:CollectGoods_set_url withParemes:setCollection];
+            btn.selected = !btn.selected;
+        
             break;
             
         case 3012:
             //加入购物车
+        [self requestAddGoodsToShoppingCarUrl:@"/index.php/app/Shopping/set" withParemes:requestDic];
             break;
             
         case 3013:
@@ -187,7 +289,6 @@
             break;
     }
 }
-
 
 /**
  加入购物车按钮点击动作
@@ -211,7 +312,16 @@
     firstPageView.frame = CGRectMake(0, 0, screenW, screenH - BottomH);
     BuyTopView* topView = [BuyTopView view];
     self.topView = topView;
-    topView.images = @[@"commidity_upimage",@"one.jpg",@"two.jpg",@"three.jpg",@"four.jpg",@"five.jpg"];//设置顶部Collectionview的图片数据
+    
+    NSMutableArray *imgs = [NSMutableArray new];
+    for (NSString *urlStr in titleImgs) {
+        UIImageView *imgView = [UIImageView new];
+        [imgView sd_setImageWithURL:[NSURL URLWithString:urlStr] placeholderImage:[UIImage imageNamed:@"tiantu_icon"]];
+        [imgs addObject:imgView.image];
+    }
+
+//    topView.images = @[@"commidity_upimage",@"one.jpg",@"two.jpg",@"three.jpg",@"four.jpg",@"five.jpg"];//设置顶部Collectionview的图片数据
+    topView.images = imgs;
     __weak UINavigationController* NaviController = self.navigationController;
     self.topView.rightRefresh.block = ^{
         BGGoodsDetailController* bggc = [[BGGoodsDetailController alloc] init];
@@ -220,6 +330,7 @@
     topView.frame = CGRectMake(0,0, screenW, TopViewH);
     [firstPageView addSubview:topView];
     BuyMiddleView* middleView = [BuyMiddleView view];
+    middleView.delegate = self;
     self.middleView = middleView;
     middleView.frame = CGRectMake(0,CGRectGetMaxY(topView.frame) + 6, screenW, MiddleViewH);
     [firstPageView addSubview:middleView];
@@ -289,16 +400,20 @@
 //    NSLog(@" --== %f",scrollView.contentOffset.y);
     if(scrollView.tag == 0){
         if(scrollView.contentOffset.y<0){
-//            if(self.TopViewScale<1.01){
-//                self.TopViewScale += 0.00015f;
-//                [self.topView.icon_img setTransform:CGAffineTransformScale(self.topView.icon_img.transform, self.TopViewScale, self.TopViewScale)];
-//            }
             scrollView.contentOffset = CGPointMake(0, 0);
+            
         }else{
-            self.NavBarView.backgroundColor = color(0.0,162.0,154.0, scrollView.contentOffset.y/(screenH-BottomH));
+            self.NavBarView.backgroundColor = color(252,252,252, scrollView.contentOffset.y/(screenH-BottomH));
+            [oneBtn setImage:[UIImage imageNamed:@"fanhui_goumai"] forState:UIControlStateNormal];
+            [twoBtn setImage:[UIImage imageNamed:@"share_gouwu-"] forState:UIControlStateNormal];
+            
         }
         if(scrollView.contentOffset.y == (screenH-BottomH)){
             scrollView.scrollEnabled = NO;
+            
+            [oneBtn setImage:[UIImage imageNamed:@"icon_fanhui"] forState:UIControlStateNormal];
+            [twoBtn setImage:[UIImage imageNamed:@"share_icon"] forState:UIControlStateNormal];
+            
         }else if (scrollView.contentOffset.y == -NaviBarH && !scrollView.isDragging){
             [UIView animateWithDuration:0.3 animations:^{
                 scrollView.contentOffset = CGPointMake(0, 0);
@@ -307,11 +422,6 @@
     }
 }
 -(void)scrollViewWillEndDragging:(UIScrollView *)scrollView withVelocity:(CGPoint)velocity targetContentOffset:(inout CGPoint *)targetContentOffset{
-//    NSLog(@" endd-- %f",self.TopViewScale);
-//    self.TopViewScale = 1.0;
-//    [UIView animateWithDuration:0.5 animations:^{
-//        [self.topView.icon_img setTransform:CGAffineTransformIdentity];//恢复原来的大小
-//    }];
 }
 
 -(void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate{
@@ -320,12 +430,10 @@
 
 #pragma -- MyOrderTopTabBarDelegate(顶部标题栏delegate)
 -(void)tabBar:(MyOrderTopTabBar *)tabBar didSelectIndex:(NSInteger)index{
-    NSLog(@"点击了 －－－ %ld",index);
-//    self.detailTableview.backgroundColor = color(random()%255, random()%255, random()%255, 1.0);
-    
+//    NSLog(@"点击了 －－－ %ld",index);
     selectedTag = index;
-    
     [self.detailTableview reloadData];
+    
 }
 #pragma -- UITableViewDataSource
 
@@ -335,14 +443,14 @@
 
 -(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView{
     if (selectedTag == 0) {
-        return 2;
+        return detailImgs.count;
         
     } else if (selectedTag == 1) {
         return 1;
         
     } else if (selectedTag == 2) {
         
-        return 10;
+        return appraiseArr.count;
         
     } else if (selectedTag == 3) {
         return 1;
@@ -357,19 +465,24 @@
     if (selectedTag == 0) {
         self.oneCell = [[[NSBundle mainBundle] loadNibNamed:@"NPYImageTextTableViewCell" owner:nil options:nil] firstObject];
         self.oneCell.selectionStyle = UITableViewCellSelectionStyleNone;
+        self.oneCell.imgUrlStr = detailImgs[indexPath.row];
+        
         return self.oneCell;
         
     } else if (selectedTag == 1) {
         self.twoCell = [[[NSBundle mainBundle] loadNibNamed:@"NPYParameterTableViewCell" owner:nil options:nil] firstObject];
         self.twoCell.selectionStyle = UITableViewCellSelectionStyleNone;
+        self.twoCell.imgUrlStr = self.goodsModel.parameter_img;
         return self.twoCell;
         
     } else if (selectedTag == 2) {
         self.threeCell = [[[NSBundle mainBundle] loadNibNamed:@"NPYGoodsDetailTableViewCell" owner:nil options:nil] firstObject];
+        self.threeCell.model = appraiseArr[indexPath.row];
         return self.threeCell;
         
     } else if (selectedTag == 3) {
         self.fourCell = [[[NSBundle mainBundle] loadNibNamed:@"NPYRecommendTableViewCell" owner:nil options:nil] firstObject];
+        self.fourCell.goodsID = self.goodsModel.goods_id;
         return self.fourCell;
         
     }
@@ -379,18 +492,219 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    
 }
 
 #pragma -- UITableViewDelegate
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+    if (selectedTag == 0) {
+        UIImageView *tm = [UIImageView new];
+        [tm sd_setImageWithURL:[NSURL URLWithString:detailImgs[indexPath.row]]];
+        cellHeight = tm.image.size.height / (tm.image.size.height / WIDTH_SCREEN == 0 ? 1 : tm.image.size.height / WIDTH_SCREEN);
+        if (cellHeight == 0) {
+            [self.detailTableview reloadData];
+        }
+    }
+    
+    if (selectedTag == 1) {
+        
+        UIImageView *tm = [UIImageView new];
+        [tm sd_setImageWithURL:[NSURL URLWithString:self.goodsModel.parameter_img]];
+        cellHeight = tm.image.size.height / (tm.image.size.height / WIDTH_SCREEN == 0 ? 1 : tm.image.size.height / WIDTH_SCREEN);
+        if (cellHeight == 0) {
+//            [self.detailTableview reloadData];
+        }
+        
+//        cellHeight = 250;
+    }
+    
+    if (selectedTag == 2) {
+        NPYAppraiseModel *mode = appraiseArr[indexPath.row];
+        if (mode.reply.length != 0) {
+            cellHeight = [self calculateStringSize:mode.reply withFontSize:12.0].height;
+            
+        } else {
+            cellHeight = 0;
+            
+        }
+        
+        return 265 + cellHeight;
+    }
     
     if (selectedTag == 3) {
         return self.detailTableview.frame.size.height;
-        
     }
     
-    return 250;
+    return cellHeight;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section {
+    if (selectedTag == 2) {
+        return 10;
+    }
+    return 0.1;
+}
+
+#pragma mark - 获取服务器数据
+- (void)requestHomeDataWithUrlString:(NSString *)url withKeyValueParemes:(NSDictionary *)pareme {
+    
+    NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:pareme] forKey:@"data"];
+    
+    [[NPYHttpRequest sharedInstance] getWithUrlString:[NSString stringWithFormat:@"%@%@",BASE_URL,url] parameters:paremes success:^(id responseObject) {
+        NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+        
+        if ([dataDict[@"r"] intValue] == 1) {
+            //成功
+//            [ZHProgressHUD showMessage:@"请求成功" inView:self.view];
+            NSDictionary *tpDict = dataDict[@"data"];
+            
+            self.goodsModel = [NPYHomeGoodsModel mj_objectWithKeyValues:tpDict[@"goods"]];
+            shopModel = [NPYShopModel mj_objectWithKeyValues:tpDict[@"shop"]];
+            sepcModel = [NPYGoodsSpecModel mj_objectWithKeyValues:tpDict[@"spec"]];
+            
+            titleImgs = [[NSMutableArray alloc] initWithArray:tpDict[@"title"]];
+            detailImgs = [[NSMutableArray alloc] initWithArray:tpDict[@"details"]];
+            
+            if ([tpDict[@"user"] isEqualToString:@"true"]) {
+                isCollection = YES;
+                
+            } else {
+                isCollection = NO;
+            }
+            
+            [self initView];
+           
+            self.topView.goodsModel = self.goodsModel;
+            self.middleView.shopModel = shopModel;
+            self.middleView.goodsID = self.goodsModel.goods_id;
+            
+            
+        } else {
+            //失败
+            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+        }
+        
+    } failure:^(NSError *error) {
+        NSLog(@"%@",error);
+        
+    }];
+    
+}
+
+- (void)requestGoodsAppraiseDataWithUrlString:(NSString *)url withGoodsID:(NSDictionary *)pareme {
+    
+    NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:pareme] forKey:@"data"];
+    
+    [[NPYHttpRequest sharedInstance] getWithUrlString:[NSString stringWithFormat:@"%@%@",BASE_URL,url] parameters:paremes success:^(id responseObject) {
+        NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+        
+        if ([dataDict[@"r"] intValue] == 1) {
+            //成功
+//            [ZHProgressHUD showMessage:@"请求成功" inView:self.view];
+            NSDictionary *tpDict = dataDict[@"data"];
+            
+            appraiseArr = [NSMutableArray new];
+            for (NSDictionary *infoDict in tpDict[@"appraise"]) {
+                NPYAppraiseModel *appraiseModel = [NPYAppraiseModel mj_objectWithKeyValues:infoDict];
+                [appraiseArr addObject:appraiseModel];
+                
+            }
+            
+        } else {
+            //失败
+            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+        }
+        
+    } failure:^(NSError *error) {
+        NSLog(@"%@",error);
+        
+    }];
+    
+}
+
+- (void)requestAddGoodsToShoppingCarUrl:(NSString *)url withParemes:(NSDictionary *)pareme {
+    NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:pareme] forKey:@"data"];
+    
+    [[NPYHttpRequest sharedInstance] getWithUrlString:[NSString stringWithFormat:@"%@%@",BASE_URL,url] parameters:paremes success:^(id responseObject) {
+        NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+        
+        if ([dataDict[@"r"] intValue] == 1) {
+            //成功
+//            NSDictionary *tpDict = dataDict[@"data"];
+            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+        } else {
+            //失败
+            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+        }
+        
+    } failure:^(NSError *error) {
+        NSLog(@"%@",error);
+        
+    }];
+    
+}
+
+- (void)requestAddGoodsToCollectListUrl:(NSString *)url withParemes:(NSDictionary *)pareme {
+    NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:pareme] forKey:@"data"];
+    
+    [[NPYHttpRequest sharedInstance] getWithUrlString:[NSString stringWithFormat:@"%@%@",BASE_URL,url] parameters:paremes success:^(id responseObject) {
+        NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+        
+        if ([dataDict[@"r"] intValue] == 1) {
+            //成功
+            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+        } else {
+            //失败
+            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+        }
+        
+    } failure:^(NSError *error) {
+        NSLog(@"%@",error);
+        
+    }];
+    
+}
+
+- (void)selectedSpecToPushViewWithGoodsID:(NSString *)goodsID {
+//    [ZHProgressHUD showMessage:@"跳到规格选择页" inView:self.view];
+    NPYSpecViewController *specVC = [[NPYSpecViewController alloc] initWithNibName:@"NPYSpecViewController" bundle:nil];
+    specVC.goodsID = goodsID;
+    specVC.sign = userModel.sign;
+    specVC.userID = userModel.user_id;
+    specVC.storNumber = self.goodsModel.inventory;
+    specVC.delegate = self;
+    specVC.view.backgroundColor = XNColor(0, 0, 0, 0.2);
+    specVC.modalPresentationStyle = UIModalPresentationOverCurrentContext;
+    [self presentViewController:specVC animated:YES completion:nil];
+    
+}
+
+- (void)pushViewToShopViewWithShopID:(NSString *)shopID {
+    self.shopVC = [[NPYAutotrophy alloc] init];
+    self.shopVC.isAutrophy = NO;
+    self.shopVC.shopID = shopModel.shop_id;
+    [self.navigationController pushViewController:self.shopVC animated:YES];
+}
+
+- (void)backItem {
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+- (void)shareButtonPressed:(UIButton *)sender {
+    //分享
+    [ShareObject shareDefault];
+    
+    [[ShareObject shareDefault] sendMessageWithTitle:@"share" withContent:@"test" withUrl:@"" withImages:detailImgs result:^(NSString *result, UIAlertViewStyle style) {
+        [ZHProgressHUD showMessage:result inView:self.detailTableview];
+    }];
+}
+
+- (CGSize)calculateStringSize:(NSString *)str withFontSize:(CGFloat)fontSize{
+    NSDictionary *attrs = @{NSFontAttributeName : [UIFont boldSystemFontOfSize:fontSize]};
+    CGSize size=[str sizeWithAttributes:attrs];
+    
+    return size;
 }
 
 @end

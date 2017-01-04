@@ -27,6 +27,10 @@
     self.tabBarController.tabBar.hidden = YES;
 }
 
+- (void)backItem:(UIButton *)sender {
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
@@ -35,14 +39,24 @@
     
     self.navigationItem.title = @"找回密码";
     
+    [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"hk_dingbu"] forBarMetrics:UIBarMetricsDefault];
+    
+    UIButton *backBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 18, 18)];
+    [backBtn setImage:[UIImage imageNamed:@"icon_fanhui"] forState:0];
+    [backBtn addTarget:self action:@selector(backItem:) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithCustomView:backBtn];
+    self.navigationItem.leftBarButtonItem = item;
+    
     [self mainViewLoad];
 }
 
 - (void)mainViewLoad {
-    UILabel *titleL = [[UILabel alloc] initWithFrame:CGRectMake(0, 80, WIDTH_SCREEN, 20)];
+    UILabel *titleL = [[UILabel alloc] initWithFrame:CGRectMake(0, 120, WIDTH_SCREEN, 20)];
     [self.view addSubview:titleL];
     
     titleL.text = [NSString stringWithFormat:@"*确保%@号码能接受短信",self.phoneStr];
+    titleL.font = XNFont(16.0);
+    titleL.textColor = XNColor(51, 51, 51, 1);
     titleL.textAlignment = NSTextAlignmentCenter;
     titleL.attributedText = [self attributedStringWithString:titleL.text];
     
@@ -50,7 +64,7 @@
     [self.view addSubview:captchaNumber];
     captchaNumber.tag = 100011;
     captchaNumber.placeholder = @"请输入短信验证码";
-    captchaNumber.textColor = [UIColor blackColor];
+    captchaNumber.textColor = XNColor(51, 51, 51, 1);
     [captchaNumber addTarget:self action:@selector(textFieldDidChange:) forControlEvents:UIControlEventEditingChanged];
     captchaNumber.clearButtonMode = UITextFieldViewModeWhileEditing;
     
@@ -58,21 +72,26 @@
     [self.view addSubview:verifyBtn];
     //    verifyBtn.titleLabel.font = [UIFont systemFontOfSize:15.0];
     [verifyBtn setTitle:@"获取验证码" forState:UIControlStateNormal];
-    [verifyBtn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    [verifyBtn setTitleColor:XNColor(51, 51, 51, 1) forState:UIControlStateNormal];
     [verifyBtn addTarget:self action:@selector(verifyButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     
     UIImageView *hLine = [[UIImageView alloc] initWithFrame:CGRectMake(CGRectGetMinX(verifyBtn.frame) - 10, CGRectGetMinY(verifyBtn.frame) + 2.5 , 1, CGRectGetHeight(verifyBtn.frame) - 5)];
-    hLine.backgroundColor = GRAY_BG;
+//    hLine.backgroundColor = GRAY_BG;
+    hLine.image = [UIImage imageNamed:@"40hui_dl"];
     [self.view addSubview:hLine];
     
     UIImageView *lineImg = [[UIImageView alloc] initWithFrame:CGRectMake(CGRectGetMinX(captchaNumber.frame), CGRectGetMaxY(captchaNumber.frame) + 10, WIDTH_SCREEN - 40, 1)];
-    lineImg.backgroundColor = GRAY_BG;
+//    lineImg.backgroundColor = GRAY_BG;
+    lineImg.image = [UIImage imageNamed:@"huixian_dl"];
     [self.view addSubview:lineImg];
     
     nextBtn = [[UIButton alloc] initWithFrame:CGRectMake(20, CGRectGetMaxY(captchaNumber.frame) + 50, WIDTH_SCREEN - 40, 40)];
     [self.view addSubview:nextBtn];
-    nextBtn.backgroundColor = captchaNumber.text.length > 3 ? [UIColor redColor] : GRAY_BG;
+    NSString *imgName = captchaNumber.text.length > 0 ? @"hongikuang_dl" : @"huikuang_dl";
+    UIImage *bgImg = [UIImage imageNamed:imgName];
+    [nextBtn setBackgroundImage:bgImg forState:UIControlStateNormal];
     nextBtn.userInteractionEnabled = captchaNumber.text.length > 3 ? YES : NO;
+    nextBtn.titleLabel.font = XNFont(18.0);
     [nextBtn setTitle:@"下一步" forState:UIControlStateNormal];
     [nextBtn addTarget:self action:@selector(nextButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
 }
@@ -80,7 +99,9 @@
 - (void)textFieldDidChange:(UITextField *)tx {
     //验证手机号、验证码
     if (tx.tag == 100011) {
-        nextBtn.backgroundColor = tx.text.length > 3 ? [UIColor redColor] : GRAY_BG;
+        NSString *imgName = captchaNumber.text.length > 0 ? @"hongikuang_dl" : @"huikuang_dl";
+        UIImage *bgImg = [UIImage imageNamed:imgName];
+        [nextBtn setBackgroundImage:bgImg forState:UIControlStateNormal];
         nextBtn.userInteractionEnabled = tx.text.length > 3 ? YES : NO;
     }
     
@@ -119,13 +140,13 @@
             //是
             [AttributedStr addAttribute:NSFontAttributeName
              
-                                 value:[UIFont systemFontOfSize:17.0]
+                                 value:[UIFont systemFontOfSize:16.0]
              
                                  range:NSMakeRange(i,1)];
             
             [AttributedStr addAttribute:NSForegroundColorAttributeName
              
-                                 value:[UIColor blueColor]
+                                 value:XNColor(0, 122, 255, 1)
              
                                  range:NSMakeRange(i,1)];
             
@@ -133,7 +154,7 @@
             
             [AttributedStr addAttribute:NSFontAttributeName
              
-                                  value:[UIFont systemFontOfSize:17.0]
+                                  value:[UIFont systemFontOfSize:16.0]
              
                                   range:NSMakeRange(0,1)];
             
@@ -142,6 +163,8 @@
                                   value:[UIColor redColor]
              
                                   range:NSMakeRange(0,1)];
+            
+            
             
         }
         

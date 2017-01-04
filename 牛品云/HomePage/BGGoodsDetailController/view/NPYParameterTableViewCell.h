@@ -10,4 +10,8 @@
 
 @interface NPYParameterTableViewCell : UITableViewCell
 
+@property (nonatomic, strong) NSString *imgUrlStr;
+
+@property (weak, nonatomic) IBOutlet UIImageView *imgView;
+
 @end

@@ -11,8 +11,11 @@
 #import "NPYLoginViewController.h"
 #import "NPYMessageViewController.h"
 #import "NPYSettingViewController.h"
+#import "NPYVacciniaViewController.h"//牛豆
+#import "NPYProCollectionViewController.h"
 #import "NPYMyOrderViewController.h"
 #import "SDTimeLineTableViewController.h"
+#import "NPYTicketViewController.h"
 #import "AppDelegate.h"
 
 @interface NPYMemberCenterPage () <UITableViewDelegate,UITableViewDataSource> {
@@ -22,12 +25,18 @@
     NSArray         *funNames;
     
     NSDictionary    *loginData;
+    NPYLoginMode    *userModel;
+    
+    UIButton        *firendMsg;
 }
 
 @property (nonatomic, strong) NPYLoginViewController            *loginVC;//登录界面
 @property (nonatomic, strong) NPYMessageViewController          *msgVC;//右侧信息
 @property (nonatomic, strong) NPYSettingViewController          *detailVC;//设置
 @property (nonatomic, strong) NPYMyOrderViewController          *myOrderVC;//我的订单
+@property (nonatomic, strong) NPYVacciniaViewController         *vacciniaVC;//我的牛豆
+@property (nonatomic, strong) NPYTicketViewController           *ticketVC;//券管理
+@property (nonatomic, strong) NPYProCollectionViewController    *proCollectionVC;//商品收藏
 @property (nonatomic, strong) SDTimeLineTableViewController     *ttVC;//朋友圈
 
 @end
@@ -43,25 +52,37 @@
     [self.navigationController.navigationBar setBackgroundImage:[UIImage new] forBarMetrics:UIBarMetricsDefault];
     self.navigationController.navigationBar.shadowImage =[UIImage new];
     
+    self.navigationController.navigationBar.translucent = YES;
+    
+    self.tabBarController.tabBar.hidden = NO;
+    
+    NSString *isLogin = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginState];
+    if ([isLogin intValue] == 1) {
+        loginData = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+        userModel = [NPYLoginMode mj_objectWithKeyValues:loginData[@"data"]];
+        
+        NSString *portrait = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LocalPortrait];
+        if (portrait) {
+            [headPortrait sd_setImageWithURL:[NSURL URLWithString:portrait] placeholderImage:[UIImage imageNamed:@"tiantu_icon"]];
+            
+        } else {
+            
+            [headPortrait sd_setImageWithURL:[NSURL URLWithString:userModel.user_portrait] placeholderImage:[UIImage imageNamed:@"tiantu_icon"]];
+        }
+        
+        userName.text = userModel.user_name;
+    }
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
-//    self.navigationController.navigationBar.tintColor = [UIColor orangeColor];
-    
     funNames = @[@"券管理",@"朋友圈",@"商品收藏",@"店铺收藏"];
     
     [self navigationViewLoad];
     
     [self mainViewLoad];
-    
-    NSString *isLogin = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginState];
-    if ([isLogin intValue] == 1) {
-        loginData = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
-        
-    }
     
 }
 
@@ -138,8 +159,8 @@
     [headerView addSubview:bgImgView];
     //头像
     headPortrait = [[UIImageView alloc] initWithFrame:CGRectMake(0, -10, 70, 70)];
-    [headPortrait sd_setImageWithURL:[NSURL URLWithString:@""] placeholderImage:[UIImage imageNamed:@"0.jpg"]];
-    headPortrait.contentMode = UIViewContentModeScaleAspectFill;
+    [headPortrait sd_setImageWithURL:[NSURL URLWithString:@""] placeholderImage:[UIImage imageNamed:@"touxiang_zc"]];
+    headPortrait.contentMode = UIViewContentModeScaleToFill;
     headPortrait.center = CGPointMake(WIDTH_SCREEN / 2, 100);
     headPortrait.layer.cornerRadius = CGRectGetHeight(headPortrait.frame) / 2;
     headPortrait.layer.borderColor = XNColor(253, 220, 220, 1).CGColor;
@@ -149,13 +170,7 @@
     
     UIButton *btn = [[UIButton alloc] initWithFrame:headPortrait.frame];
     [headerView addSubview:btn];
-//    btn.badgeBgColor = [UIColor blueColor];
-//    btn.badgeTextColor = [UIColor whiteColor];
-//    btn.badgeFont = [UIFont boldSystemFontOfSize:11];
-//    btn.badgeMaximumBadgeNumber = 99;
-//    btn.badgeCenterOffset = CGPointMake(5, 0);
-//    [btn showBadgeWithStyle:WBadgeStyleNumber value:100 animationType:WBadgeAnimTypeScale];
-//    [btn addTarget:self action:@selector(loginButtonPressed2:) forControlEvents:7];
+    [btn addTarget:self action:@selector(loginButtonPressed2:) forControlEvents:7];
     
     //会员名
     userName = [[UILabel alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(headPortrait.frame) + 15, 100, 20)];
@@ -177,7 +192,6 @@
         
         if (indexPath.section == 0) {
             if (indexPath.row == 0) {
-//                [mainCell.imageView sd_setImageWithURL:[NSURL URLWithString:@""] placeholderImage:[UIImage imageNamed:@"dingdan_icon"]];
                 mainCell.imageView.image = [UIImage imageNamed:@"dingdan_icon"];
                 mainCell.textLabel.text = @"我的订单";
                 mainCell.detailTextLabel.text = @"查看全部订单";
@@ -199,6 +213,7 @@
                     funBtn.titleLabel.font = [UIFont systemFontOfSize:13.0];
                     funBtn.contentHorizontalAlignment = UIControlContentHorizontalAlignmentCenter;
                     funBtn.titleEdgeInsets = UIEdgeInsetsMake(25, -placeHolder.size.width, 0.0, 0.0);
+                    
                     if (i == 3) {
                         funBtn.imageEdgeInsets = UIEdgeInsetsMake(10.0, 10.0, 30, -placeHolder.size.width - 30);
                     } else {
@@ -212,16 +227,27 @@
             }
             
         } else if (indexPath.section == 2) {
+            //券、朋友圈、收藏
             NSArray *imges = @[@"quanguanli_icon",@"pengyouqun_icon",@"shangpin_icon",@"dianpu_icon"];
-//            [mainCell.imageView sd_setImageWithURL:[NSURL URLWithString:@""] placeholderImage:[UIImage imageNamed:imges[indexPath.row]]];
+            
+            if (indexPath.row == 1) {
+                //通知信息
+                firendMsg = [[UIButton alloc] initWithFrame:CGRectMake(WIDTH_SCREEN - 50, (47 - 18) / 2, 18, 18)];
+                [firendMsg setBackgroundImage:[UIImage imageNamed:@"tuoyuan_pyq"] forState:UIControlStateNormal];
+                firendMsg.titleLabel.font = [UIFont systemFontOfSize:10.0];
+                [firendMsg setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+                [firendMsg setTitle:@"3" forState:UIControlStateNormal];
+                [mainCell addSubview:firendMsg];
+            }
+            
             mainCell.imageView.image = [UIImage imageNamed:imges[indexPath.row]];
             mainCell.textLabel.text = funNames[indexPath.row];
             
         } else {
-//            [mainCell.imageView sd_setImageWithURL:[NSURL URLWithString:@""] placeholderImage:[UIImage imageNamed:@"niudou_icon"]];
+            //
             mainCell.imageView.image = [UIImage imageNamed:@"niudou_icon"];
             mainCell.textLabel.text = @"我的牛豆";
-            mainCell.detailTextLabel.text = [NSString stringWithFormat:@"%i牛豆",20];
+            mainCell.detailTextLabel.text = [NSString stringWithFormat:@"%i牛豆",[userModel.integral intValue]];
         }
     }
     
@@ -238,7 +264,6 @@
         
     } else {
         mainCell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-//        NSLog(@"%li,%li",indexPath.section,indexPath.row);
         
     }
     
@@ -251,21 +276,39 @@
         self.myOrderVC = [[NPYMyOrderViewController alloc] init];
         [self.navigationController pushViewController:self.myOrderVC animated:YES];
     }
-    
+    //我的牛豆
     if (indexPath.section == 1) {
-        self.detailVC = [[NPYSettingViewController alloc] init];
-        self.detailVC.titleStr = @"我的牛豆";
-        [self.navigationController pushViewController:self.detailVC animated:YES];
+        self.vacciniaVC = [[NPYVacciniaViewController alloc] init];
+        [self.navigationController pushViewController:self.vacciniaVC animated:YES];
+    }
+    
+    if (indexPath.section == 2 && indexPath.row == 0) {
+        //券管理
+        self.ticketVC = [[NPYTicketViewController alloc] init];
+        [self.navigationController pushViewController:self.ticketVC animated:YES];
     }
     
     if (indexPath.section == 2 && indexPath.row == 1) {
         //朋友圈
-//        self.ttVC = [[SDTimeLineTableViewController alloc] init];
-//        self.ttVC = [[SDTimeLineTableViewController alloc] initWithNibName:@"SDTimeLineTableViewController" bundle:nil];
-//        [self.navigationController pushViewController:self.ttVC animated:YES];
         [(AppDelegate *)[UIApplication sharedApplication].delegate switchRootViewControllerWithIdentifier:@"NPYFriend"];
         
     }
+    
+    //商品收藏
+    if (indexPath.section == 2 && indexPath.row == 2) {
+        self.proCollectionVC = [[NPYProCollectionViewController alloc] init];
+        [self.navigationController pushViewController:self.proCollectionVC animated:YES];
+        
+    }
+    
+    //店铺收藏
+    if ((indexPath.section == 2 && indexPath.row == 3)) {
+        self.detailVC = [[NPYSettingViewController alloc] init];
+        [self.navigationController pushViewController:self.detailVC animated:YES];
+        self.detailVC.titleStr = @"店铺收藏";
+       
+    }
+    
 }
 
 #pragma mark - 更改tableView的分割线顶格显示
@@ -299,7 +342,7 @@
 
 - (void)settingButtonPressed:(UIButton *)btn {
     //
-    NSLog(@"设置按钮...");
+//    NSLog(@"设置按钮...");
     self.detailVC = [[NPYSettingViewController alloc] init];
     self.detailVC.titleStr = @"设置";
     [self.navigationController pushViewController:self.detailVC animated:YES];

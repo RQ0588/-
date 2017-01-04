@@ -12,6 +12,8 @@
 @interface NPYFeatureStoreTVCell () {
     UIImageView *logIcon;
     UIButton *shopName,*rightIntoBtn,*product1,*product2,*product3;
+    UILabel *shopNameL;
+    UIImageView *tpImgView;
     double width_LogIcon,width_ShopName,height_Space;
 }
 
@@ -52,19 +54,27 @@
     logIcon.frame = CGRectMake(14 , 10, width_LogIcon, width_LogIcon);
 //    logIcon.layer.borderWidth = 0.5;
 //    logIcon.layer.borderColor = GRAY_BG.CGColor;
-    logIcon.image = [UIImage imageNamed:@"placeholder"];
+//    logIcon.image = [UIImage imageNamed:@"tiantu_icon"];
+    [logIcon sd_setImageWithURL:[NSURL URLWithString:self.model.shop_img] placeholderImage:[UIImage imageNamed:@"tiantu_icon"]];
+    logIcon.contentMode = UIViewContentModeScaleToFill;
     [self.contentView addSubview:logIcon];
     //name
     shopName = [[UIButton alloc] init];
     shopName.frame = CGRectMake(CGRectGetMaxX(logIcon.frame) + 5, 10, width_ShopName, width_LogIcon);
-    [shopName setTitle:@"店铺名称" forState:0];
-    shopName.titleEdgeInsets = UIEdgeInsetsMake(0, -width_ShopName + width_LogIcon * 2, 0, 0);
+//    [shopName setTitle:self.model.shop_name forState:0];
+//    shopName.titleEdgeInsets = UIEdgeInsetsMake(0, -width_ShopName / 2, 0, 0);
     [shopName setTitleColor:XNColor(0, 0, 0, 1) forState:0];
     shopName.titleLabel.font = XNFont(15.0);
     [shopName setTag:300];
     [shopName addTarget:self action:@selector(detailButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     [self.contentView addSubview:shopName];
     
+    shopNameL = [[UILabel alloc] init];
+    shopNameL.frame = CGRectMake(CGRectGetMaxX(logIcon.frame) + 5, 10, width_ShopName, width_LogIcon);
+    shopNameL.text = self.model.shop_name;
+    shopNameL.textColor = XNColor(0, 0, 0, 1);
+    shopNameL.font = XNFont(15.0);
+    [self.contentView addSubview:shopNameL];
 //    shopName.backgroundColor = [UIColor blueColor];
     //rightIntoButton
     rightIntoBtn = [[UIButton alloc] init];
@@ -81,7 +91,18 @@
     product1.frame = CGRectMake(10, CGRectGetMaxY(logIcon.frame) + height_Space, width_LogIcon + width_ShopName, CGRectGetMaxY(backgroundView.frame) - height_Space * 2 - CGRectGetMaxY(logIcon.frame) );
     product1.layer.borderColor = GRAY_BG.CGColor;
     product1.layer.borderWidth = 0.5;
-    [product1 setImage:[UIImage imageNamed:@"placeholder"] forState:0];
+
+    if (self.model.goods.count >= 1) {
+        NSDictionary *dic1 = self.model.goods[0];
+        tpImgView = [[UIImageView alloc] init];
+        [tpImgView sd_setImageWithURL:[NSURL URLWithString:dic1[@"goods_img"]] placeholderImage:[UIImage imageNamed:@"tiantu_icon"]];
+        UIImage *img = tpImgView.image;
+        [product1 setImage:img forState:UIControlStateNormal];
+    } else {
+        [product1 setImage:[UIImage imageNamed:@"tiantu_icon"] forState:0];
+        
+    }
+    
     [product1 setTag:302];
     [product1 addTarget:self action:@selector(detailButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     [self.contentView addSubview:product1];
@@ -90,7 +111,18 @@
     product2.frame = CGRectMake(CGRectGetMaxX(product1.frame) + height_Space, CGRectGetMaxY(logIcon.frame) + height_Space, CGRectGetWidth(backgroundView.frame) - CGRectGetMaxX(product1.frame) - height_Space * 2, (CGRectGetHeight(product1.frame) - height_Space) / 2);
     product2.layer.borderColor = GRAY_BG.CGColor;
     product2.layer.borderWidth = 0.5;
-    [product2 setImage:[UIImage imageNamed:@"placeholder"] forState:0];
+    
+    if (self.model.goods.count >= 2) {
+        NSDictionary *dic1 = self.model.goods[1];
+//        [product2.imageView sd_setImageWithURL:[NSURL URLWithString:dic1[@"goods_img"]] placeholderImage:[UIImage imageNamed:@"tiantu_icon"]];
+        [tpImgView sd_setImageWithURL:[NSURL URLWithString:dic1[@"goods_img"]] placeholderImage:[UIImage imageNamed:@"tiantu_icon"]];
+        UIImage *img = tpImgView.image;
+        [product2 setImage:img forState:UIControlStateNormal];
+    } else {
+        [product2 setImage:[UIImage imageNamed:@"tiantu_icon"] forState:0];
+        
+    }
+    
     [product2 setTag:303];
     [product2 addTarget:self action:@selector(detailButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     [self.contentView addSubview:product2];
@@ -99,10 +131,24 @@
     product3.frame = CGRectMake(CGRectGetMaxX(product1.frame) + height_Space, CGRectGetMaxY(product2.frame) + height_Space, CGRectGetWidth(backgroundView.frame) - CGRectGetMaxX(product1.frame) - height_Space * 2, (CGRectGetHeight(product1.frame) - height_Space) / 2);
     product3.layer.borderColor = GRAY_BG.CGColor;
     product3.layer.borderWidth = 0.5;
-    [product3 setImage:[UIImage imageNamed:@"placeholder"] forState:0];
+    if (self.model.goods.count >= 3) {
+        NSDictionary *dic1 = self.model.goods[2];
+//        [product1.imageView sd_setImageWithURL:[NSURL URLWithString:dic1[@"goods_img"]] placeholderImage:[UIImage imageNamed:@"tiantu_icon"]];
+        [tpImgView sd_setImageWithURL:[NSURL URLWithString:dic1[@"goods_img"]] placeholderImage:[UIImage imageNamed:@"tiantu_icon"]];
+        UIImage *img = tpImgView.image;
+        [product3 setImage:img forState:UIControlStateNormal];
+    } else {
+        [product3 setImage:[UIImage imageNamed:@"tiantu_icon"] forState:0];
+        
+    }
+    
     [product3 setTag:304];
     [product3 addTarget:self action:@selector(detailButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     [self.contentView addSubview:product3];
+    
+    product1.contentMode = UIViewContentModeScaleToFill;
+    product2.contentMode = UIViewContentModeScaleToFill;
+    product3.contentMode = UIViewContentModeScaleToFill;
     
 }
 
@@ -110,10 +156,10 @@
 //300-店铺名称点击,301-进入店铺点击
 //302-左侧商品图片点击,303-右上商品图片点击,304-右下商品图片点击
 - (void)detailButtonPressed:(UIButton *)btn {
-    NSLog(@"点击了%@,进入详情页...",btn.currentTitle);
-    UIButton *tmpBtn = [self viewWithTag:300];
-    if (self.delegate && [self.delegate respondsToSelector:@selector(passButtonTag:withButtonTitle:)]) {
-        [self.delegate passButtonTag:btn.tag withButtonTitle:tmpBtn.currentTitle];
+//    NSLog(@"点击了%@,进入详情页...",btn.tag);
+    
+    if (self.delegate && [self.delegate respondsToSelector:@selector(passButtonTag: withPressedButtonTag:)]) {
+        [self.delegate passButtonTag:self.index withPressedButtonTag:btn.tag];
     }
     
 }

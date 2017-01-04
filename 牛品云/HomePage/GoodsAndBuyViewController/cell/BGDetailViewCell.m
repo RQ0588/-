@@ -22,10 +22,16 @@
     // Initialization code
 }
 
--(void)setImage:(NSString *)image{
+-(void)setImage:(id)image{
     _image = image;
     //NSLog(@"---> %@",image);
-    self.img.image = [UIImage imageNamed:image];
+    if ([image isKindOfClass:[UIImage class]]) {
+        self.img.image = image;
+        
+    } else if ([image isKindOfClass:[NSString class]]) {
+        self.img.image = [UIImage imageNamed:image];
+        
+    }
     
 }
 

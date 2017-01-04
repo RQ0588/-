@@ -14,4 +14,7 @@
 
 @interface NPYReleaseViewController : UIViewController
 
+@property (nonatomic, strong) NSString *sign;
+@property (nonatomic, strong) NSString *userID;
+
 @end

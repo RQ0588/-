@@ -7,7 +7,10 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "NPYDicHomeModel.h"
 
 @interface NPYDicDetailViewController : UIViewController
+
+@property (nonatomic, strong) NPYDicHomeModel *homeModel;
 
 @end

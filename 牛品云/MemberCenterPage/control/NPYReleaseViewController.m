@@ -18,6 +18,7 @@
 @interface NPYReleaseViewController () <TZImagePickerControllerDelegate,UICollectionViewDelegate,UICollectionViewDataSource> {
     CGFloat _itemWH;
     CGFloat _margin;
+    UILabel *addL;
 }
 
 @property (nonatomic, strong) NPYPlaceHolderTextView *wordView;
@@ -77,14 +78,18 @@
 }
 
 - (void)navigationViewLoad {
-    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:nil];
-    self.navigationItem.backBarButtonItem = item;
+    [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"hk_dingbu"] forBarMetrics:UIBarMetricsDefault];
     
-    [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"daohaglan_bg"] forBarMetrics:UIBarMetricsDefault];
+    UIButton *backBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 18, 18)];
+    [backBtn setImage:[UIImage imageNamed:@"icon_fanhui"] forState:0];
+    [backBtn addTarget:self action:@selector(backItem:) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithCustomView:backBtn];
+    self.navigationItem.leftBarButtonItem = item;
     
     UIBarButtonItem *rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"发送" style:UIBarButtonItemStyleDone target:self action:@selector(rightBarButtonItemAction:)];
     self.navigationItem.rightBarButtonItem = rightBarButtonItem;
     
+//    self.tabBarController.tabBar.hidden = YES;
 }
 
 - (void)editViewLoad {
@@ -108,9 +113,16 @@
     
     [self.collectionView registerClass:[CollectionViewCell class] forCellWithReuseIdentifier:@"cell"];
     [editView addSubview:self.collectionView];
+    //
+    addL = [[UILabel alloc] initWithFrame:CGRectMake(65, CGRectGetMaxY(editView.frame) - 45, 100, 20)];
+    addL.text = @"添加图片";
+    addL.textColor = XNColor(178, 178, 178, 1);
+    addL.font = XNFont(15.0);
+    [self.view addSubview:addL];
 }
 
 - (void)checkLocalPhoto{
+    addL.text = @"";
     
     TZImagePickerController *imagePicker = [[TZImagePickerController alloc] initWithMaxImagesCount:9 delegate:self];
     [imagePicker setSortAscendingByModificationDate:NO];
@@ -159,8 +171,7 @@
     CollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"cell" forIndexPath:indexPath];
     
     if (indexPath.row == _photosArray.count) {
-        cell.imagev.image = [UIImage imageNamed:@"AlbumAddBtn"];
-        //        cell.imagev.backgroundColor = [UIColor redColor];
+        cell.imagev.image = [UIImage imageNamed:@"tiantu_icon"];
         cell.deleteButton.hidden = YES;
         
     }else{
@@ -187,6 +198,71 @@
 // 右栏目按钮点击事件
 - (void)rightBarButtonItemAction:(UIBarButtonItem *)sender{
     //提交数据到服务器，返回到朋友圈
+    NSString *urlStr = @"/index.php/app/Moments/set";
+    NSDictionary *request = [NSDictionary dictionaryWithObjectsAndKeys:self.sign,@"sign",self.userID,@"user_id",self.wordView.text,@"text", nil];
+    [self requestMomentsAndImagesToServerWithUrl:urlStr withParames:request];
+    
+}
+
+- (void)requestMomentsAndImagesToServerWithUrl:(NSString *)url withParames:(NSDictionary *)pareme{
+    
+    if (pareme == nil) {
+        return;
+    }
+    
+    NSMutableDictionary *paremes = [[NSMutableDictionary alloc] init];
+    [paremes setObject:[NPYChangeClass dictionaryToJson:pareme] forKey:@"data"];
+    //    [paremes setObject:imageData forKey:@"img"];
+    
+    AFHTTPSessionManager *manager = [AFHTTPSessionManager manager];
+    //接收类型不一致请替换一致text/html或别的
+    manager.responseSerializer.acceptableContentTypes = [NSSet setWithObjects:@"application/json",
+                                                         @"text/html",
+                                                         @"image/jpeg",
+                                                         @"image/png",
+                                                         @"application/octet-stream",
+                                                         @"text/json",
+                                                         nil];
+    
+    NSURLSessionDataTask *task = [manager POST:[NSString stringWithFormat:@"%@%@",BASE_URL,url] parameters:paremes constructingBodyWithBlock:^(id<AFMultipartFormData> _Nonnull formData) {
+        
+        NSArray *imgNames = @[@"img1",@"img2",@"img3"];
+        for (int i = 0; i < _photosArray.count; i++) {
+            NSData *imageData =UIImageJPEGRepresentation(_photosArray[i],1);
+            NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+            formatter.dateFormat =@"yyyyMMddHHmmss";
+            NSString *str = [formatter stringFromDate:[NSDate date]];
+            NSString *fileName = [NSString stringWithFormat:@"%@.jpg", str];
+            
+            //上传的参数(上传图片，以文件流的格式)
+            [formData appendPartWithFileData:imageData
+                                        name:imgNames[i]
+                                    fileName:fileName
+                                    mimeType:@"image/jpeg"];
+            
+        }
+        
+        
+    } progress:^(NSProgress *_Nonnull uploadProgress) {
+        //打印下上传进度
+        NSLog(@"");
+        
+    } success:^(NSURLSessionDataTask *_Nonnull task, id _Nullable responseObject) {
+        //上传成功
+        [ZHProgressHUD showMessage:[responseObject valueForKey:@"data"] inView:self.view];
+        
+        [self.navigationController popViewControllerAnimated:YES];
+        
+    } failure:^(NSURLSessionDataTask *_Nullable task, NSError * _Nonnull error) {
+        //上传失败
+        NSLog(@"");
+        
+    }];
+    
+    
+}
+
+- (void)backItem:(UIButton *)sender {
     [self.navigationController popViewControllerAnimated:YES];
 }
 

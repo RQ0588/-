@@ -9,6 +9,11 @@
 #import "NPYFeatureStore.h"
 #import "NPYBaseConstant.h"
 #import "NPYFeatureStoreTVCell.h"
+#import "NPYShopClassifyModel.h"
+#import "NPYAutotrophy.h"
+#import "BuyViewController.h"
+
+#define shopUrl @"/index.php/app/Index/get_shop"
 
 @interface NPYFeatureStore () <UITableViewDelegate,UITableViewDataSource,PassMainTableViewValueDelegate> {
     double height_HeaderView;   //tableview的头高度
@@ -18,6 +23,8 @@
     UIButton *topLeftBtn,*topRightBtn;
     
     NSMutableArray *menuTitles;
+    
+    NSArray *shopArr,*goodsArr;
 }
 
 @property (nonatomic, strong) UITableView *mainTView;
@@ -34,17 +41,21 @@
     // Do any additional setup after loading the view.
     
     height_HeaderView = 34;
+    number_Tag = 110;
 //    number_Function = 6;
     
     self.view.backgroundColor = GRAY_BG;
     
-    menuTitles = [[NSMutableArray alloc] initWithObjects:@"鲜蔬水果",@"水产品",@"粮油调味",@"禽类蛋品",@"功能保健", nil];
-    number_Function = (int)menuTitles.count;
+//    menuTitles = [[NSMutableArray alloc] initWithObjects:@"鲜蔬水果",@"水产品",@"粮油调味",@"禽类蛋品",@"功能保健", nil];
     
     //导航栏设置
     [self navigationLoad];
     //加载主页面
     [self mainViewLoad];
+    
+    NSDictionary *requestDic = [NSDictionary dictionaryWithObjectsAndKeys:@"npy_we874646sf",@"key",@"0",@"num", nil];
+    
+    [self requestHomeDataWithUrlString:shopUrl withKeyValueParemes:requestDic];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -60,7 +71,6 @@
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
     
-//    self.navigationController.navigationBar.translucent = YES;
     self.tabBarController.tabBar.hidden = NO;
 }
 
@@ -112,7 +122,7 @@
 #pragma mark - MainTableView Function
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return 15;
+    return shopArr.count;
 }
 
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -131,9 +141,6 @@
     //检索按钮
     UIButton *searchBtn = [[UIButton alloc] init];
     [searchBtn setFrame:CGRectMake(0, 0, height_HeaderView, height_HeaderView)];
-//    [searchBtn setTitle:@"🔍" forState:0];
-//    [searchBtn setTitleColor:[UIColor blackColor] forState:0];
-//    searchBtn.backgroundColor = [UIColor blackColor];
     [searchBtn setImage:[UIImage imageNamed:@"sousuo_icon"] forState:UIControlStateNormal];
     [headerView addSubview:searchBtn];
     //底部横线
@@ -163,9 +170,10 @@
     UIView *contentView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, width_btn * number_Function, 60)];
     
     for (int i = 0; i < number_Function; i++) {
+        NPYShopClassifyModel *model = [NPYShopClassifyModel mj_objectWithKeyValues:menuTitles[i]];
         UIButton *funcBtn = [[UIButton alloc] init];
         [funcBtn setFrame: CGRectMake(i * width_btn, 0, width_btn, height_HeaderView)];
-        [funcBtn setTitle:menuTitles[i] forState:0];
+        [funcBtn setTitle:model.classify_name forState:0];
         funcBtn.titleLabel.textAlignment = NSTextAlignmentCenter;
         funcBtn.titleLabel.font = XNFont(12.0);
         [funcBtn setTag:110 + i];
@@ -177,10 +185,19 @@
         selectedImgView.tag = funcBtn.tag + 100;
         selectedImgView.frame = CGRectMake(0, CGRectGetHeight(funcBtn.frame) - 2, CGRectGetWidth(funcBtn.frame), 2);
         [funcBtn addSubview:selectedImgView];
+        
         if (i == 0) {
             funcBtn.selected = YES;
             selectedImgView.hidden = NO;
-            number_Tag = 110;
+            
+        } else {
+            funcBtn.selected = NO;
+            selectedImgView.hidden = YES;
+        }
+        
+        if (funcBtn.tag == number_Tag) {
+            funcBtn.selected = YES;
+            selectedImgView.hidden = NO;
         } else {
             funcBtn.selected = NO;
             selectedImgView.hidden = YES;
@@ -202,6 +219,8 @@
     NPYFeatureStoreTVCell *cell = [tableView dequeueReusableCellWithIdentifier:identifier];
     if (!cell) {
         cell = [[NPYFeatureStoreTVCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:identifier];
+        cell.index = indexPath.row;
+        cell.model = shopArr[indexPath.row];
         cell.delegate = self;
     }
     
@@ -216,9 +235,11 @@
     [self.navigationController pushViewController:self.msgVC animated:YES];
     
 }
-//菜单按钮的点击事件
+//菜单按钮的点击事件(110 -)
 - (void)menuButtonPressed:(UIButton *)btn {
 //    NSLog(@"菜单按钮点击了...%li",btn.tag);
+    NSString *urlStr = @"/index.php/app/Index/get_shop_where";
+    
     if (number_Tag == btn.tag) {
         return;
     }
@@ -233,13 +254,67 @@
     tmpImgView2.hidden = YES;
     
     number_Tag = btn.tag;
+    
+    NPYShopClassifyModel *model = [NPYShopClassifyModel mj_objectWithKeyValues:menuTitles[btn.tag-110]];
+    
+    NSDictionary *requestDic = [NSDictionary dictionaryWithObjectsAndKeys:@"npy_we874646sf",@"key",@"1",@"num",model.classify_id,@"class_id", nil];
+    
+    [self requestHomeDataWithUrlString:urlStr withKeyValueParemes:requestDic];
+}
+
+- (void)requestHomeDataWithUrlString:(NSString *)url withKeyValueParemes:(NSDictionary *)pareme {
+    
+    NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:pareme] forKey:@"data"];
+    
+    [[NPYHttpRequest sharedInstance] getWithUrlString:[NSString stringWithFormat:@"%@%@",BASE_URL,url] parameters:paremes success:^(id responseObject) {
+        NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+        
+        if ([dataDict[@"r"] intValue] == 1) {
+            //成功
+            [ZHProgressHUD showMessage:@"请求成功" inView:self.view];
+            NPYHomeModel *model = [[NPYHomeModel alloc] init];
+            model.shopArr = dataDict[@"data"];
+            [model toDetailModel];
+            shopArr = [model returnShopModelArray];
+            
+            menuTitles =[NSMutableArray arrayWithArray:dataDict[@"class"]];
+            
+            number_Function = (int)menuTitles.count;
+            
+        } else {
+            //失败
+            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+        }
+        
+        [self.mainTView reloadData];
+        
+        [self.mainTView setContentOffset:CGPointMake(0,0) animated:NO];
+        
+    } failure:^(NSError *error) {
+        NSLog(@"%@",error);
+        
+    }];
+    
 }
 
 #pragma mark - 自定义cell点击回传值
 //300-店铺名称点击,301-进入店铺点击
 //302-左侧商品图片点击,303-右上商品图片点击,304-右下商品图片点击
-- (void)passButtonTag:(NSInteger)tag withButtonTitle:(NSString *)title {
-    NSLog(@"点击了...%li,name = %@",tag,title);
+- (void)passButtonTag:(NSInteger)index withPressedButtonTag:(NSInteger)tag{
+    NSLog(@"点击了...%li,name = %li",tag,index);
+    
+    if (tag == 300 || tag == 301) {
+        NPYAutotrophy *shopVC = [[NPYAutotrophy alloc] init];
+        NPYShopModel *model = shopArr[index];
+        shopVC.shopID = model.shop_id;
+        shopVC.isAutrophy = NO;
+        [self.navigationController pushViewController:shopVC animated:YES];
+        
+    } else {
+        BuyViewController *goodsView = [[BuyViewController alloc] initWithNibName:@"BuyViewController" bundle:nil];
+        [self.navigationController pushViewController:goodsView animated:YES];
+        
+    }
     
 }
 

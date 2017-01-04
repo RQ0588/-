@@ -7,12 +7,19 @@
 //
 
 #import "NPYParameterTableViewCell.h"
+#import "NPYBaseConstant.h"
 
 @implementation NPYParameterTableViewCell
 
 - (void)awakeFromNib {
     [super awakeFromNib];
     // Initialization code
+}
+
+- (void)layoutSubviews {
+    [self.imgView sd_setImageWithURL:[NSURL URLWithString:self.imgUrlStr] placeholderImage:[UIImage imageNamed:@"tiantu_icon"]];
+//    UIImage *img = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:self.imgUrlStr]]];
+    
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {

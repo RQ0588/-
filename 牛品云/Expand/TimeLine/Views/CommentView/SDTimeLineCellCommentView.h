@@ -30,10 +30,20 @@
 
 #import "GlobalDefines.h"
 
+@protocol SDTimeLineCellCommentViewDelegate <NSObject>
+
+- (void)didClickLinkTitleInCell:(UITableViewCell *)cell;
+
+- (void)didClickLinkTitleId:(NSString *)clickId withLinkName:(NSString *)name;;
+
+@end
+
 @interface SDTimeLineCellCommentView : UIView
 
 - (void)setupWithLikeItemsArray:(NSArray *)likeItemsArray commentItemsArray:(NSArray *)commentItemsArray;
 
 @property (nonatomic, copy) void (^didClickCommentLabelBlock)(NSString *commentId, CGRect rectInWindow);
+
+@property (nonatomic, weak) id<SDTimeLineCellCommentViewDelegate>delegate;
 
 @end

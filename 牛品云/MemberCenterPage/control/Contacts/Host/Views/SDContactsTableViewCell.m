@@ -29,6 +29,7 @@
 #import "SDContactsTableViewCell.h"
 #import "UIView+SDAutoLayout.h"
 #import "SDContactModel.h"
+#import "NPYBaseConstant.h"
 
 @implementation SDContactsTableViewCell
 {
@@ -57,20 +58,23 @@
 - (void)setupView
 {
     _iconImageView = [UIImageView new];
+    _iconImageView.layer.cornerRadius = 5;
+//    _iconImageView.layer.borderWidth = 0.5;
+    _iconImageView.contentMode = UIViewContentModeScaleAspectFill;
     [self.contentView addSubview:_iconImageView];
     
     _nameLabel = [UILabel new];
-    _nameLabel.textColor = [UIColor darkGrayColor];
-    _nameLabel.font = [UIFont systemFontOfSize:15];
+    _nameLabel.textColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:1.0];
+    _nameLabel.font = [UIFont systemFontOfSize:16.0];
     [self.contentView addSubview:_nameLabel];
     
     
-    CGFloat margin = 8;
+    CGFloat margin = 14;
     
     
     _iconImageView.sd_layout
     .leftSpaceToView(self.contentView, margin)
-    .widthIs(35)
+    .widthIs(36)
     .heightEqualToWidth()
     .centerYEqualToView(self.contentView);
     
@@ -87,12 +91,20 @@
     _model = model;
     
     _nameLabel.text = [NSString stringWithFormat:@"%@",model.name];
-    _iconImageView.image = [UIImage imageNamed:model.imageName];
+    if (model.imageName) {
+         _iconImageView.image = [UIImage imageNamed:model.imageName];
+        
+    }
+   
+    if (model.firend_img) {
+        [_iconImageView sd_setImageWithURL:[NSURL URLWithString:model.firend_img] placeholderImage:[UIImage new]];
+    }
+    
 }
 
 + (CGFloat)fixedHeight
 {
-    return 50;
+    return 56;
 }
 
 @end

@@ -27,6 +27,7 @@
  */
 
 #import <UIKit/UIKit.h>
+#import "SDTimeLineCellCommentView.h"
 
 @protocol SDTimeLineCellDelegate <NSObject>
 
@@ -37,7 +38,7 @@
 
 @class SDTimeLineCellModel;
 
-@interface SDTimeLineCell : UITableViewCell
+@interface SDTimeLineCell : UITableViewCell <SDTimeLineCellCommentViewDelegate>
 
 @property (nonatomic, weak) id<SDTimeLineCellDelegate> delegate;
 
@@ -47,6 +48,6 @@
 
 @property (nonatomic, copy) void (^moreButtonClickedBlock)(NSIndexPath *indexPath);
 
-@property (nonatomic, copy) void (^didClickCommentLabelBlock)(NSString *commentId, CGRect rectInWindow, NSIndexPath *indexPath);
+@property (nonatomic, copy) void (^didClickCommentLabelBlock)(NSString *commentId, NSString *commentName,CGRect rectInWindow, NSIndexPath *indexPath);
 
 @end

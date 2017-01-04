@@ -17,7 +17,8 @@
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    //    self.navigationController.navigationBar.translucent = NO;
+    
+    [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"hk_dingbu"] forBarMetrics:UIBarMetricsDefault];
     self.tabBarController.tabBar.hidden = YES;
 }
 
@@ -35,68 +36,71 @@
     
     self.view.backgroundColor = GRAY_BG;
     
-    self.navigationController.navigationBar.titleTextAttributes = @{NSForegroundColorAttributeName: [UIColor blackColor],NSFontAttributeName : [UIFont boldSystemFontOfSize:17.0]};
+//    self.navigationController.navigationBar.titleTextAttributes = @{NSForegroundColorAttributeName: [UIColor blackColor],NSFontAttributeName : [UIFont boldSystemFontOfSize:17.0]};
     
-    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:nil];
-    self.navigationItem.backBarButtonItem = item;
+    UIButton *backBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 18, 18)];
+    [backBtn setImage:[UIImage imageNamed:@"icon_fanhui"] forState:0];
+    [backBtn addTarget:self action:@selector(backItem:) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithCustomView:backBtn];
+    self.navigationItem.leftBarButtonItem = item;
     
     [self subViewsLoad];
 }
 
 - (void)subViewsLoad {
     //
-    UIView *topView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, WIDTH_SCREEN, 200)];
+    UIView *topView = [[UIView alloc] initWithFrame:CGRectMake(0, 1, WIDTH_SCREEN, 260)];
     topView.backgroundColor = [UIColor whiteColor];
     [self.view addSubview:topView];
     
-    UIImageView *sucImgView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 50, 50)];
-    sucImgView.image = [UIImage imageNamed:@"placeholder"];
-    sucImgView.center = CGPointMake(WIDTH_SCREEN / 2, 35);
+    UIImageView *sucImgView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 90, 90)];
+    sucImgView.image = [UIImage imageNamed:@"zfcg_gouwu"];
+    sucImgView.center = CGPointMake(WIDTH_SCREEN / 2, 75);
     [topView addSubview:sucImgView];
     
-    UILabel *sucL = [[UILabel alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(sucImgView.frame) + 10, 100, 20)];
+    UILabel *sucL = [[UILabel alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(sucImgView.frame) + 15, 100, 20)];
     sucL.text = @"支付成功";
-    sucL.textColor = [UIColor blackColor];
+    sucL.textColor = XNColor(51, 51, 51, 1);
+    sucL.font = XNFont(18.0);
+    sucL.textAlignment = NSTextAlignmentCenter;
     sucL.center = CGPointMake(WIDTH_SCREEN / 2, CGRectGetMidY(sucL.frame));
     [topView addSubview:sucL];
     
-    UILabel *alertL = [[UILabel alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(sucL.frame) + 10, WIDTH_SCREEN, 20)];
+    UILabel *alertL = [[UILabel alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(sucL.frame) + 15, WIDTH_SCREEN, 20)];
     alertL.text = @"亲、我们会尽快给您发货，请保持手机通畅~";
-    alertL.textColor = [UIColor grayColor];
+    alertL.textColor = XNColor(166, 166, 166, 1);
     alertL.textAlignment = NSTextAlignmentCenter;
     alertL.font = [UIFont systemFontOfSize:12.0];
     [topView addSubview:alertL];
     
-    UIImageView *lineImg = [[UIImageView alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(alertL.frame) + 10, WIDTH_SCREEN, 1)];
-    lineImg.backgroundColor = GRAY_BG;
+    UIImageView *lineImg = [[UIImageView alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(alertL.frame) + 15, WIDTH_SCREEN, 1)];
+//    lineImg.backgroundColor = GRAY_BG;
+    lineImg.image = [UIImage imageNamed:@"750huixian_92"];
     [topView addSubview:lineImg];
     
-    UIButton *lookOrder = [[UIButton alloc] initWithFrame:CGRectMake(20, CGRectGetMaxY(lineImg.frame) + 10, 100, 30)];
+    UIButton *lookOrder = [[UIButton alloc] initWithFrame:CGRectMake(43, CGRectGetMaxY(lineImg.frame) + 10, 100, 30)];
     [lookOrder setTitle:@"查看订单" forState:UIControlStateNormal];
-    [lookOrder setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
-    lookOrder.layer.borderColor = [UIColor redColor].CGColor;
-    lookOrder.layer.borderWidth = 1.0;
-    lookOrder.layer.cornerRadius = 5.0;
+    [lookOrder setBackgroundImage:[UIImage imageNamed:@"hongkuang_gouwu"] forState:UIControlStateNormal];
+    [lookOrder setTitleColor:XNColor(248, 31, 31, 1) forState:UIControlStateNormal];
     lookOrder.titleLabel.font = [UIFont systemFontOfSize:15.0];
     [lookOrder addTarget:self action:@selector(lookOrderButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     [topView addSubview:lookOrder];
     
-    UIButton *waite = [[UIButton alloc] initWithFrame:CGRectMake(WIDTH_SCREEN - 120, CGRectGetMinY(lookOrder.frame), 100, 30)];
+    UIButton *waite = [[UIButton alloc] initWithFrame:CGRectMake(WIDTH_SCREEN - 143, CGRectGetMinY(lookOrder.frame), 100, 30)];
     [waite setTitle:@"再去逛逛" forState:UIControlStateNormal];
-    [waite setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
-    waite.layer.borderColor = [UIColor redColor].CGColor;
-    waite.layer.borderWidth = 1.0;
-    waite.layer.cornerRadius = 5.0;
+    [waite setBackgroundImage:[UIImage imageNamed:@"hongkuang_gouwu"] forState:UIControlStateNormal];
+    [waite setTitleColor:XNColor(248, 31, 31, 1) forState:UIControlStateNormal];
     waite.titleLabel.font = [UIFont systemFontOfSize:15.0];
     [waite addTarget:self action:@selector(waiteButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     [topView addSubview:waite];
     
     
-    UILabel *safeAlert = [[UILabel alloc] initWithFrame:CGRectMake(10, CGRectGetMaxY(topView.frame), WIDTH_SCREEN - 20, 50)];
+    UILabel *safeAlert = [[UILabel alloc] initWithFrame:CGRectMake(15, CGRectGetMaxY(topView.frame) + 15, WIDTH_SCREEN - 30, 50)];
     safeAlert.text = @"安全提醒：牛品云不会以任何理由要求您提供银行卡信息或支付额外费用，请谨防钓鱼链接或诈骗电话。";
-    safeAlert.textColor = [UIColor grayColor];
+    safeAlert.textColor = XNColor(166, 166, 166, 1);
     safeAlert.numberOfLines = 0;
     safeAlert.font = [UIFont systemFontOfSize:12.0];
+    [self setLabelSpace:safeAlert withValue:safeAlert.text withFont:[UIFont systemFontOfSize:12.0]];
     [self.view addSubview:safeAlert];
 }
 
@@ -108,6 +112,29 @@
 - (void)waiteButtonPressed:(UIButton *)btn {
     //跳到首页
     [self.navigationController popToRootViewControllerAnimated:YES];
+}
+
+- (void)backItem:(UIButton *)sender {
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+//给UILabel设置行间距和字间距
+-(void)setLabelSpace:(UILabel*)label withValue:(NSString*)str withFont:(UIFont*)font {
+    NSMutableParagraphStyle *paraStyle = [[NSMutableParagraphStyle alloc] init];
+    paraStyle.lineBreakMode = NSLineBreakByCharWrapping;
+    paraStyle.alignment = NSTextAlignmentLeft;
+    paraStyle.lineSpacing = 6; //设置行间距
+    paraStyle.hyphenationFactor = 1.0;
+    paraStyle.firstLineHeadIndent = 0.0;
+    paraStyle.paragraphSpacingBefore = 0.0;
+    paraStyle.headIndent = 0;
+    paraStyle.tailIndent = 0;
+    //设置字间距 NSKernAttributeName:@1.5f
+    NSDictionary *dic = @{NSFontAttributeName:font, NSParagraphStyleAttributeName:paraStyle, NSKernAttributeName:@0.0f
+                          };
+    
+    NSAttributedString *attributeStr = [[NSAttributedString alloc] initWithString:str attributes:dic];
+    label.attributedText = attributeStr;
 }
 
 - (void)didReceiveMemoryWarning {

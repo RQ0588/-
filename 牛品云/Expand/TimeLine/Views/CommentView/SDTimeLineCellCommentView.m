@@ -272,6 +272,12 @@
 - (void)didClickLink:(MLLink *)link linkText:(NSString *)linkText linkLabel:(MLLinkLabel *)linkLabel
 {
     NSLog(@"%@", link.linkValue);
+    
+    if (self.delegate && [self.delegate respondsToSelector:@selector(didClickLinkTitleId:withLinkName:)]) {
+        [self.delegate didClickLinkTitleId:link.linkValue withLinkName:linkText];
+    }
+    
 }
+
 
 @end

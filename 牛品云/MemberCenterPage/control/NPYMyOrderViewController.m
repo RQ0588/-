@@ -12,8 +12,14 @@
 #import "NPYPaymentViewController.h"
 #import "NPYOrdeDetailViewController.h"
 
+#import "NPYMyOrderModel.h"
+
+#define OrderUrl @"/index.php/app/Order/get"
+
 @interface NPYMyOrderViewController () <UITableViewDelegate,UITableViewDataSource> {
     NSInteger number_Tag;       //记录选中按钮的tag值
+    
+    NSMutableArray *dataArr;
 }
 
 @property (nonatomic, strong) UIView        *topMenuView;
@@ -45,12 +51,25 @@
     self.view.backgroundColor = GRAY_BG;
     self.navigationItem.title = @"我的订单";
     
-    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:nil];
-    self.navigationItem.backBarButtonItem = item;
+    dataArr = [NSMutableArray new];
+    
+    [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"hk_dingbu"] forBarMetrics:UIBarMetricsDefault];
+    
+    UIButton *backBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 18, 18)];
+    [backBtn setImage:[UIImage imageNamed:@"icon_fanhui"] forState:0];
+    [backBtn addTarget:self action:@selector(backItem:) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithCustomView:backBtn];
+    self.navigationItem.leftBarButtonItem = item;
     
     [self topMenuViewLoad];
     
     [self mainTableViewLoad];
+    
+    NSDictionary *dic = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+    NPYLoginMode *model = [NPYLoginMode mj_objectWithKeyValues:dic[@"data"]];
+    
+    NSDictionary *request = [NSDictionary dictionaryWithObjectsAndKeys:[dic valueForKey:@"sign"],@"sign",model.user_id,@"user_id",@"all",@"type",@"0",@"num", nil];
+    [self requestOrderInfoWithUrlString:OrderUrl withParames:request];
 }
 
 //midMenuView
@@ -67,12 +86,12 @@
         menuBtn.frame = CGRectMake(i * WIDTH_SCREEN / nameBtn.count, 0, WIDTH_SCREEN / nameBtn.count, CGRectGetHeight(topMenuView.frame));
         [menuBtn setTag:2000 + i];
         [menuBtn setTitle:nameBtn[i] forState:UIControlStateNormal];
-        [menuBtn setTitleColor:[UIColor grayColor] forState:UIControlStateNormal];
-        [menuBtn setTitleColor:[UIColor redColor] forState:UIControlStateSelected];
-        menuBtn.titleLabel.font = [UIFont systemFontOfSize:15.0];
+        [menuBtn setTitleColor:XNColor(102, 102, 102, 1) forState:UIControlStateNormal];
+        [menuBtn setTitleColor:XNColor(248, 31, 31, 1) forState:UIControlStateSelected];
+        menuBtn.titleLabel.font = [UIFont systemFontOfSize:14.0];
         
         UIImageView *selectedImgView = [[UIImageView alloc] init];
-        selectedImgView.image = [UIImage imageNamed:@"testLine"];
+        selectedImgView.image = [UIImage imageNamed:@"hongxian_xz"];
         selectedImgView.tag = menuBtn.tag + 100;
         selectedImgView.frame = CGRectMake(0, CGRectGetHeight(menuBtn.frame) - 2, CGRectGetWidth(menuBtn.frame), 2);
         [menuBtn addSubview:selectedImgView];
@@ -93,11 +112,16 @@
 
 //tableView
 - (void)mainTableViewLoad {
-    self.mainTableView = [[UITableView alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(self.topMenuView.frame), WIDTH_SCREEN, HEIGHT_SCREEN - CGRectGetMaxY(self.topMenuView.frame)) style:UITableViewStyleGrouped];
+    self.mainTableView = [[UITableView alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(self.topMenuView.frame), WIDTH_SCREEN, HEIGHT_SCREEN - CGRectGetMaxY(self.topMenuView.frame)-1) style:UITableViewStyleGrouped];
     self.mainTableView.delegate = self;
     self.mainTableView.dataSource = self;
     self.mainTableView.showsVerticalScrollIndicator = NO;
+    self.mainTableView.backgroundColor = GRAY_BG;
+    self.mainTableView.estimatedRowHeight = 100;
+    self.mainTableView.rowHeight = UITableViewAutomaticDimension;
     [self.view addSubview:self.mainTableView];
+    
+    self.mainTableView.separatorColor = GRAY_BG;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
@@ -105,15 +129,15 @@
 }
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return 5;
+    return dataArr.count;
 }
 
-- (CGFloat)tableView:(UITableView *)tableView estimatedHeightForHeaderInSection:(NSInteger)section {
-    return 8;
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
+    return 10;
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    return 200;
+    return 180;
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section {
@@ -125,10 +149,9 @@
     NPYTableViewCell *cell = (NPYTableViewCell *)[tableView dequeueReusableCellWithIdentifier:identifier];
     if (! cell) {
         cell = [[[NSBundle mainBundle] loadNibNamed:@"NPYTableViewCell" owner:nil options:nil] firstObject];
-        if (indexPath.section == 0) {
-            cell.orderState.text = @"待付款";
-        }
     }
+    
+    cell.model = dataArr[indexPath.section];
     
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
     
@@ -172,6 +195,41 @@
     tmpImgView2.hidden = YES;
     
     number_Tag = btn.tag;
+}
+
+#pragma mark - 网络请求
+
+- (void)requestOrderInfoWithUrlString:(NSString *)urlStr withParames:(NSDictionary *)parame {
+    NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:parame] forKey:@"data"];
+    
+    [[NPYHttpRequest sharedInstance] getWithUrlString:[NSString stringWithFormat:@"%@%@",BASE_URL,urlStr] parameters:paremes success:^(id responseObject) {
+        NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+        
+        if ([dataDict[@"r"] intValue] == 1) {
+            //成功
+            [ZHProgressHUD showMessage:@"请求成功" inView:self.view];
+            for (NSDictionary *dic in dataDict[@"data"]) {
+                NPYMyOrderModel *model = [NPYMyOrderModel mj_objectWithKeyValues:dic];
+                
+                [dataArr addObject:model];
+            }
+            
+            [self.mainTableView reloadData];
+            
+        } else {
+            //失败
+            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+            //            [self.navigationController popViewControllerAnimated:YES];
+        }
+        
+    } failure:^(NSError *error) {
+        NSLog(@"%@",error);
+        
+    }];
+}
+
+- (void)backItem:(UIButton *)sender {
+    [self.navigationController popViewControllerAnimated:YES];
 }
 
 - (void)didReceiveMemoryWarning {

@@ -10,9 +10,17 @@
 //#import <MJExtension.h>
 #import "MJExtension.h"
 #import "shoppingCartModel.h"
+#import "NPYBaseConstant.h"
+
+#define shoppingCarUrl @"/index.php/app/Shopping/get"
+
+@interface MKJRequestHelper () {
+    NSMutableArray *shopMArr;
+}
+
+@end
 
 @implementation MKJRequestHelper
-
 
 static MKJRequestHelper *_requestHelper;
 
@@ -44,25 +52,105 @@ static id _requestHelp;
 
 - (void)requestShoppingCartInfo:(requestHelperBlock)block
 {
-    NSString *path = [[NSBundle mainBundle] pathForResource:@"shoppingCart" ofType:@"json"];
-    NSString *shoppingStr = [NSString stringWithContentsOfFile:path usedEncoding:nil error:nil];
-    NSDictionary *shoppingDic = [shoppingStr mj_JSONObject];
-    [BuyerInfo mj_setupObjectClassInArray:^NSDictionary *{
-        
-        return @{@"prod_list":@"ProductInfo"};
-        
-    }];
+    NSDictionary *userDict = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+    NPYLoginMode *userModel = [NPYLoginMode mj_objectWithKeyValues:userDict[@"data"]];
     
-    [ProductInfo mj_setupObjectClassInArray:^NSDictionary *{
-       
-        return @{@"model_detail":@"ModelDeatail"};
-        
-    }];
+    //主页面网络请求
+    NSDictionary *requestDic = [NSDictionary dictionaryWithObjectsAndKeys:[userDict valueForKey:@"sign"],@"sign",userModel.user_id,@"user_id", nil];
+    [self requestShoppingCarDataWithUrlString:shoppingCarUrl withKeyValueParemes:requestDic block:block];
     
-    NSMutableArray *buyerLists = [BuyerInfo mj_objectArrayWithKeyValuesArray:shoppingDic[@"buyers_data"]];
-    block(buyerLists,nil);
+//    NSString *path = [[NSBundle mainBundle] pathForResource:@"shoppingCart" ofType:@"json"];
+//    NSString *shoppingStr = [NSString stringWithContentsOfFile:path usedEncoding:nil error:nil];
+//    NSDictionary *shoppingDic = [shoppingStr mj_JSONObject];
+//    [BuyerInfo mj_setupObjectClassInArray:^NSDictionary *{
+//        
+//        return @{@"prod_list":@"ProductInfo"};
+//        
+//    }];
+//    
+//    [ProductInfo mj_setupObjectClassInArray:^NSDictionary *{
+//       
+//        return @{@"model_detail":@"ModelDeatail"};
+//        
+//    }];
+//    
+//    NSMutableArray *buyerLists = [BuyerInfo mj_objectArrayWithKeyValuesArray:shoppingDic[@"buyers_data"]];
+//    block(buyerLists,nil);
 }
 
+- (void)requestShoppingCarDataWithUrlString:(NSString *)url withKeyValueParemes:(NSDictionary *)pareme block:(requestHelperBlock)block {
+    
+    NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:pareme] forKey:@"data"];
+    
+    [[NPYHttpRequest sharedInstance] getWithUrlString:[NSString stringWithFormat:@"%@%@",BASE_URL,url] parameters:paremes success:^(id responseObject) {
+        NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+        
+        if ([dataDict[@"r"] intValue] == 1) {
+            //成功
+            //            [ZHProgressHUD showMessage:@"请求成功" inView:self.view];
+            NSArray *tpArr = dataDict[@"data"];
+            
+            NSMutableArray *goodsMArr = [NSMutableArray new];
+            NSMutableDictionary *goodsMDict = [NSMutableDictionary new];
+            
+            NSMutableArray *specMArr = [NSMutableArray new];
+            NSMutableDictionary *specMDict = [NSMutableDictionary new];
+            
+            shopMArr = [NSMutableArray new];
+            NSMutableDictionary *shopMDict = [NSMutableDictionary new];
+            
+            for (int i = 0; i < tpArr.count; i++) {
+                NSDictionary *tpDict = tpArr[i];
+                [specMDict setObject:[tpDict valueForKey:@"spec_id"] forKey:@"key"];
+                [specMDict setObject:[tpDict valueForKey:@"spec_name"] forKey:@"type_name"];
+                [specMArr addObject:specMDict];
+                
+                [goodsMDict setObject:[tpDict valueForKey:@"goods_id"] forKey:@"prod_id"];
+                [goodsMDict setObject:[tpDict valueForKey:@"goods_img"] forKey:@"image"];
+                [goodsMDict setObject:[tpDict valueForKey:@"goods_name"] forKey:@"title"];
+                [goodsMDict setObject:[tpDict valueForKey:@"goods_price"] forKey:@"price"];
+                [goodsMDict setObject:[tpDict valueForKey:@"goods_price"] forKey:@"order_price"];
+                [goodsMDict setObject:[tpDict valueForKey:@"goods_price"] forKey:@"cn_price"];
+                [goodsMDict setObject:specMArr forKey:@"model_detail"];
+                [goodsMDict setObject:[tpDict valueForKey:@"number"] forKey:@"count"];
+                
+                [goodsMArr addObject:goodsMDict];
+                
+                [shopMDict setObject:[tpDict valueForKey:@"shopping_id"] forKey:@"buyer_id"];
+                [shopMDict setObject:[tpDict valueForKey:@"shop_name"] forKey:@"nick_name"];
+                [shopMDict setObject:goodsMArr forKey:@"prod_list"];
+                [shopMDict setObject:[tpDict valueForKey:@"shop_img"] forKey:@"user_avatar"];
+                [shopMDict setObject:[tpDict valueForKey:@"postage"] forKey:@"trans_fee"];
+                
+                [shopMArr addObject:shopMDict];
+            }
+            
+            [BuyerInfo mj_setupObjectClassInArray:^NSDictionary *{
+                
+                return @{@"prod_list":@"ProductInfo"};
+                
+            }];
+            
+            [ProductInfo mj_setupObjectClassInArray:^NSDictionary *{
+                
+                return @{@"model_detail":@"ModelDeatail"};
+                
+            }];
+            
+            NSMutableArray *buyerLists = [BuyerInfo mj_objectArrayWithKeyValuesArray:shopMArr];
+            block(buyerLists,nil);
+            
+        } else {
+            //失败
+            block(nil,dataDict[@"data"]);
+        }
+        
+    } failure:^(NSError *error) {
+        NSLog(@"%@",error);
+        
+    }];
+    
+}
 
 - (void)requestMoreRecommandInfo:(requestHelperBlock)block
 {

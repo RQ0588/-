@@ -7,8 +7,25 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "NPYBaseConstant.h"
+
+@protocol MidViewDelegate <NSObject>
+
+- (void)selectedSpecToPushViewWithGoodsID:(NSString *)goodsID;
+
+- (void)pushViewToShopViewWithShopID:(NSString *)shopID;
+
+@end
 
 @interface BuyMiddleView : UIView
+
+@property (weak, nonatomic) IBOutlet UILabel *showSelectedSpec;
+
+@property (nonatomic, strong) NPYShopModel *shopModel;
+
+@property (nonatomic, strong) NSString *goodsID;
+
+@property (nonatomic, weak) id<MidViewDelegate>delegate;
 
 + (instancetype)view;
 

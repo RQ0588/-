@@ -39,7 +39,7 @@
             <connections>
                 <outlet property="itemCell" destination="U7o-sj-cAW" id="VpD-7Y-gJL"/>
             </connections>
-            <point key="canvasLocation" x="-235" y="61"/>
+            <point key="canvasLocation" x="-203" y="85"/>
         </tableViewCell>
     </objects>
 </document>

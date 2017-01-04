@@ -28,12 +28,21 @@
 
 @implementation NPYLogisticsViewController
 
+- (void)backItem:(UIButton *)sender {
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
-    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:nil];
-    self.navigationItem.backBarButtonItem = item;
+    [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"hk_dingbu"] forBarMetrics:UIBarMetricsDefault];
+    
+    UIButton *backBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 18, 18)];
+    [backBtn setImage:[UIImage imageNamed:@"icon_fanhui"] forState:0];
+    [backBtn addTarget:self action:@selector(backItem:) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithCustomView:backBtn];
+    self.navigationItem.leftBarButtonItem = item;
     
     self.navigationItem.title = @"物流信息";
     
@@ -65,6 +74,10 @@
     self.listTableview.delegate=self;
     self.listTableview.dataSource=self;
     self.listTableview.showsVerticalScrollIndicator = NO;
+    self.listTableview.separatorColor = [UIColor colorWithRed:230/255.0
+                                                        green:230/255.0
+                                                         blue:230/255.0
+                                                        alpha:1.0];
     [self.view addSubview:self.listTableview];
 }
 
@@ -76,25 +89,25 @@
     TimeModel *model=[[TimeModel alloc]initData:dic];
     [self.dataList addObject:model];
     
-    NSDictionary *dic2=@{@"timeStr":@"2016-07-21",@"titleStr":@"第二步",@"detailSrtr":@"关于zls是不是宇宙最帅的讨论关于zls是不是宇宙最帅的讨论"};
+    NSDictionary *dic2=@{@"timeStr":@"2016-07-21",@"titleStr":@"[苏州市]江苏省苏州市高新区科技城分部公司 已签收 签收人：本人 感谢使用顺丰快递，期待再次为您服务"};
     TimeModel *model2=[[TimeModel alloc]initData:dic2];
     [self.dataList addObject:model2];
     
-    NSDictionary *dic3=@{@"timeStr":@"2016-07-22",@"titleStr":@"第三步",@"detailSrtr":@"关于zls是不是宇宙最帅的讨论关于zls是不是宇宙最帅的讨论关于zls是不是宇宙最帅的讨论关于zls是不是宇宙最帅的讨论关于zls是不是宇宙最帅的讨论关于zls是不是宇宙最帅的讨论关于zls是不是宇宙最帅的讨论关于zls是不是宇宙最帅的讨论"};
+    NSDictionary *dic3=@{@"timeStr":@"2016-07-22",@"titleStr":@"[苏州市]江苏省苏州市高新区科技城分部公司 已签收 签收人：本人 感谢使用顺丰快递，期待再次为您服务",};
     TimeModel *model3=[[TimeModel alloc]initData:dic3];
     [self.dataList addObject:model3];
     
-    NSDictionary *dic4=@{@"timeStr":@"2016-07-23",@"titleStr":@"第四步",@"detailSrtr":@"关于zls是不是宇宙最帅的讨论关于zls是不是宇宙最帅的讨论"};
+    NSDictionary *dic4=@{@"timeStr":@"2016-07-23",@"titleStr":@"[苏州市]江苏省苏州市高新区科技城分部公司 已签收 签收人：本人 感谢使用顺丰快递，期待再次为您服务"};
     TimeModel *model4=[[TimeModel alloc]initData:dic4];
     [self.dataList addObject:model4];
     
-    NSDictionary *dic5=@{@"timeStr":@"2016-07-24",@"titleStr":@"第五步",@"detailSrtr":@"关于zls是不是宇宙最帅的讨论"};
+    NSDictionary *dic5=@{@"timeStr":@"2016-07-24",@"titleStr":@"[苏州市]江苏省苏州市高新区科技城分部公司 已签收 签收人：本人 感谢使用顺丰快递，期待再次为您服务"};
     TimeModel *model5=[[TimeModel alloc]initData:dic5];
     [self.dataList addObject:model5];
-    NSDictionary *dic6=@{@"timeStr":@"2016-07-25",@"titleStr":@"第六步",@"detailSrtr":@"关于zls是不是宇宙最帅的讨论是不是宇宙最帅的讨论关于zls是不是宇宙最帅的讨论关于zls是不是宇宙最帅的讨论关于zls是不是宇宙最帅的讨论关于zls是不是宇宙最帅的讨论关于zls是不是宇宙最帅的讨论关于zls是不是宇宙最帅的讨论"};
+    NSDictionary *dic6=@{@"timeStr":@"2016-07-25",@"titleStr":@"[苏州市]江苏省苏州市高新区科技城分部公司 已签收 签收人：本人 感谢使用顺丰快递，期待再次为您服务"};
     TimeModel *model6=[[TimeModel alloc]initData:dic6];
     [self.dataList addObject:model6];
-    NSDictionary *dic7=@{@"timeStr":@"2016-07-26",@"titleStr":@"第七步",@"detailSrtr":@"关于zls是不是宇宙最帅的讨论帅的讨论关于zls是不是宇宙最帅的讨论关于zls是不是宇宙最帅的讨论关于zls是不是宇宙最帅的讨论关于zls是不是宇宙最帅的讨论关于zls是不是宇宙最帅的讨论关于zls是不是宇宙最帅的讨论帅的讨论关于zls是不是宇宙最帅的讨论关于zls是不是宇宙最帅的讨论关于zls是不是宇宙最帅的讨论关于zls是不是宇宙最帅的讨论关于zls是不是宇宙最帅的讨论关于zls是不是宇宙最帅的讨论帅的讨论关于zls是不是宇宙最帅的讨论关于zls是不是宇宙最帅的讨论关于zls是不是宇宙最帅的讨论关于zls是不是宇宙最帅的讨论关于zls是不是宇宙最帅的讨论关于zls是不是宇宙最帅的讨论",@"isEnd":@"YES"};
+    NSDictionary *dic7=@{@"timeStr":@"2016-07-26",@"titleStr":@"[苏州市]江苏省苏州市高新区科技城分部公司 已签收 签收人：本人 感谢使用顺丰快递，期待再次为您服务",@"isEnd":@"YES"};
     TimeModel *model7=[[TimeModel alloc]initData:dic7];
     [self.dataList addObject:model7];
     [self.listTableview reloadData];
@@ -115,16 +128,17 @@
     }
     TimeModel *model=self.dataList[indexPath.row];
     cell.model = model;
-    self.listTableview.separatorStyle = UITableViewCellSeparatorStyleNone;
+    self.listTableview.separatorStyle = UITableViewCellSeparatorStyleSingleLine;
     return cell;
 }
 
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     TimeModel *model=self.dataList[indexPath.row];
-    NSDictionary *fontDic=@{NSFontAttributeName:[UIFont systemFontOfSize:12]};
+    NSDictionary *fontDic=@{NSFontAttributeName:[UIFont systemFontOfSize:14]};
     CGSize size1=CGSizeMake(WIDTH_OF_PROCESS_LABLE,0);
     CGSize titleLabelSize=[model.detailSrtr boundingRectWithSize:size1 options:NSStringDrawingTruncatesLastVisibleLine | NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading   attributes:fontDic context:nil].size;
+    
     if (titleLabelSize.height < 15) {
         titleLabelSize.height = 40;
     }else{
@@ -136,14 +150,14 @@
 
 - (void)topViewLoad {
     //topView
-    topView = [[UIView alloc] initWithFrame:CGRectMake(0, 65, WIDTH_SCREEN, 100)];
+    topView = [[UIView alloc] initWithFrame:CGRectMake(0, 65, WIDTH_SCREEN, 90)];
     topView.backgroundColor = [UIColor whiteColor];
     topView.layer.borderColor = GRAY_BG.CGColor;
     topView.layer.borderWidth = 0.5;
     [self.view addSubview:topView];
     //
-    goodsImgView = [[UIImageView alloc] initWithFrame:CGRectMake(10, 20, 60, 60)];
-    [goodsImgView sd_setImageWithURL:[NSURL new] placeholderImage:[UIImage imageNamed:@"background_01"]];
+    goodsImgView = [[UIImageView alloc] initWithFrame:CGRectMake(14, 15, 60, 60)];
+    [goodsImgView sd_setImageWithURL:[NSURL new] placeholderImage:[UIImage imageNamed:@"anli1_gouwu"]];
     goodsImgView.contentMode = UIViewContentModeScaleToFill;
     goodsImgView.layer.borderWidth = 0.5;
     goodsImgView.layer.borderColor = GRAY_BG.CGColor;
@@ -152,40 +166,62 @@
     UILabel *stateL = [[UILabel alloc] initWithFrame:CGRectMake(CGRectGetMaxX(goodsImgView.frame) + 10, CGRectGetMinY(goodsImgView.frame), 70, 20)];
     stateL.text = @"物流状态";
     stateL.textColor = [UIColor blackColor];
-    stateL.font = [UIFont systemFontOfSize:13.0];
-//    stateL.backgroundColor = [UIColor orangeColor];
+    stateL.font = [UIFont systemFontOfSize:15.0];
     [topView addSubview:stateL];
     
     logisticsStateL = [[UILabel alloc] initWithFrame:CGRectMake(CGRectGetMaxX(stateL.frame), CGRectGetMinY(stateL.frame), WIDTH_SCREEN, CGRectGetHeight(stateL.frame))];
     logisticsStateL.text = @"已签收";
-    logisticsStateL.textColor = [UIColor redColor];
-    logisticsStateL.font = [UIFont systemFontOfSize:13.0];
+    logisticsStateL.textColor = XNColor(248, 31, 31, 1);
+    logisticsStateL.font = [UIFont systemFontOfSize:15.0];
     [topView addSubview:logisticsStateL];
     //
     UILabel *courier = [[UILabel alloc] initWithFrame:CGRectMake(CGRectGetMaxX(goodsImgView.frame) + 10, CGRectGetMaxY(stateL.frame) + Height_Space, CGRectGetWidth(stateL.frame), 20)];
     courier.text = @"承运公司：";
-    courier.textColor = [UIColor grayColor];
+    courier.textColor = XNColor(153, 153, 153, 1);
     courier.font = [UIFont systemFontOfSize:13.0];
     [topView addSubview:courier];
     
     courierL = [[UILabel alloc] initWithFrame:CGRectMake(CGRectGetMaxX(courier.frame), CGRectGetMinY(courier.frame), WIDTH_SCREEN, CGRectGetHeight(stateL.frame))];
     courierL.text = @"顺丰快递";
-    courierL.textColor = [UIColor grayColor];
+    courierL.textColor = XNColor(153, 153, 153, 1);
     courierL.font = [UIFont systemFontOfSize:13.0];
     [topView addSubview:courierL];
     //
     UILabel *waybillIDL = [[UILabel alloc] initWithFrame:CGRectMake(CGRectGetMaxX(goodsImgView.frame) + 10, CGRectGetMaxY(courier.frame) + Height_Space, CGRectGetWidth(stateL.frame), 20)];
     waybillIDL.text = @"运单编号：";
-    waybillIDL.textColor = [UIColor grayColor];
+    waybillIDL.textColor = XNColor(153, 153, 153, 1);
     waybillIDL.font = [UIFont systemFontOfSize:13.0];
     [topView addSubview:waybillIDL];
     
     waybillID = [[UILabel alloc] initWithFrame:CGRectMake(CGRectGetMaxX(waybillIDL.frame), CGRectGetMinY(waybillIDL.frame), WIDTH_SCREEN, CGRectGetHeight(stateL.frame))];
     waybillID.text = @"26554646516546646165";
-    waybillID.textColor = [UIColor grayColor];
+    waybillID.textColor = XNColor(153, 153, 153, 1);
     waybillID.font = [UIFont systemFontOfSize:13.0];
     [topView addSubview:waybillID];
 }
+
+#pragma mark - 更改tableView的分割线顶格显示
+- (void)viewDidLayoutSubviews
+{
+    if ([self.listTableview respondsToSelector:@selector(setSeparatorInset:)]) {
+        [self.listTableview setSeparatorInset:UIEdgeInsetsMake(0,60,0,0)];
+    }
+    
+    if ([self.listTableview respondsToSelector:@selector(setLayoutMargins:)]) {
+        [self.listTableview setLayoutMargins:UIEdgeInsetsMake(0,60,0,0)];
+    }
+}
+
+//- (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath
+//{
+//    if ([cell respondsToSelector:@selector(setSeparatorInset:)]) {
+//        [cell setSeparatorInset:UIEdgeInsetsZero];
+//    }
+//    
+//    if ([cell respondsToSelector:@selector(setLayoutMargins:)]) {
+//        [cell setLayoutMargins:UIEdgeInsetsZero];
+//    }
+//}
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];

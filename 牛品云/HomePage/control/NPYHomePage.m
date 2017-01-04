@@ -18,10 +18,12 @@
 #import "NPYHomeADModel.h"
 #import "NPYHomeGoodsModel.h"
 #import "NPYGoodsListViewController.h"
+#import "NPYHeaderCollectionReusableView.h"
+#import "NPYGoodsCollectionViewCell.h"
 
 #define HomeUrl @"/index.php/app/Index/home"
 
-@interface NPYHomePage () <UIScrollViewDelegate,UICollectionViewDelegate,UICollectionViewDataSource> {
+@interface NPYHomePage () <UIScrollViewDelegate,UICollectionViewDelegate,UICollectionViewDataSource,LoadMoreDataDelegate> {
     NSMutableArray *topImgArray;       //滚动图片数组
     CGRect oldFrame;            //记录滚动前的位置
     CGFloat itemHeight;         //每个item的高度
@@ -29,7 +31,14 @@
     
     UIButton *topLeftBtn,*topRightBtn;
     
+    UICollectionReusableView *headerView;
+    UIView *bgView;
+    UIImageView *productImg;
+    UILabel *titleL,*priceL,*evaluationL;
+    
     NSArray *adArr,*goodsArr;
+    
+    UILabel *refresh;
 }
 
 @property (nonatomic, strong) UIScrollView *mainScrollView;
@@ -60,7 +69,6 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-    [self requestHomeData];
     
     topImgArray = [NSMutableArray arrayWithObjects:@"",@"",@"", nil];
     
@@ -85,6 +93,8 @@
     [self menuViewLoad];
     
     [self recommendedViewLoad];
+    
+    [self setupRefresh];
     
 }
 
@@ -228,11 +238,14 @@
     recommendView.showsVerticalScrollIndicator = NO;
     recommendView.scrollEnabled = NO;
     //注册item类型 这里使用系统的类型
-    [recommendView registerClass:[UICollectionViewCell class] forCellWithReuseIdentifier:@"cellid"];
-    [recommendView registerClass:[UICollectionReusableView class] forSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:@"headerIdentifier"];
+    [recommendView registerClass:[NPYGoodsCollectionViewCell class] forCellWithReuseIdentifier:@"cellid"];
+    [recommendView registerClass:[NPYHeaderCollectionReusableView class] forSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:@"headerIdentifier"];
     [self.mainScrollView addSubview:recommendView];
     self.recommendView = recommendView;
     oldFrame = recommendView.frame;
+    
+    [self requestHomeData];
+    
 }
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
@@ -246,101 +259,39 @@
 }
 
 - (__kindof UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
-    UICollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"cellid" forIndexPath:indexPath];
-    //    cell.backgroundColor = [UIColor blueColor];
     
     NPYHomeGoodsModel *goodsModel = goodsArr[indexPath.row];
     
-    UIView *bgView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, (WIDTH_SCREEN - 15) / 2, cell.frame.size.height - 5)];
-    bgView.layer.borderColor = XNColor(242, 242, 242, 1).CGColor;
-    bgView.layer.borderWidth = 0.5;
-    [cell addSubview:bgView];
-    //产品图片
-    UIImageView *productImg = [[UIImageView alloc] init];
-    productImg.frame = CGRectMake(0, 0, bgView.frame.size.width, bgView.frame.size.width);
-//    productImg.image = [UIImage imageNamed:@"placeholder"];
-    [productImg sd_setImageWithURL:[NSURL URLWithString:goodsModel.goods_img] placeholderImage:[UIImage new]];
-    productImg.contentMode = UIViewContentModeScaleToFill;
-    [bgView addSubview:productImg];
-    //标题
-    UILabel *titleL = [[UILabel alloc] init];
-    titleL.frame = CGRectMake(CGRectGetMinX(productImg.frame) + Height_Space, CGRectGetMaxY(productImg.frame), CGRectGetWidth(productImg.frame) - Height_Space, 20);
-    titleL.textColor = XNColor(85, 85, 85, 1);
-    titleL.text = goodsModel.goods_name;
-    titleL.numberOfLines = 0;
-    titleL.adjustsFontSizeToFitWidth = YES;
-    titleL.font = [UIFont systemFontOfSize:10.0];
-    [cell addSubview:titleL];
-    //价格
-    UILabel *priceL = [[UILabel alloc] init];
-    priceL.frame = CGRectMake(CGRectGetMinX(titleL.frame), CGRectGetMaxY(titleL.frame) + Height_Space, CGRectGetWidth(productImg.frame) / 2, 20);
-    priceL.textColor = XNColor(251, 8, 8, 1);
-    priceL.text = @"￥45.60";
-    priceL.numberOfLines = 0;
-    priceL.adjustsFontSizeToFitWidth = YES;
-    priceL.font = [UIFont systemFontOfSize:15.0];
-    [cell addSubview:priceL];
-    //评价
-    UILabel *evaluationL = [[UILabel alloc] init];
-    evaluationL.frame = CGRectMake(CGRectGetMaxX(priceL.frame), CGRectGetMaxY(titleL.frame) + Height_Space, CGRectGetWidth(productImg.frame) / 2, 20);
-    evaluationL.textColor = XNColor(136, 136, 136, 1);
-    evaluationL.text = [NSString stringWithFormat:@"%@人购买",goodsModel.sold];
-    evaluationL.numberOfLines = 0;
-    evaluationL.adjustsFontSizeToFitWidth = YES;
-    evaluationL.font = [UIFont systemFontOfSize:12.0];
-    [cell addSubview:evaluationL];
+    NPYGoodsCollectionViewCell *goodsCell = [collectionView dequeueReusableCellWithReuseIdentifier:@"cellid" forIndexPath:indexPath];
     
-    return cell;
+    goodsCell.goodsModel = goodsModel;
+    
+    return goodsCell;
     
 }
 
 - (UICollectionReusableView *)collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath {
-    UICollectionReusableView *headerView;
+    
     if (kind == UICollectionElementKindSectionHeader) {
-        headerView = [collectionView dequeueReusableSupplementaryViewOfKind:kind withReuseIdentifier:@"headerIdentifier" forIndexPath:indexPath];
-        UILabel *titleName = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, WIDTH_SCREEN, 30)];
-        titleName.text = @"牛品推荐";
-        titleName.textAlignment = NSTextAlignmentCenter;
-        titleName.textColor = XNColor(102, 102, 102, 1);
-        titleName.font = [UIFont systemFontOfSize:13.0];
-        [headerView addSubview:titleName];
+       NPYHeaderCollectionReusableView *header = [collectionView dequeueReusableSupplementaryViewOfKind:kind withReuseIdentifier:@"headerIdentifier" forIndexPath:indexPath];
+        header.delegate = self;
+        return header;
         
-        UIImageView *vLine = [[UIImageView alloc] init];
-        vLine.frame = CGRectMake(CGRectGetMidX(titleName.frame) - 75, 0, 25, 1);
-//        vLine.backgroundColor = GRAY_BG;
-        vLine.image = [UIImage imageNamed:@"heixian_zuo"];
-        vLine.center = CGPointMake(CGRectGetMidX(vLine.frame), CGRectGetMidY(titleName.frame));
-        [headerView addSubview:vLine];
-        
-        UIImageView *vLine2 = [[UIImageView alloc] init];
-        vLine2.frame = CGRectMake(CGRectGetMidX(titleName.frame) + 50, 0, 25, 1);
-//        vLine2.backgroundColor = GRAY_BG;
-        vLine2.image = [UIImage imageNamed:@"heixian_you"];
-        vLine2.center = CGPointMake(CGRectGetMidX(vLine2.frame), CGRectGetMidY(titleName.frame));
-        [headerView addSubview:vLine2];
-        
-        UIButton *moreBtn = [[UIButton alloc] init];
-        moreBtn.frame = CGRectMake(WIDTH_SCREEN - 60, 0, 50, 30);
-        moreBtn.center = CGPointMake(CGRectGetMidX(moreBtn.frame), CGRectGetMidY(titleName.frame));
-        [moreBtn setTitle:@"更多 >" forState:UIControlStateNormal];
-        [moreBtn setTitleColor:XNColor(240, 84, 84, 1) forState:UIControlStateNormal];
-        moreBtn.titleLabel.font = [UIFont systemFontOfSize:11];
-        [moreBtn addTarget:self action:@selector(moreButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
-        [headerView addSubview:moreBtn];
     }
-    return headerView;
+    return nil;
 }
 
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
 //    NSLog(@"点击了精品推荐的第%li物品",(long)indexPath.row);
     self.goodsView = [[BuyViewController alloc] initWithNibName:@"BuyViewController" bundle:nil];
+    self.goodsView.goodsModel = goodsArr[indexPath.row];
     [self.navigationController pushViewController:self.goodsView animated:YES];
     
 }
 
 - (void)viewDidLayoutSubviews {
-    CGRect fram = CGRectMake(self.recommendView.frame.origin.x, self.recommendView.frame.origin.y, self.recommendView.frame.size.width, self.recommendView.contentSize.height);
-    self.recommendView.frame = fram;
+//    CGRect fram = CGRectMake(self.recommendView.frame.origin.x, self.recommendView.frame.origin.y, self.recommendView.frame.size.width, self.recommendView.contentSize.height);
+    self.recommendView.frame = oldFrame;
     
     self.mainScrollView.contentSize = CGSizeMake(0, self.mainScrollView.frame.size.height + self.recommendView.contentSize.height - oldFrame.size.height);
     
@@ -356,6 +307,17 @@
     }
     
     if (scrollView.tag == 100011) {
+        
+        if (scrollView.contentOffset.y <= -50) {
+            if (refresh.tag == 20101) {
+                refresh.text = @"松开刷新";
+            }
+            refresh.tag = 20102;
+        }else{
+            //防止用户在下拉到contentOffset.y <= -50后不松手，然后又往回滑动，需要将值设为默认状态
+            refresh.tag = 20101;
+            refresh.text = @"下拉刷新";
+        }
         
         if (self.mainScrollView.contentOffset.y > -60 && self.mainScrollView.contentOffset.y != 0) {
             [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"hk_dingbu"] forBarMetrics:UIBarMetricsDefault];
@@ -381,6 +343,25 @@
         
     }
     
+}
+
+- (void)scrollViewWillEndDragging:(UIScrollView *)scrollView withVelocity:(CGPoint)velocity targetContentOffset:(inout CGPoint *)targetContentOffset {
+    
+    if (refresh.tag == 20102) {
+        [UIView animateWithDuration:.3 animations:^{
+            refresh.text = @"加载中";
+        }];
+        //数据加载成功后执行；这里为了模拟加载效果，一秒后执行恢复原状代码
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+            [UIView animateWithDuration:.3 animations:^{
+                refresh.tag = 20101;
+                refresh.text = @"下拉刷新";
+                [self requestHomeData];
+            }];
+            
+        });
+        
+    }
 }
 
 - (void)searcherButtonPressed:(UIButton *)btn {
@@ -427,6 +408,12 @@
     
 }
 
+- (void)pushToNewViewController {
+    self.goodsListVC = [[NPYGoodsListViewController alloc] init];
+    self.goodsListVC.isMore = YES;
+    [self.navigationController pushViewController:self.goodsListVC animated:YES];
+}
+
 - (void)requestHomeData {
     NSDictionary *requestDic = [NSDictionary dictionaryWithObjectsAndKeys:@"npy_we874646sf",@"key", nil];
     NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:requestDic] forKey:@"data"];
@@ -436,7 +423,7 @@
         
         if ([dataDict[@"r"] intValue] == 1) {
             //成功
-            [ZHProgressHUD showMessage:@"登录成功" inView:self.view];
+//            [ZHProgressHUD showMessage:@"数据请求成功" inView:self.view];
             NPYHomeModel *model = [[NPYHomeModel alloc] init];
             model.adArr = dataDict[@"ad"];
             model.goodsArr = dataDict[@"recommend"];
@@ -454,8 +441,12 @@
                 [topImgArray addObject:adModel.img];
             }
             
+            [_topImgView removeFromSuperview];
+            _topImgView = nil;
+            
+            [self topScrollImageViewLoad];
+            
             [self.recommendView reloadData];
-//            NSLog(@"...");
             
         } else {
             //失败
@@ -467,6 +458,16 @@
         
     }];
 
+}
+
+- (void)setupRefresh {
+    refresh = [[UILabel alloc] initWithFrame:CGRectMake(0, -100, WIDTH_SCREEN, 50)];
+    refresh.text  = @"下拉刷新";
+    refresh.textAlignment = NSTextAlignmentCenter;
+    refresh.tag = 20101;
+    [self.mainScrollView addSubview:refresh];
+    
+//    [self requestHomeData];
 }
 
 - (void)didReceiveMemoryWarning {

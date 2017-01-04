@@ -10,4 +10,6 @@
 
 @interface NPYMsgDetailViewController : UIViewController
 
+@property (nonatomic, strong) NSString *titleName;
+
 @end

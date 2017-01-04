@@ -16,6 +16,7 @@
 
 @property(nonatomic,weak) TabButton *lastBtn;//记录上一个按钮
 @property(nonatomic,weak) UIView* bottomView;//记录底部指示的标示条
+@property(nonatomic,weak) UIImageView* sepView;//分割线
 @property(nonatomic,assign)CGFloat btnW;//记录按钮的宽度
 @property(nonatomic,assign)CGFloat btnH;//记录按钮的高度
 
@@ -31,7 +32,7 @@
     self = [super initWithFrame:frame];
     if (self) {
         UIView* bottomView = [[UIView alloc] init];
-        bottomView.backgroundColor = color(0.0,162.0,154.0,1.0);
+//        bottomView.backgroundColor = color(0.0,162.0,154.0,1.0);
         self.bottomView = bottomView;
         [self addSubview:bottomView];
     }
@@ -59,9 +60,9 @@
     
     TabButton *btn = [TabButton buttonWithType:UIButtonTypeCustom];
     [btn setTitle:name forState:UIControlStateNormal];
-    [btn setTitleColor:color(33.0,33,33.0,1.0) forState:UIControlStateNormal];
-    [btn setTitleColor:color(0.0,162.0,154.0,1.0) forState:UIControlStateSelected];
-    [btn.titleLabel setFont:[UIFont systemFontOfSize:[global pxTopt:30.0]]];
+    [btn setTitleColor:color(102.0,102.0,102.0,1.0) forState:UIControlStateNormal];
+    [btn setTitleColor:color(253.0,40.0,40.0,1.0) forState:UIControlStateSelected];
+    [btn.titleLabel setFont:[UIFont systemFontOfSize:[global pxTopt:26.0]]];
     [btn addTarget:self action:@selector(TabBtnClick:) forControlEvents:UIControlEventTouchDown];
     [self addSubview:btn];
     [btn setTag:self.subviews.count-2];
@@ -69,7 +70,6 @@
     if(2 == self.subviews.count){
         [self TabBtnClick:btn];
     }
-    
 }
 /**
  计算字view的frame
@@ -88,7 +88,20 @@
             UIView* view = self.subviews[i];
             view.frame = CGRectMake(0, btnH - [global pxTopt:bottomViewW], btnW,[global pxTopt:bottomViewW]);
         }
+        
+        if (i < btnCount - 1) {
+            UIImageView* sepView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"24huxian_gouwu"]];
+            self.sepView = sepView;
+            sepView.frame = CGRectMake(btnW * (i + 1), (btnH - 12) / 2, 1, 12);
+            [self addSubview:sepView];
+        }
+        
     }
+    
+    UIImageView *sepLine = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"750huixian_88"]];
+    sepLine.frame = CGRectMake(0, btnH - 1, self.frame.size.width, 1);
+    [self addSubview:sepLine];
+    
     //NSLog(@"按钮数量 == %ld",self.subviews.count);
 }
 

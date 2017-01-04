@@ -9,16 +9,22 @@
 #import "NPYSettingViewController.h"
 #import "NPYBaseConstant.h"
 #import "NPYSettingTVCell.h"
+#import "NPYShopCollectionTableViewCell.h"
 #import "NPYLoginViewController.h"
+#import "NPYRetrievePWDetailViewController.h"
+#import "NPYSettingDetailViewController.h"
+
+#define Updata_Image_Url @"/index.php/app/User/update_img"
 
 @interface NPYSettingViewController () <UITableViewDataSource,UITableViewDelegate,UIActionSheetDelegate,UIImagePickerControllerDelegate,UINavigationControllerDelegate> {
     UITableView     *mainTableView;
     NSInteger   row;
-    CGFloat     hegiht;
+    CGFloat     hegiht,topSep;
     NSArray     *dataArray;
 }
 
 @property (nonatomic, strong) NPYLoginViewController    *loginVC;
+@property (nonatomic, strong) NPYRetrievePWDetailViewController     *pwVC;
 
 @property (nonatomic, strong) UIImage *headerImg;
 
@@ -37,7 +43,7 @@
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
     
-    self.tabBarController.tabBar.hidden = NO;
+//    self.tabBarController.tabBar.hidden = NO;
 }
 
 - (void)viewDidLoad {
@@ -46,20 +52,40 @@
     
     self.navigationItem.title = self.titleStr;
     
-    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:nil];
-    self.navigationItem.backBarButtonItem = item;
+    [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"hk_dingbu"] forBarMetrics:UIBarMetricsDefault];
+    
+    UIButton *backBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 18, 18)];
+    [backBtn setImage:[UIImage imageNamed:@"icon_fanhui"] forState:0];
+    [backBtn addTarget:self action:@selector(backItem:) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithCustomView:backBtn];
+    self.navigationItem.leftBarButtonItem = item;
+    
+    NSString *requestUrl;
+    NSDictionary *requestDic;
+    NSDictionary *dic = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+    NPYLoginMode *model = [NPYLoginMode mj_objectWithKeyValues:dic[@"data"]];
     
     if ([self.titleStr isEqualToString:@"设置"]) {
         //设置页
         row = 5;
-        hegiht = 60;
+        hegiht = 46;
         dataArray = @[@"头像",@"用户名",@"修改登录密码",@"地址管理",@"关于"];
         
     } else if ([self.titleStr isEqualToString:@"我的牛豆"]) {
         //我的牛豆页
-        row = 2;
-        hegiht = 40;
-        dataArray = @[@"获取",@"使用"];
+//        row = 1;
+//        hegiht = 40;
+//        dataArray = @[@"获取",@"使用"];
+        
+    } else if ([self.titleStr isEqualToString:@"店铺收藏"]) {
+        //店铺收藏
+        topSep = 10;
+        row = dataArray.count;
+        hegiht = 70;
+        dataArray = @[@"大明食品旗舰店",@"company官方店"];
+        
+        requestUrl = @"/index.php/app/Collect/get_shop";
+        requestDic = [NSDictionary dictionaryWithObjectsAndKeys:[dic valueForKey:@"sign"],@"sign",@"1",@"num",model.user_id,@"user_id", nil];
     }
     
     [self mainViewLoad];
@@ -68,6 +94,9 @@
     if ([[[UIDevice currentDevice]systemVersion]floatValue]>=8.0 ) {
         [self setupCameraView];
     }
+    
+    [self requestDataWithUrlString:requestUrl withKeyValueParemes:requestDic];
+    
 }
 
 - (void)mainViewLoad {
@@ -75,8 +104,11 @@
     mainTableView.dataSource = self;
     mainTableView.delegate = self;
     mainTableView.tableFooterView = [UIView new];
+    mainTableView.backgroundColor = GRAY_BG;
     [self.view addSubview:mainTableView];
     
+    mainTableView.separatorColor = GRAY_BG;
+    mainTableView.tableHeaderView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, WIDTH_SCREEN, topSep)];
 }
 
 #pragma mark - UITableView
@@ -85,9 +117,16 @@
     return row;
 }
 
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    return hegiht;
+}
+
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     
     if ([self.titleStr isEqualToString:@"设置"]) {
+        
+        mainTableView.scrollEnabled = NO;
+        
         static NSString *identifier = @"cell";
         NPYSettingTVCell *cell = [tableView dequeueReusableCellWithIdentifier:identifier];
         if (cell == nil) {
@@ -102,12 +141,11 @@
             }
         }
         
-        UIButton *outBtn = [[UIButton alloc] initWithFrame:CGRectMake(10, HEIGHT_SCREEN / 2, WIDTH_SCREEN - 20, 40)];
+        UIButton *outBtn = [[UIButton alloc] initWithFrame:CGRectMake(8, hegiht * row + 90, WIDTH_SCREEN - 16, 44)];
+        [outBtn setBackgroundImage:[UIImage imageNamed:@"hongikuang_dl"] forState:UIControlStateNormal];
         [outBtn setTitle:@"退出登录" forState:UIControlStateNormal];
         [outBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-        outBtn.backgroundColor = [UIColor redColor];
-        outBtn.layer.cornerRadius = 5;
-        outBtn.layer.masksToBounds = YES;
+//        outBtn.backgroundColor = [UIColor redColor];
         [outBtn addTarget:self action:@selector(outLoginButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
         [self.view addSubview:outBtn];
         
@@ -118,11 +156,28 @@
         UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:identifier];
         if (cell == nil) {
             cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:identifier];
-            [cell.imageView sd_setImageWithURL:[NSURL URLWithString:@""] placeholderImage:[UIImage imageNamed:@"placeholder"]];
+            [cell.imageView sd_setImageWithURL:[NSURL URLWithString:@""] placeholderImage:[UIImage imageNamed:@"tiantu_icon"]];
             
             cell.textLabel.text = dataArray[indexPath.row];
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
         }
+        return cell;
+        
+    } else if ([self.titleStr isEqualToString:@"店铺收藏"]) {
+//        mainTableView.scrollEnabled = NO;
+        
+        static NSString *identifier = @"cell";
+        NPYShopCollectionTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:identifier];
+        if (cell == nil) {
+            cell = [[[NSBundle mainBundle] loadNibNamed:@"NPYShopCollectionTableViewCell" owner:nil options:nil] firstObject];
+//            cell.shopName = dataArray[indexPath.row];
+            
+            NPYShopModel *model = [NPYShopModel mj_objectWithKeyValues:dataArray[indexPath.row]];
+            cell.shopName.text = model.shop_name;
+            [cell.shopIcon sd_setImageWithURL:[NSURL URLWithString:model.shop_img] placeholderImage:[UIImage imageNamed:@"tiantu_icon"]];
+            cell.shopCity.text = model.shop_province;
+        }
+        
         return cell;
     }
     
@@ -142,6 +197,26 @@
                 [self setupCameraViewBelow8];
                 
             }
+        }
+        
+        if (indexPath.row == 1) {
+            
+        }
+        
+        if (indexPath.row == 2) {
+            self.pwVC = [[NPYRetrievePWDetailViewController alloc] init];
+            self.pwVC.titleName = @"修改登录密码";
+            [self.navigationController pushViewController:self.pwVC animated:YES];
+        }
+        
+        if (indexPath.row == 3) {
+            
+        }
+        
+        if (indexPath.row == 4) {
+            //关于
+            NPYSettingDetailViewController *aboutVC = [[NPYSettingDetailViewController alloc] initWithNibName:@"NPYSettingDetailViewController" bundle:nil];
+            [self.navigationController pushViewController:aboutVC animated:YES];
         }
         
     } else if ([self.titleStr isEqualToString:@"我的牛豆"]) {
@@ -171,6 +246,41 @@
     if ([cell respondsToSelector:@selector(setLayoutMargins:)]) {
         [cell setLayoutMargins:UIEdgeInsetsZero];
     }
+}
+
+- (void)requestDataWithUrlString:(NSString *)url withKeyValueParemes:(NSDictionary *)pareme {
+    
+    if (pareme == nil) {
+        return;
+    }
+    
+    NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:pareme] forKey:@"data"];
+    
+    [[NPYHttpRequest sharedInstance] getWithUrlString:[NSString stringWithFormat:@"%@%@",BASE_URL,url] parameters:paremes success:^(id responseObject) {
+        NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+        
+        if ([dataDict[@"r"] intValue] == 1) {
+            //成功
+            [ZHProgressHUD showMessage:@"请求成功" inView:self.view];
+            NPYHomeModel *model = [[NPYHomeModel alloc] init];
+            model.shopArr = dataDict[@"data"];
+            [model toDetailModel];
+            dataArray = [model returnShopModelArray];
+            
+            row = dataArray.count;
+            
+        } else {
+            //失败
+            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+        }
+        
+        [mainTableView reloadData];
+        
+    } failure:^(NSError *error) {
+        NSLog(@"%@",error);
+        
+    }];
+    
 }
 
 #pragma mark - 相册相机
@@ -270,6 +380,18 @@
     
     self.headerImg = iconImage;
     
+//    NSData *imageData = UIImageJPEGRepresentation(iconImage, 1);
+    
+    iconImage = [self imageWithImage:iconImage scaledToSize:CGSizeMake(200, 200)];
+    NSData *imageData = UIImageJPEGRepresentation(iconImage, 1);
+    
+    NSDictionary *dic = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+    NPYLoginMode *model = [NPYLoginMode mj_objectWithKeyValues:dic[@"data"]];
+    
+    NSDictionary *pareme = [NSDictionary dictionaryWithObjectsAndKeys:[dic valueForKey:@"sign"],@"sign",model.user_id,@"user_id", nil];
+    
+    [self updataImageToServerWithUrl:Updata_Image_Url withParames:pareme withImageData:(NSData *)imageData];
+    
     [mainTableView reloadData];
 }
 
@@ -296,8 +418,7 @@
 
 - (void)outLoginButtonPressed:(UIButton *)btn {
     //退出登录
-    NSLog(@"退出登录...");
-    
+//    NSLog(@"退出登录...");
     self.loginVC = [[NPYLoginViewController alloc] init];
     [self.navigationController pushViewController:self.loginVC animated:YES];
 }
@@ -305,12 +426,86 @@
 - (UIImage *)headerImg {
     if (_headerImg == nil) {
         UIImageView *tmp = [UIImageView new];
-        [tmp sd_setImageWithURL:[NSURL new] placeholderImage:[UIImage imageNamed:@"placeholder"]];
+        NSString *isLogin = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginState];
+        if ([isLogin intValue] == 1) {
+            NSDictionary *loginData = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+            NPYLoginMode *userModel = [NPYLoginMode mj_objectWithKeyValues:loginData[@"data"]];
+            
+            NSString *portrait = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LocalPortrait];
+            if (portrait) {
+                [tmp sd_setImageWithURL:[NSURL URLWithString:portrait] placeholderImage:[UIImage imageNamed:@"tiantu_icon"]];
+                
+            } else {
+                
+                [tmp sd_setImageWithURL:[NSURL URLWithString:userModel.user_portrait] placeholderImage:[UIImage imageNamed:@"tiantu_icon"]];
+            }
+            
+//            userName.text = userModel.user_name;
+        }
+//        [tmp sd_setImageWithURL:[NSURL new] placeholderImage:[UIImage imageNamed:@"touxiang_zc"]];
         _headerImg = [[UIImage alloc] init];
         _headerImg = tmp.image;
     }
     
     return _headerImg;
+}
+
+- (void)updataImageToServerWithUrl:(NSString *)url withParames:(NSDictionary *)pareme withImageData:(NSData *)imageData{
+    
+    if (pareme == nil) {
+        return;
+    }
+    
+    NSMutableDictionary *paremes = [[NSMutableDictionary alloc] init];
+    [paremes setObject:[NPYChangeClass dictionaryToJson:pareme] forKey:@"data"];
+//    [paremes setObject:imageData forKey:@"img"];
+    
+    AFHTTPSessionManager *manager = [AFHTTPSessionManager manager];
+    //接收类型不一致请替换一致text/html或别的
+    manager.responseSerializer.acceptableContentTypes = [NSSet setWithObjects:@"application/json",
+                                                         @"text/html",
+                                                         @"image/jpeg",
+                                                         @"image/png",
+                                                         @"application/octet-stream",
+                                                         @"text/json",
+                                                         nil];
+    
+    NSURLSessionDataTask *task = [manager POST:[NSString stringWithFormat:@"%@%@",BASE_URL,url] parameters:paremes constructingBodyWithBlock:^(id<AFMultipartFormData> _Nonnull formData) {
+        
+        NSData *imageData =UIImageJPEGRepresentation(self.headerImg,1);
+        
+        NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+        formatter.dateFormat =@"yyyyMMddHHmmss";
+        NSString *str = [formatter stringFromDate:[NSDate date]];
+        NSString *fileName = [NSString stringWithFormat:@"%@.jpg", str];
+        
+        //上传的参数(上传图片，以文件流的格式)
+        [formData appendPartWithFileData:imageData
+                                    name:@"img"
+                                fileName:fileName
+                                mimeType:@"image/jpeg"];
+        
+    } progress:^(NSProgress *_Nonnull uploadProgress) {
+        //打印下上传进度
+        NSLog(@"");
+        
+    } success:^(NSURLSessionDataTask *_Nonnull task, id _Nullable responseObject) {
+        //上传成功
+//        [ZHProgressHUD showMessage:[responseObject valueForKey:@"data"] inView:self.view];
+        [ZHProgressHUD showMessage:@"修改成功" inView:self.view];
+        
+        [NPYSaveGlobalVariable saveValueAtLocal:[responseObject valueForKey:@"data"] withKey:LocalPortrait];
+        
+    } failure:^(NSURLSessionDataTask *_Nullable task, NSError * _Nonnull error) {
+        //上传失败
+        NSLog(@"");
+    }];
+    
+    
+}
+
+- (void)backItem:(UIButton *)sender {
+    [self.navigationController popViewControllerAnimated:YES];
 }
 
 - (void)didReceiveMemoryWarning {

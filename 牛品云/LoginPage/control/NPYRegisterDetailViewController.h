@@ -10,4 +10,10 @@
 
 @interface NPYRegisterDetailViewController : UIViewController
 
+@property (nonatomic, strong) NSString *verifyCode;
+
+@property (nonatomic, strong) NSString *phoneNumber;
+
+@property (nonatomic, strong) NSString *refereesPhone;
+
 @end

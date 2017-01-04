@@ -10,8 +10,18 @@
 #import "NPYBaseConstant.h"
 #import "NPYSearchViewController.h"
 #import "BuyViewController.h"
+#import "NPYLoginMode.h"
+#import "NPYShopModel.h"
+#import "NPYHeaderCollectionReusableView.h"
+#import "NPYGoodsCollectionViewCell.h"
 
-@interface NPYAutotrophy () <UICollectionViewDelegate,UICollectionViewDataSource> {
+#define ShopUrl @"/index.php/app/Shop/home"
+#define AllGoodsUrl @"/index.php/app/Shop/get_goods"
+#define PromotionUrl @"/index.php/app/Shop/get_promotion"
+#define NewGoodsUrl @"/index.php/app/Shop/get_new"
+#define Collect_shop_set_url @"/index.php/app/Collect/set_shop"
+
+@interface NPYAutotrophy () <UICollectionViewDelegate,UICollectionViewDataSource,LoadMoreDataDelegate> {
     double height_Space;        //间隔高度
     NSInteger number_Tag;       //记录选中按钮的tag值
     double height_ScrollView;   //底部滚动视图的大小
@@ -19,15 +29,28 @@
     BOOL isMove;                //滑动上移
     BOOL isHome;                //是否是首页
     
+    NSString *userID;
+    NSString *signStr;
+    
     UIButton *topLeftBtn,*topRightBtn;
     
     UIButton *oneAD,*twoAD;//广告位
     
+    UICollectionReusableView *headerView;
+    UIView *bgView;
+    UIImageView *productImg;
+    UILabel *titleL,*priceL,*evaluationL;
     NSMutableArray *dataArr;
     
     UIImageView *icon2;
     UILabel *nameL2;
     UILabel *addressL2;
+    UIButton *collectBtn2;
+    
+    NSArray *goodsArr,*adArr,*shopArr;
+    
+    BOOL isCollected;
+    
 }
 
 @property (nonatomic, strong) UIView *topTitleView;
@@ -54,12 +77,19 @@
     height_ScrollView = 300.0;
     isMove = YES;
     
+    NSDictionary *dic = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+    NPYLoginMode *model = [NPYLoginMode mj_objectWithKeyValues:dic[@"data"]];
+    
+    signStr = [dic valueForKey:@"sign"];
+    
     if (self.isAutrophy) {
         //是自营馆
-        
+        self.shopID = @"0";
     } else {
         //店铺
-        
+        if (self.shopID == nil) {
+            self.shopID = @"0";
+        }
     }
     
     self.view.backgroundColor = GRAY_BG; //灰色背景
@@ -67,6 +97,11 @@
     [self navigationLoad];  //导航栏设置
     
     [self mainViewLoad];    //主页面布局
+    
+    NSDictionary *requestDic = [NSDictionary dictionaryWithObjectsAndKeys:@"npy_we874646sf",@"key",self.shopID,@"shop_id",model.user_id,@"user_id", nil];
+    userID = model.user_id;
+    
+    [self requestHomeDataWithUrlString:ShopUrl withKeyValueParemes:requestDic];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -83,7 +118,6 @@
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
     
-//    self.navigationController.navigationBar.translucent = YES;
     self.tabBarController.tabBar.hidden = NO;
 }
 
@@ -94,11 +128,9 @@
     
     [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"hk_dingbu"] forBarMetrics:UIBarMetricsDefault];
     
-//    self.navigationController.navigationBar.shadowImage =[UIImage imageNamed:@"hk_dingbu"];
-    
     UIButton *backBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 18, 18)];
     [backBtn setImage:[UIImage imageNamed:@"icon_fanhui"] forState:0];
-    [backBtn addTarget:self action:@selector(backItem) forControlEvents:UIControlEventTouchUpInside];
+    [backBtn addTarget:self action:@selector(backItem:) forControlEvents:UIControlEventTouchUpInside];
     UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithCustomView:backBtn];
     self.navigationItem.leftBarButtonItem = item;
     
@@ -152,7 +184,7 @@
     UIImageView *shopIcon = [[UIImageView alloc] init];
     shopIcon.frame = CGRectMake(14, 20, 40, 40);
     shopIcon.center = CGPointMake(CGRectGetMidX(shopIcon.frame), topTitleView.frame.size.height / 2);
-    shopIcon.image = [UIImage imageNamed:@"placeholder"];
+    shopIcon.image = [UIImage imageNamed:@"tiantu_icon"];
     [topTitleView addSubview:shopIcon];
     icon2 = shopIcon;
     //titleName
@@ -165,10 +197,11 @@
     nameL2 = nameL;
     //address
     UILabel *addressL = [[UILabel alloc] init];
-    addressL.frame = CGRectMake(CGRectGetMinX(nameL.frame), CGRectGetMaxY(nameL.frame) + height_Space, WIDTH_SCREEN / 2, 20);
+    addressL.frame = CGRectMake(CGRectGetMinX(nameL.frame), CGRectGetMaxY(nameL.frame) + height_Space, WIDTH_SCREEN / 2 + 50, 20);
     addressL.text = @"苏州高新区科技城致远大厦";
     addressL.textColor = XNColor(153, 153, 153, 1);
     addressL.font = [UIFont systemFontOfSize:11.0];
+    addressL.adjustsFontSizeToFitWidth = YES;
     [topTitleView addSubview:addressL];
     addressL2 = addressL;
     //collect
@@ -182,12 +215,13 @@
     [collectBtn setTitle:@"收藏" forState:0];
     [collectBtn setTitleColor:XNColor(153, 153, 153, 1) forState:UIControlStateNormal];
     collectBtn.titleLabel.font = [UIFont systemFontOfSize:12.0];
-    collectBtn.selected = NO;
+    collectBtn.selected = isCollected;
     collectBtn.contentHorizontalAlignment = UIControlContentHorizontalAlignmentCenter;
     collectBtn.titleEdgeInsets = UIEdgeInsetsMake(25, -placeHolder.size.width, 0.0, 0.0);
     collectBtn.imageEdgeInsets = UIEdgeInsetsMake(0.0, 0.0, 20, -placeHolder.size.width - 8);
     [collectBtn addTarget:self action:@selector(collectButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     [topTitleView addSubview:collectBtn];
+    collectBtn2 = collectBtn;
     
 }
 //midMenuView
@@ -261,7 +295,7 @@
     UIButton *oneImg = [[UIButton alloc] init];
     oneImg.tag = 2010;
     oneImg.frame = CGRectMake(10, 5, CGRectGetWidth(advertView.frame) - 20, (CGRectGetHeight(advertView.frame) - 20) / 2);
-    UIImage *imgOne = [UIImage imageNamed:@"placeholder"];
+    UIImage *imgOne = [UIImage imageNamed:@"tiantu_icon"];
     [oneImg setImage:imgOne forState:UIControlStateNormal];
     [oneImg setImageEdgeInsets:UIEdgeInsetsMake(height_Space / 2, height_Space, height_Space / 2, height_Space)];
     [oneImg addTarget:self action:@selector(adButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
@@ -274,7 +308,7 @@
     UIButton *twoImg = [[UIButton alloc] init];
     twoImg.tag = 2020;
     twoImg.frame = CGRectMake(10, CGRectGetMaxY(oneImg.frame) + 10, CGRectGetWidth(advertView.frame) - 20, (CGRectGetHeight(advertView.frame) - 20) / 2);
-    UIImage *imgTwo = [UIImage imageNamed:@"placeholder"];
+    UIImage *imgTwo = [UIImage imageNamed:@"tiantu_icon"];
     [twoImg setImage:imgTwo forState:UIControlStateNormal];
     [twoImg setImageEdgeInsets:UIEdgeInsetsMake(height_Space / 2, height_Space, height_Space / 2, height_Space)];
     [twoImg addTarget:self action:@selector(adButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
@@ -302,8 +336,8 @@
     recommendView.backgroundColor = [UIColor whiteColor];
     recommendView.showsVerticalScrollIndicator = NO;
     //注册item类型 这里使用系统的类型
-    [recommendView registerClass:[UICollectionViewCell class] forCellWithReuseIdentifier:@"cellid"];
-    [recommendView registerClass:[UICollectionReusableView class] forSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:@"headerIdentifier"];
+    [recommendView registerClass:[NPYGoodsCollectionViewCell class] forCellWithReuseIdentifier:@"goodsCell"];
+    [recommendView registerClass:[NPYHeaderCollectionReusableView class] forSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:@"headerIdentifier"];
     [bottomScorllView addSubview:recommendView];
     self.recommendView = recommendView;
     oldFrame = recommendView.frame;
@@ -314,7 +348,7 @@
 }
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
-    return 20;
+    return goodsArr.count;
 }
 
 -(UIEdgeInsets)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout insetForSectionAtIndex:(NSInteger)section
@@ -324,76 +358,27 @@
 }
 
 - (__kindof UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
-    UICollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"cellid" forIndexPath:indexPath];
-    //    cell.backgroundColor = [UIColor blueColor];
-    UIView *bgView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, (WIDTH_SCREEN - 15) / 2, cell.frame.size.height)];
-    bgView.layer.borderColor = XNColor(242, 242, 242, 1).CGColor;
-    bgView.layer.borderWidth = 0.5;
-    [cell addSubview:bgView];
-    //产品图片
-    UIImageView *productImg = [[UIImageView alloc] init];
-    productImg.frame = CGRectMake(0, 0, bgView.frame.size.width, bgView.frame.size.width);
-    productImg.image = [UIImage imageNamed:@"placeholder"];
-    productImg.contentMode = UIViewContentModeScaleToFill;
-    [bgView addSubview:productImg];
-    //标题
-    UILabel *titleL = [[UILabel alloc] init];
-    titleL.frame = CGRectMake(CGRectGetMinX(productImg.frame) + Height_Space, CGRectGetMaxY(productImg.frame), CGRectGetWidth(productImg.frame) - Height_Space, 20);
-    titleL.textColor = XNColor(85, 85, 85, 1);
-    titleL.text = @"正宗黑龙江五常东北有机稻花香大米非转基因高端大米 1kg";
-    titleL.numberOfLines = 0;
-    titleL.adjustsFontSizeToFitWidth = YES;
-    titleL.font = [UIFont systemFontOfSize:10.0];
-    [cell addSubview:titleL];
-    //价格
-    UILabel *priceL = [[UILabel alloc] init];
-    priceL.frame = CGRectMake(CGRectGetMinX(titleL.frame), CGRectGetMaxY(titleL.frame) + Height_Space, CGRectGetWidth(productImg.frame) / 2, 20);
-    priceL.textColor = XNColor(251, 8, 8, 1);
-    priceL.text = @"￥45.60";
-    priceL.numberOfLines = 0;
-    priceL.adjustsFontSizeToFitWidth = YES;
-    priceL.font = [UIFont systemFontOfSize:15.0];
-    [cell addSubview:priceL];
-    //评价
-    UILabel *evaluationL = [[UILabel alloc] init];
-    evaluationL.frame = CGRectMake(CGRectGetMaxX(priceL.frame), CGRectGetMaxY(titleL.frame) + Height_Space, CGRectGetWidth(productImg.frame) / 2, 20);
-    evaluationL.textColor = XNColor(136, 136, 136, 1);
-    evaluationL.text = @"326人购买";
-    evaluationL.numberOfLines = 0;
-    evaluationL.adjustsFontSizeToFitWidth = YES;
-    evaluationL.font = [UIFont systemFontOfSize:12.0];
-    [cell addSubview:evaluationL];
     
-    return cell;
+    NPYHomeGoodsModel *goodsModel = goodsArr[indexPath.row];
+    
+    NPYGoodsCollectionViewCell *goodsCell = [collectionView dequeueReusableCellWithReuseIdentifier:@"goodsCell" forIndexPath:indexPath];
+    
+    goodsCell.goodsModel = goodsModel;
+    
+    return goodsCell;
     
 }
 
 - (UICollectionReusableView *)collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath {
-    UICollectionReusableView *headerView;
-    if (kind == UICollectionElementKindSectionHeader) {
-        headerView = [collectionView dequeueReusableSupplementaryViewOfKind:kind withReuseIdentifier:@"headerIdentifier" forIndexPath:indexPath];
-        UILabel *titleName = [[UILabel alloc] initWithFrame:CGRectMake(height_Space * 2, 0, WIDTH_SCREEN, 30)];
-        titleName.text = @"精品推荐";
-        titleName.textAlignment = NSTextAlignmentCenter;
-        titleName.textColor = XNColor(102, 102, 102, 1);
-        titleName.font = [UIFont systemFontOfSize:12.0];
-        [headerView addSubview:titleName];
-        
-        UIImageView *vLine = [[UIImageView alloc] init];
-        vLine.frame = CGRectMake(CGRectGetMidX(titleName.frame) - 75, 0, 25, 1);
-        //        vLine.backgroundColor = GRAY_BG;
-        vLine.image = [UIImage imageNamed:@"heixian_zuo"];
-        vLine.center = CGPointMake(CGRectGetMidX(vLine.frame), CGRectGetMidY(titleName.frame));
-        [headerView addSubview:vLine];
-        
-        UIImageView *vLine2 = [[UIImageView alloc] init];
-        vLine2.frame = CGRectMake(CGRectGetMidX(titleName.frame) + 50, 0, 25, 1);
-        //        vLine2.backgroundColor = GRAY_BG;
-        vLine2.image = [UIImage imageNamed:@"heixian_you"];
-        vLine2.center = CGPointMake(CGRectGetMidX(vLine2.frame), CGRectGetMidY(titleName.frame));
-        [headerView addSubview:vLine2];
+    if (kind == UICollectionElementKindSectionHeader ) {
+        NPYHeaderCollectionReusableView *header = [collectionView dequeueReusableSupplementaryViewOfKind:kind withReuseIdentifier:@"headerIdentifier" forIndexPath:indexPath];
+        header.isHiddenAll = !isHome;
+        header.delegate = self;
+        header.isHideMore = YES;
+        return header;
+       
     }
-    return headerView;
+    return nil;
 }
 //点击
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
@@ -424,9 +409,83 @@
     
 }
 
+#pragma mark - 
+
+- (void)requestHomeDataWithUrlString:(NSString *)urlStr withKeyValueParemes:(NSDictionary *)pareme {
+    
+    NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:pareme] forKey:@"data"];
+    
+    [[NPYHttpRequest sharedInstance] getWithUrlString:[NSString stringWithFormat:@"%@%@",BASE_URL,urlStr] parameters:paremes success:^(id responseObject) {
+        NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+        
+        if ([dataDict[@"r"] intValue] == 1) {
+            //成功
+            [ZHProgressHUD showMessage:@"请求成功" inView:self.view];
+            NSDictionary *tpDict = dataDict[@"data"];
+            
+            NPYHomeModel *model = [[NPYHomeModel alloc] init];
+            model.goodsArr = tpDict[@"goods"];
+            [model toDetailModel];
+            goodsArr = [model returnGoodsModelArray];
+            
+            NSString *collectState = tpDict[@"collect"];
+            
+            isCollected = [collectState boolValue];
+            
+            [collectBtn2 setSelected:YES];
+            
+//            [self topTitleViewLoad];
+            
+            NPYShopModel *shopModel = [NPYShopModel mj_objectWithKeyValues:tpDict[@"shop"]];
+            nameL2.text = shopModel.shop_name;
+            [icon2 sd_setImageWithURL:[NSURL URLWithString:shopModel.shop_img] placeholderImage:[UIImage imageNamed:@"tiantu_icon"]];
+            addressL2.text = shopModel.address;
+            
+            NPYHomeADModel *ad1Model = [NPYHomeADModel mj_objectWithKeyValues:tpDict[@"ad1"]];
+            [oneAD.imageView sd_setImageWithURL:[NSURL URLWithString:ad1Model.img] placeholderImage:[UIImage imageNamed:@"tiantu_icon"]];
+            
+            NPYHomeADModel *ad2Model = [NPYHomeADModel mj_objectWithKeyValues:tpDict[@"ad2"]];
+                [twoAD.imageView sd_setImageWithURL:[NSURL URLWithString:ad2Model.img] placeholderImage:[UIImage imageNamed:@"tiantu_icon"]];
+            
+            [self.recommendView reloadData];
+            
+        } else {
+            //失败
+            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+//            [self.navigationController popViewControllerAnimated:YES];
+        }
+        
+    } failure:^(NSError *error) {
+        NSLog(@"%@",error);
+        
+    }];
+    
+}
+
+- (void)requestAddShopToCollectListUrl:(NSString *)url withParemes:(NSDictionary *)pareme {
+    NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:pareme] forKey:@"data"];
+    
+    [[NPYHttpRequest sharedInstance] getWithUrlString:[NSString stringWithFormat:@"%@%@",BASE_URL,url] parameters:paremes success:^(id responseObject) {
+        NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+        
+        if ([dataDict[@"r"] intValue] == 1) {
+            //成功
+            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+        } else {
+            //失败
+            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+        }
+        
+    } failure:^(NSError *error) {
+        NSLog(@"%@",error);
+        
+    }];
+    
+}
+
 #pragma mark - Button Pressed Event
 
-- (void)backItem {
+- (void)backItem:(UIButton *)sender {
     [self.navigationController popViewControllerAnimated:YES];
 }
 
@@ -447,6 +506,9 @@
 //收藏按钮的点击事件
 - (void)collectButtonPressed:(UIButton *)btn {
 //    NSLog(@"收藏按钮点击了...");
+    NSDictionary *requestDic = [NSDictionary dictionaryWithObjectsAndKeys:signStr,@"sign",self.shopID,@"shop_id",userID,@"user_id", nil];
+    [self requestAddShopToCollectListUrl:Collect_shop_set_url withParemes:requestDic];
+    
     btn.selected = !btn.selected;
     
 }
@@ -473,35 +535,35 @@
     
     number_Tag = btn.tag;
     
-//    [self.advertView removeFromSuperview];
-//    self.advertView = nil;
-//    [self.recommendView removeFromSuperview];
-//    self.recommendView = nil;
-//    [self.bottomView removeFromSuperview];
-//    self.bottomView = nil;
-    
-//    [self.view setNeedsDisplay];
+    NSString *urlStr;
     
     switch (btn.tag) {
         case 2000:
             isHome = YES;
+            urlStr = ShopUrl;
             break;
             
         case 2001:
              isHome = NO;
+            urlStr = AllGoodsUrl;
             break;
             
         case 2002:
              isHome = NO;
+            urlStr = PromotionUrl;
             break;
             
         case 2003:
              isHome = NO;
+            urlStr = NewGoodsUrl;
             break;
             
         default:
             break;
     }
+    
+    NSDictionary *requestDic = [NSDictionary dictionaryWithObjectsAndKeys:@"npy_we874646sf",@"key",self.shopID,@"shop_id",@"1",@"num", nil];
+    [self requestHomeDataWithUrlString:urlStr withKeyValueParemes:requestDic];
     
     if (isHome) {
         self.advertView.hidden = NO;

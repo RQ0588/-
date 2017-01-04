@@ -10,7 +10,7 @@
 
 @interface BGDetailViewCell : UICollectionViewCell
 
-@property(nonatomic,copy)NSString* image;
+@property(nonatomic,copy)id image;
 @property(nonatomic,copy)NSString* pageString;
 
 @end

@@ -29,8 +29,8 @@
 - (UIButton *)deleteButton{
     if (!_deleteButton) {
         self.deleteButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        _deleteButton.frame = CGRectMake(CGRectGetWidth(self.bounds)-20, 0, 20, 20);
-        [_deleteButton setBackgroundImage:[UIImage imageNamed:@"photo_delete"] forState:UIControlStateNormal];
+        _deleteButton.frame = CGRectMake(CGRectGetWidth(self.bounds)-10, -3, 13, 13);
+        [_deleteButton setBackgroundImage:[UIImage imageNamed:@"chahao_pyq"] forState:UIControlStateNormal];
     }
     return _deleteButton;
 }

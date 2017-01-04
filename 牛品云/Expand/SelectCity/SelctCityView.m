@@ -158,7 +158,7 @@
         NSLog(@"self.provinceStr%@--city:%@",self.provinceStr, city);
         
         if (self.block) {
-            self.block([NSString stringWithFormat:@"%@%@", self.provinceStr, city]);
+            self.block([NSString stringWithFormat:@"%@-%@", self.provinceStr, city]);
             [self removeAnimation];
             
         }

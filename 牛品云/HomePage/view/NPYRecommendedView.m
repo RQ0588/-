@@ -7,6 +7,11 @@
 //
 
 #import "NPYRecommendedView.h"
+#import "NPYBaseConstant.h"
+
+@interface NPYRecommendedView ()
+
+@end
 
 @implementation NPYRecommendedView
 
@@ -18,6 +23,10 @@
     }
     
     return self;
+}
+
+- (void)layoutSubviews {
+    
 }
 
 /*

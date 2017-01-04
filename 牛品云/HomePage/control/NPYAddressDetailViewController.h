@@ -18,6 +18,14 @@
 
 @interface NPYAddressDetailViewController : UIViewController
 
+@property (nonatomic, strong) NSString *isDefault;
+
+@property (nonatomic, strong) NSString *address_id;
+
+@property (nonatomic, assign) NSInteger index;
+
+@property (nonatomic, strong) NSMutableDictionary *dataDict;
+
 @property (nonatomic, retain) id<passValueToBackDeleagate> delegate;
 
 @property (nonatomic, assign) BOOL isEdit;

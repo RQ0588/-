@@ -33,6 +33,8 @@
 
 #import "SDPhotoBrowser.h"
 
+#import "NPYBaseConstant.h"
+
 @interface SDWeiXinPhotoContainerView () <SDPhotoBrowserDelegate>
 
 @property (nonatomic, strong) NSArray *imageViewsArray;
@@ -53,7 +55,7 @@
 {
     NSMutableArray *temp = [NSMutableArray new];
     
-    for (int i = 0; i < 9; i++) {
+    for (int i = 0; i < 3; i++) {
         UIImageView *imageView = [UIImageView new];
         [self addSubview:imageView];
         imageView.userInteractionEnabled = YES;
@@ -70,6 +72,12 @@
 - (void)setPicPathStringsArray:(NSArray *)picPathStringsArray
 {
     _picPathStringsArray = picPathStringsArray;
+    
+    NSString *str = _picPathStringsArray[0];
+    if ([str isEqualToString:@""]) {
+        
+        _picPathStringsArray = nil;
+    }
     
     for (long i = _picPathStringsArray.count; i < self.imageViewsArray.count; i++) {
         UIImageView *imageView = [self.imageViewsArray objectAtIndex:i];
@@ -100,7 +108,8 @@
         long rowIndex = idx / perRowItemCount;
         UIImageView *imageView = [_imageViewsArray objectAtIndex:idx];
         imageView.hidden = NO;
-        imageView.image = [UIImage imageNamed:obj];
+//        imageView.image = [UIImage imageNamed:obj];
+        [imageView sd_setImageWithURL:[NSURL URLWithString:obj]];
         imageView.frame = CGRectMake(columnIndex * (itemW + margin), rowIndex * (itemH + margin), itemW, itemH);
     }];
     
@@ -139,13 +148,14 @@
 
 - (NSInteger)perRowItemCountForPicPathArray:(NSArray *)array
 {
-    if (array.count < 3) {
-        return array.count;
-    } else if (array.count <= 4) {
-        return 2;
-    } else {
-        return 3;
-    }
+//    if (array.count < 3) {
+//        return array.count;
+//    } else if (array.count <= 4) {
+//        return 2;
+//    } else {
+//        return 3;
+//    }
+    return 3;
 }
 
 

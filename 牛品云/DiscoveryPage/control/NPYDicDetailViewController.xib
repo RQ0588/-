@@ -29,24 +29,32 @@
                 </tableView>
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="zMJ-V7-IiD">
                     <subviews>
-                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="o6p-lK-F95">
+                        <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="74huixian_zhongchou" translatesAutoresizingMaskIntoConstraints="NO" id="Ib5-Xo-POz">
                             <constraints>
-                                <constraint firstAttribute="height" constant="40" id="6lp-LA-fes"/>
+                                <constraint firstAttribute="height" constant="1" id="TSa-s0-e6s"/>
+                            </constraints>
+                        </imageView>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="o6p-lK-F95">
+                            <constraints>
+                                <constraint firstAttribute="height" constant="49" id="6lp-LA-fes"/>
                                 <constraint firstAttribute="width" constant="120" id="9xs-xT-qeD"/>
                             </constraints>
-                            <state key="normal" title="收藏">
+                            <fontDescription key="fontDescription" type="system" pointSize="18"/>
+                            <state key="normal" title="收藏" image="shoucang_zhongchou">
                                 <color key="titleColor" red="1" green="0.074743433489999997" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                             </state>
+                            <state key="selected" image="yishoucang_zhongchou"/>
                             <connections>
                                 <action selector="collectionButtonPressed:" destination="-1" eventType="touchUpInside" id="lKq-Te-P9K"/>
                             </connections>
                         </button>
-                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Xgg-NO-JW8">
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Xgg-NO-JW8">
                             <color key="backgroundColor" red="1" green="0.074743433489999997" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                             <constraints>
-                                <constraint firstAttribute="height" constant="40" id="Vt6-uR-D3s"/>
+                                <constraint firstAttribute="height" constant="49" id="Vt6-uR-D3s"/>
                             </constraints>
-                            <state key="normal" title="我要支持">
+                            <fontDescription key="fontDescription" type="system" pointSize="18"/>
+                            <state key="normal" title="我要支持" image="dianzan_zhongchou">
                                 <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             </state>
                             <connections>
@@ -57,14 +65,17 @@
                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     <constraints>
                         <constraint firstAttribute="bottom" secondItem="o6p-lK-F95" secondAttribute="bottom" id="0Jt-iT-djN"/>
+                        <constraint firstItem="Ib5-Xo-POz" firstAttribute="leading" secondItem="zMJ-V7-IiD" secondAttribute="leading" id="2Ev-vY-cCe"/>
                         <constraint firstItem="o6p-lK-F95" firstAttribute="top" secondItem="zMJ-V7-IiD" secondAttribute="top" id="8re-EQ-R6r"/>
                         <constraint firstItem="Xgg-NO-JW8" firstAttribute="top" secondItem="zMJ-V7-IiD" secondAttribute="top" id="HqK-Vb-0PF"/>
                         <constraint firstAttribute="bottom" secondItem="Xgg-NO-JW8" secondAttribute="bottom" id="Mtd-GQ-r8k"/>
                         <constraint firstItem="Xgg-NO-JW8" firstAttribute="leading" secondItem="o6p-lK-F95" secondAttribute="trailing" id="Plx-bc-QC1"/>
                         <constraint firstItem="Xgg-NO-JW8" firstAttribute="leading" secondItem="o6p-lK-F95" secondAttribute="trailing" id="Th4-hd-fPS"/>
-                        <constraint firstAttribute="height" constant="40" id="Ziv-8v-bzP"/>
+                        <constraint firstAttribute="height" constant="49" id="Ziv-8v-bzP"/>
+                        <constraint firstAttribute="trailing" secondItem="Ib5-Xo-POz" secondAttribute="trailing" id="hmJ-vS-XIa"/>
                         <constraint firstAttribute="trailing" secondItem="Xgg-NO-JW8" secondAttribute="trailing" id="ibU-LC-mtg"/>
                         <constraint firstItem="o6p-lK-F95" firstAttribute="leading" secondItem="zMJ-V7-IiD" secondAttribute="leading" id="mHQ-5h-sN1"/>
+                        <constraint firstItem="Ib5-Xo-POz" firstAttribute="top" secondItem="zMJ-V7-IiD" secondAttribute="top" id="xHy-or-RoO"/>
                     </constraints>
                 </view>
             </subviews>
@@ -82,4 +93,10 @@
             <point key="canvasLocation" x="-228.5" y="-66.5"/>
         </view>
     </objects>
+    <resources>
+        <image name="74huixian_zhongchou" width="1" height="1"/>
+        <image name="dianzan_zhongchou" width="16" height="16"/>
+        <image name="shoucang_zhongchou" width="16" height="16"/>
+        <image name="yishoucang_zhongchou" width="16" height="16"/>
+    </resources>
 </document>

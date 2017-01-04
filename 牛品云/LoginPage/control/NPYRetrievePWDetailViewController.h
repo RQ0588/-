@@ -10,4 +10,6 @@
 
 @interface NPYRetrievePWDetailViewController : UIViewController
 
+@property (nonatomic, strong) NSString *titleName;
+
 @end

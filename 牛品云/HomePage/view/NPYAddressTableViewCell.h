@@ -7,10 +7,20 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "NPYAddressModel.h"
+
+@protocol editButtonPressedEventDelegate <NSObject>
+
+- (void)passCellIndex:(NSInteger)index;
+
+@end
 
 @interface NPYAddressTableViewCell : UITableViewCell
 
-@property (nonatomic, strong) NSDictionary  *dataDic;
+@property (nonatomic, strong) NPYAddressModel  *model;
+@property (nonatomic, assign) NSInteger     index;
+
+@property (nonatomic, retain) id<editButtonPressedEventDelegate>delegate;
 
 - (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier;
 

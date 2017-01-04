@@ -7,7 +7,12 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "NPYBaseConstant.h"
 
 @interface NPYImageTextTableViewCell : UITableViewCell
+
+@property (nonatomic, strong) NSString *imgUrlStr;
+
+@property (weak, nonatomic) IBOutlet UIImageView *imgView;
 
 @end

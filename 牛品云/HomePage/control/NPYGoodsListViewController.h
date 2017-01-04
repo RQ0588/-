@@ -12,6 +12,8 @@
 
 @property (nonatomic, strong) NSString *searchStr;
 
+@property (nonatomic, strong) NSString *dataUrl;
+
 @property (nonatomic, assign) BOOL  isMore;
 
 @end

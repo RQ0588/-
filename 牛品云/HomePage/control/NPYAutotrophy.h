@@ -10,6 +10,8 @@
 
 @interface NPYAutotrophy : UIViewController
 
+@property (nonatomic, strong) NSString *shopID;
+
 @property (nonatomic, assign) BOOL isAutrophy;
 
 @end

@@ -9,41 +9,41 @@
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
         <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="gTV-IL-0wX" customClass="BGDetailViewCell">
-            <rect key="frame" x="0.0" y="0.0" width="375" height="277"/>
+            <rect key="frame" x="0.0" y="0.0" width="375" height="300"/>
             <autoresizingMask key="autoresizingMask"/>
             <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
-                <rect key="frame" x="0.0" y="0.0" width="375" height="277"/>
+                <rect key="frame" x="0.0" y="0.0" width="375" height="300"/>
                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                 <subviews>
-                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="commidity_upimage" translatesAutoresizingMaskIntoConstraints="NO" id="3vI-ih-Kir"/>
-                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UOX-pD-2YY">
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="anli1_gouwu" translatesAutoresizingMaskIntoConstraints="NO" id="3vI-ih-Kir"/>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="1/6" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UOX-pD-2YY">
                         <color key="backgroundColor" red="0.66247996794871788" green="0.66247996794871788" blue="0.66247996794871788" alpha="0.65956357758620687" colorSpace="calibratedRGB"/>
                         <constraints>
-                            <constraint firstAttribute="height" constant="21" id="T5u-tX-LL9"/>
-                            <constraint firstAttribute="width" constant="42" id="fbZ-RZ-bZQ"/>
+                            <constraint firstAttribute="height" constant="20" id="T5u-tX-LL9"/>
+                            <constraint firstAttribute="width" constant="40" id="fbZ-RZ-bZQ"/>
                         </constraints>
-                        <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                        <fontDescription key="fontDescription" type="system" pointSize="12"/>
                         <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <nil key="highlightedColor"/>
                     </label>
                 </subviews>
             </view>
             <constraints>
+                <constraint firstAttribute="trailing" secondItem="UOX-pD-2YY" secondAttribute="trailing" constant="17" id="JHU-wF-2ld"/>
                 <constraint firstAttribute="trailing" secondItem="3vI-ih-Kir" secondAttribute="trailing" id="LhT-wd-6oM"/>
                 <constraint firstAttribute="bottom" secondItem="3vI-ih-Kir" secondAttribute="bottom" id="aJT-Sl-6l4"/>
                 <constraint firstItem="3vI-ih-Kir" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" id="blE-PH-olB"/>
-                <constraint firstAttribute="trailing" secondItem="UOX-pD-2YY" secondAttribute="trailing" constant="8" id="nmJ-xY-zbB"/>
-                <constraint firstAttribute="bottom" secondItem="UOX-pD-2YY" secondAttribute="bottom" constant="8" id="oGW-9D-JQJ"/>
+                <constraint firstAttribute="bottom" secondItem="UOX-pD-2YY" secondAttribute="bottom" constant="10" id="oGW-9D-JQJ"/>
                 <constraint firstItem="3vI-ih-Kir" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="q1r-5c-V5W"/>
             </constraints>
             <connections>
                 <outlet property="img" destination="3vI-ih-Kir" id="4Bc-5x-NMV"/>
                 <outlet property="pageCount" destination="UOX-pD-2YY" id="RY9-DR-OwA"/>
             </connections>
-            <point key="canvasLocation" x="-214" y="45"/>
+            <point key="canvasLocation" x="-171" y="21"/>
         </collectionViewCell>
     </objects>
     <resources>
-        <image name="commidity_upimage" width="720" height="552"/>
+        <image name="anli1_gouwu" width="375" height="375"/>
     </resources>
 </document>

@@ -9,6 +9,51 @@
 #ifndef NPYBaseConstant_h
 #define NPYBaseConstant_h
 
+//服务器基地址
+#define BASE_URL    @"http://npy.cq-vip.com"
+
+#define Verification_url    @"/index.php/app/Login/send"//验证码请求地址
+#define Register_url    @"/index.php/app/Login/register"//注册请求地址
+#define CollectGoods_url @"/index.php/app/Collect/get_goods"//获取商品收藏地址
+#define CollectGoods_set_url @"/index.php/app/Collect/set_goods"//商品收藏地址
+#define GoodsDetail_url @"/index.php/app/Getgoods/home"//商品详情地址
+#define GoodsAppraise_url @"/index.php/app/Getgoods/get_appraise"//商品评论地址
+
+/**
+ *  保存登录信息到本地的key
+ */
+#define LoginData_Local   @"LoginData_Local"
+
+/**
+ *  登录状态的key
+ */
+#define LoginState  @"LoginState"
+
+/**
+ *  本地保存的头像
+ */
+#define LocalPortrait  @"LocalPortrait"
+
+/**
+ *  本地保存的头像
+ */
+#define LocalPassword  @"LocalPassword"
+
+/**
+ *  模型
+ */
+#import "NPYHomeModel.h"
+
+/**
+ *  登录模型
+ */
+#import "NPYLoginMode.h"
+
+/**
+ *  分享
+ */
+#import "ShareObject.h"
+
 /**
  *  网络请求
  */
@@ -21,10 +66,20 @@
 #import "NPYSaveGlobalVariable.h"
 
 /**
+ *  登录界面
+ */
+#import "NPYLoginViewController.h"
+
+/**
  *  自定义的一些方法
  */
 #import "MJExtension.h"
 #import "NPYChangeClass.h"
+
+/**
+ *  刷新
+ */
+#import "MJRefresh.h"
 
 /**
  *  弹窗
@@ -41,18 +96,9 @@
 
 #import "WZLBadgeImport.h"
 
-//服务器地址
-#define BASE_URL    @"http://npy.cq-vip.com"
+#import "UITabBar+NPYBadge.h"
 
-/**
- *  保存登录信息到本地的key
- */
-#define LoginData_Local   @"LoginData_Local"
-
-/**
- *  登录状态的key
- */
-#define LoginState  @"LoginState"
+#import "AppDelegate.h"
 
 //日志输出
 #ifdef DEBUG

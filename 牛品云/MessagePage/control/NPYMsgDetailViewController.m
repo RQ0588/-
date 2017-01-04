@@ -8,8 +8,14 @@
 
 #import "NPYMsgDetailViewController.h"
 #import "NPYBaseConstant.h"
+#import "NPYMessageTableViewCell.h"
 
-@interface NPYMsgDetailViewController ()
+@interface NPYMsgDetailViewController () <UITableViewDelegate,UITableViewDataSource> {
+    NSMutableArray *dataMArr;
+    
+}
+
+@property (nonatomic, strong) UITableView *mainTableView;
 
 @end
 
@@ -31,12 +37,72 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
-    self.navigationItem.title = @"优惠消息";
+    self.navigationItem.title = self.titleName;
     
     self.view.backgroundColor = GRAY_BG;
     
-    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:nil];
-    self.navigationItem.backBarButtonItem = item;
+    [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"hk_dingbu"] forBarMetrics:UIBarMetricsDefault];
+    
+    UIButton *backBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 18, 18)];
+    [backBtn setImage:[UIImage imageNamed:@"icon_fanhui"] forState:0];
+    [backBtn addTarget:self action:@selector(backItem:) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithCustomView:backBtn];
+    self.navigationItem.leftBarButtonItem = item;
+    
+     [self.view addSubview:self.mainTableView];
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return 5;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    if ([self.titleName isEqualToString:@"通知消息"]) {
+        NPYMessageTableViewCell *cell = [[[NSBundle mainBundle] loadNibNamed:@"NPYMessageTableViewCell" owner:self options:nil] objectAtIndex:indexPath.row%2];
+        cell.backgroundColor = [UIColor clearColor];
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        
+        [self configCell:cell indexPath:indexPath];
+        
+        return cell;
+        
+    }
+    
+    if ([self.titleName isEqualToString:@"优惠消息"]) {
+        NPYMessageTableViewCell *cell = [[[NSBundle mainBundle] loadNibNamed:@"NPYMessageTableViewCell" owner:self options:nil] objectAtIndex:2];
+        cell.backgroundColor = [UIColor clearColor];
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        
+        [self configCell:cell indexPath:indexPath];
+        
+        return cell;
+        
+    }
+    
+    return nil;
+}
+
+- (void)configCell:(NPYMessageTableViewCell *)cell indexPath:(NSIndexPath *)indexPath {
+    cell.timeLabel.text = @"2016-12-12";
+    
+}
+
+- (UITableView *)mainTableView {
+    if (_mainTableView == nil) {
+        _mainTableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, WIDTH_SCREEN, HEIGHT_SCREEN) style:UITableViewStylePlain];
+        _mainTableView.backgroundColor = GRAY_BG;
+        _mainTableView.delegate = self;
+        _mainTableView.dataSource = self;
+        _mainTableView.estimatedRowHeight = 100;
+        _mainTableView.rowHeight = UITableViewAutomaticDimension;
+        _mainTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    }
+    
+    return _mainTableView;
+}
+
+- (void)backItem:(UIButton *)sender {
+    [self.navigationController popViewControllerAnimated:YES];
 }
 
 - (void)didReceiveMemoryWarning {

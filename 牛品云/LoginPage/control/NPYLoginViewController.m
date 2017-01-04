@@ -22,6 +22,8 @@
 @property (nonatomic, strong) NPYRegisterViewController     *registerVC;
 @property (nonatomic, strong) NPYRetrievePWViewController   *retrievePWVC;
 
+@property (nonatomic, strong) NPYLoginMode *model;
+
 @end
 
 @implementation NPYLoginViewController
@@ -38,11 +40,23 @@
     self.tabBarController.tabBar.hidden = NO;
 }
 
+- (void)backItem:(UIButton *)sender {
+    [self.navigationController popToRootViewControllerAnimated:YES];
+}
+
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
     self.view.backgroundColor = [UIColor whiteColor];
+    
+    NSDictionary *userDict = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+    if (userDict) {
+        _model = [NPYLoginMode mj_objectWithKeyValues:userDict[@"data"]];
+        _model.r = userDict[@"r"];
+        _model.sign = userDict[@"sign"];
+    }
     
     [self navigateViewLoad];
     
@@ -52,22 +66,33 @@
 - (void)navigateViewLoad {
     self.navigationItem.title = @"登录牛品云";
     
+    [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"hk_dingbu"] forBarMetrics:UIBarMetricsDefault];
+    
+    UIButton *backBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 18, 18)];
+    [backBtn setImage:[UIImage imageNamed:@"icon_fanhui"] forState:0];
+    [backBtn addTarget:self action:@selector(backItem:) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithCustomView:backBtn];
+    self.navigationItem.leftBarButtonItem = item;
+    
 }
 
 - (void)subViewLoad {
-    UILabel *nameL = [[UILabel alloc] initWithFrame:CGRectMake(20, 80, 60, 20)];
+    UILabel *nameL = [[UILabel alloc] initWithFrame:CGRectMake(20, 120, 60, 20)];
     [self.view addSubview:nameL];
     nameL.text = @"账号";
-    nameL.textColor = [UIColor blackColor];
+    nameL.font = XNFont(17.0);
+    nameL.textColor = XNColor(0, 0, 0, 1);
     
     UILabel *pwL = [[UILabel alloc] initWithFrame:CGRectMake(CGRectGetMinX(nameL.frame), CGRectGetMaxY(nameL.frame) + 30, CGRectGetWidth(nameL.frame), CGRectGetHeight(nameL.frame))];
     [self.view addSubview:pwL];
     pwL.text = @"密码";
+    pwL.font = XNFont(17.0);
     pwL.textColor = [UIColor blackColor];
     
     name = [[UITextField alloc] initWithFrame:CGRectMake(CGRectGetMaxX(nameL.frame), CGRectGetMinY(nameL.frame), WIDTH_SCREEN - 40 - CGRectGetWidth(nameL.frame) - 10, CGRectGetHeight(nameL.frame))];
     [self.view addSubview:name];
-    name.text = @"13133333333";
+    name.text = _model.user_phone;
+    name.font = XNFont(17.0);
     name.placeholder = @"请输入手机号";
     name.textColor = [UIColor blackColor];
     name.borderStyle = UITextBorderStyleNone;
@@ -78,7 +103,8 @@
     
     pw = [[UITextField alloc] initWithFrame:CGRectMake(CGRectGetMinX(name.frame), CGRectGetMinY(pwL.frame), CGRectGetWidth(name.frame), CGRectGetHeight(name.frame))];
     [self.view addSubview:pw];
-    pw.text = @"123456";
+    pw.text = @"";
+    pw.font = XNFont(17.0);
     pw.placeholder = @"请输入密码";
     pw.borderStyle = UITextBorderStyleNone;
     pw.secureTextEntry = YES;
@@ -88,14 +114,19 @@
     
     for (int i = 0; i < 2; i++) {
         UIImageView *lineImg = [[UIImageView alloc] initWithFrame:CGRectMake(CGRectGetMinX(nameL.frame), CGRectGetMaxY(nameL.frame) + i * 50 + 15, WIDTH_SCREEN - 40, 1)];
-        lineImg.backgroundColor = GRAY_BG;
+//        lineImg.backgroundColor = GRAY_BG;
+        lineImg.image = [UIImage imageNamed:@"huixian_dl"];
         [self.view addSubview:lineImg];
     }
     
     loginBtn = [[UIButton alloc] initWithFrame:CGRectMake(20, CGRectGetMaxY(pwL.frame) + 50, WIDTH_SCREEN - 40, 40)];
     [self.view addSubview:loginBtn];
-    loginBtn.backgroundColor = name.text.length > 0 ? [UIColor redColor] : GRAY_BG;
+    
+    NSString *imgName = name.text.length > 0 ? @"hongikuang_dl" : @"huikuang_dl";
+    UIImage *bgImg = [UIImage imageNamed:imgName];
+    [loginBtn setBackgroundImage:bgImg forState:UIControlStateNormal];
     loginBtn.userInteractionEnabled = name.text.length > 0 ? YES : NO;
+    loginBtn.titleLabel.font = XNFont(18.0);
     [loginBtn setTitle:@"登录" forState:UIControlStateNormal];
     [loginBtn addTarget:self action:@selector(loginButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     
@@ -116,7 +147,9 @@
 }
 
 - (void)textFieldDidChange:(UITextField *)tx {
-    loginBtn.backgroundColor = tx.text.length > 0 ? [UIColor redColor] : GRAY_BG;
+    NSString *imgName = name.text.length > 0 ? @"hongikuang_dl" : @"huikuang_dl";
+    UIImage *bgImg = [UIImage imageNamed:imgName];
+    [loginBtn setBackgroundImage:bgImg forState:UIControlStateNormal];
     loginBtn.userInteractionEnabled = tx.text.length > 0 ? YES : NO;
     
 }
@@ -137,6 +170,8 @@
             
             [NPYSaveGlobalVariable saveValueAtLocal:dataDict withKey:LoginData_Local];
             [NPYSaveGlobalVariable saveValueAtLocal:dataDict[@"r"] withKey:LoginState];
+            
+            [self.navigationController popToRootViewControllerAnimated:YES];
             
         } else {
             //用户账号不存在

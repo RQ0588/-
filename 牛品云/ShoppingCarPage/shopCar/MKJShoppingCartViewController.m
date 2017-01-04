@@ -22,8 +22,17 @@
 
 #import "NPYBaseConstant.h"
 
+#import "NPYSpecViewController.h"//规格页
 
-@interface MKJShoppingCartViewController () <UITableViewDelegate,UITableViewDataSource,ShoppingCartCellDelegate,UIAlertViewDelegate,UICollectionViewDelegate,UICollectionViewDataSource,UICollectionViewDelegateFlowLayout>
+@interface MKJShoppingCartViewController () <UITableViewDelegate,UITableViewDataSource,ShoppingCartCellDelegate,UIAlertViewDelegate,UICollectionViewDelegate,UICollectionViewDataSource,UICollectionViewDelegateFlowLayout,popValueToSuperViewDelegate> {
+    
+    NSDictionary *specDict;
+    int buyNumber;
+    
+    NSString *buyID;
+    
+    BOOL isNeedLogin;
+}
 
 @property (weak, nonatomic) IBOutlet UIView *emptyCar;
 
@@ -77,6 +86,8 @@ static NSString *relatedHeaderID = @"RelatedHeaderCollectionReusableView";
 
 - (void)dealloc
 {
+//    [self removeObserver:self forKeyPath:@"iSNEEDLOGIN"];
+    
     NSLog(@"%s____dealloc",object_getClassName(self));
 }
 
@@ -85,6 +96,7 @@ static NSString *relatedHeaderID = @"RelatedHeaderCollectionReusableView";
 {
     [super viewWillAppear:animated];
     [self.navigationController setNavigationBarHidden:NO animated:animated];
+    
 }
 
 
@@ -92,6 +104,10 @@ static NSString *relatedHeaderID = @"RelatedHeaderCollectionReusableView";
     [super viewDidLoad];
     // Do any additional setup after loading the view from its nib.
     self.automaticallyAdjustsScrollViewInsets = NO;
+    
+    [(AppDelegate *)[UIApplication sharedApplication].delegate verifyLoginWithViewController:self];
+
+//    [self addObserver:self forKeyPath:@"iSNEEDLOGIN" options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:nil];
     
     // 设置底部按钮
     CGRect rec = self.bottomView.frame;
@@ -187,6 +203,10 @@ static NSString *relatedHeaderID = @"RelatedHeaderCollectionReusableView";
     // 请求购物车数据
     [[MKJRequestHelper shareRequestHelper] requestShoppingCartInfo:^(id obj, NSError *err) {
        // buyer Array
+        if (err) {
+            [ZHProgressHUD showMessage:[NSString stringWithFormat:@"%@",err] inView:self.view];
+        }
+        
         [weakSelf.buyerLists removeAllObjects];
         weakSelf.buyerLists = (NSMutableArray *)obj;
         
@@ -271,7 +291,8 @@ static NSString *relatedHeaderID = @"RelatedHeaderCollectionReusableView";
     else
     {
         cell.editDetailView.hidden = NO;
-        cell.sizeDetailLabel.text = @"这里测试规格数据这里测试规格数据这里测试规格数据这里测试规格数据这里测试规格数据这里测试规格数据这里测试规格数据";
+//        cell.sizeDetailLabel.text = @"这里测试规格数据这里测试规格数据这里测试规格数据这里测试规格数据这里测试规格数据这里测试规格数据这里测试规格数据";
+        cell.sizeDetailLabel.text = [product.model_detail[indexPath.row] valueForKey:@"type_name"];
         cell.editDetailTitleLabel.text = @"点击我修改规格";
     }
     
@@ -476,6 +497,7 @@ static NSString *relatedHeaderID = @"RelatedHeaderCollectionReusableView";
 {
     BuyerInfo *buy = self.buyerLists[sectionIdx];
     buy.buyerIsEditing = !buy.buyerIsEditing;
+    
     [self.tableView reloadData];
 }
 
@@ -483,18 +505,63 @@ static NSString *relatedHeaderID = @"RelatedHeaderCollectionReusableView";
 - (void)clickEditingDetailInfo:(ShoppingCartCell *)cell
 {
     // 编辑对应的商品信息，这里写的太多了，我就写死了，逻辑太多了，这尼玛根本不叫Demo了，这简直就是我的成品
-    self.chooseVC = nil;
-    self.chooseVC = [[ChooseGoodsPropertyViewController alloc] init];
-    self.chooseVC.enterType = SecondEnterType;
-    self.chooseVC.price = 999.99f;
-    [self.navigationController presentSemiViewController:self.chooseVC withOptions:@{
-                                                                                         KNSemiModalOptionKeys.pushParentBack    : @(YES),
-                                                                                         KNSemiModalOptionKeys.animationDuration : @(0.6),
-                                                                                         KNSemiModalOptionKeys.shadowOpacity     : @(0.3),
-                                                                                         KNSemiModalOptionKeys.backgroundView : [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"background_01"]]
-                                                                                         }];
+//    self.chooseVC = nil;
+//    self.chooseVC = [[ChooseGoodsPropertyViewController alloc] init];
+//    self.chooseVC.enterType = SecondEnterType;
+//    self.chooseVC.price = 999.99f;
+//    [self.navigationController presentSemiViewController:self.chooseVC withOptions:@{
+//                                                                                         KNSemiModalOptionKeys.pushParentBack    : @(YES),
+//                                                                                         KNSemiModalOptionKeys.animationDuration : @(0.6),
+//                                                                                         KNSemiModalOptionKeys.shadowOpacity     : @(0.3),
+//                                                                                         KNSemiModalOptionKeys.backgroundView : [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"background_01"]]
+//                                                                                         }];
+//
+    
+#pragma mark - 规格编辑
+    NSIndexPath *indexPath = [self.tableView indexPathForCell:cell];
+    BuyerInfo *buyer  = self.buyerLists[indexPath.section];
+    ProductInfo *product = buyer.prod_list[indexPath.row];
+    buyID = [buyer valueForKey:@"buyer_id"];
+    
+    NSDictionary *userDict = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+    NPYLoginMode *userModel = [NPYLoginMode mj_objectWithKeyValues:userDict[@"data"]];
+    
+    NPYSpecViewController *specVC = [[NPYSpecViewController alloc] initWithNibName:@"NPYSpecViewController" bundle:nil];
+    specVC.goodsID = product.prod_id;
+    specVC.sign = [userDict valueForKey:@"sign"];
+    specVC.userID = userModel.user_id;
+    specVC.storNumber = [NSString stringWithFormat:@"%li",(long)product.count];
+    specVC.delegate = self;
+    specVC.view.backgroundColor = XNColor(0, 0, 0, 0.2);
+    specVC.modalPresentationStyle = UIModalPresentationOverCurrentContext;
+    [self presentViewController:specVC animated:YES completion:nil];
+    
 }
 
+#pragma mark - 编辑规格返回的值
+- (void)popValue:(NSDictionary *)dataDict withNumber:(int)number {
+    specDict = [NSDictionary dictionaryWithDictionary:dataDict];
+    buyNumber = number;
+    
+    NSString *urlStr = @"/index.php/app/Shopping/update";
+    
+    NSDictionary *userDict = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+    NPYLoginMode *userModel = [NPYLoginMode mj_objectWithKeyValues:userDict[@"data"]];
+    
+    NSDictionary *editDict = [NSDictionary dictionaryWithObjectsAndKeys:
+                              buyID,@"shopping_id",
+                              [NSString stringWithFormat:@"%i",buyNumber],@"number",
+                              [specDict valueForKey:@"id"],@"goods_spec", nil];
+    
+    NSArray *listArr = [NSArray arrayWithObject:editDict];
+    
+    NSDictionary *requestDic = [NSDictionary dictionaryWithObjectsAndKeys:
+                                [userDict valueForKey:@"sign"],@"sign",
+                                userModel.user_id,@"user_id",
+                                listArr,@"list", nil];
+    
+    [self requestEditShoppingCarUrl:urlStr withParemes:requestDic];
+}
 
 #pragma mark - 点击图片展示Show
 - (void)clickProductIMG:(ShoppingCartCell *)cell
@@ -565,6 +632,16 @@ static NSString *relatedHeaderID = @"RelatedHeaderCollectionReusableView";
             {
                 [buyer.prod_list removeObject:product];
             }
+            
+            NSString *urlStr = @"/index.php/app/Shopping/delete";
+            NSDictionary *userDict = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+            NPYLoginMode *userModel = [NPYLoginMode mj_objectWithKeyValues:userDict[@"data"]];
+            NSDictionary *requestDic = [NSDictionary dictionaryWithObjectsAndKeys:
+                                        [userDict valueForKey:@"sign"],@"sign",
+                                        userModel.user_id,@"user_id",
+                                        [buyer valueForKey:@"buyer_id"],@"shopping_id", nil];
+            
+            [self requestDeleteGoodsFromShoppingCar:urlStr withPatemes:requestDic];
             // 这里删除之后操作涉及到太多东西了，需要
             [self updateInfomation];
         }
@@ -598,7 +675,27 @@ static NSString *relatedHeaderID = @"RelatedHeaderCollectionReusableView";
             }
             [self.buyerLists removeObjectsInArray:buyerTempArr];
             [self updateInfomation];
+            
+            NSMutableArray *mArr = [NSMutableArray new];
+            NSMutableDictionary *mDict = [NSMutableDictionary new];
+            
+            for (int i = 0; i < buyerTempArr.count; i++) {
+                BuyerInfo *buyer = buyerTempArr[i];
+                [mDict setObject:[buyer valueForKey:@"buyer_id"] forKey:@"shopping_id"];
+                [mArr addObject:mDict];
+            }
+            
+            NSString *urlStr = @"/index.php/app/Shopping/del";
+            NSDictionary *userDict = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+            NPYLoginMode *userModel = [NPYLoginMode mj_objectWithKeyValues:userDict[@"data"]];
+            NSDictionary *requestDic = [NSDictionary dictionaryWithObjectsAndKeys:
+                                        [userDict valueForKey:@"sign"],@"sign",
+                                        userModel.user_id,@"user_id",
+                                        mArr,@"list", nil];
+            
+            [self requestDeleteGoodsFromShoppingCar:urlStr withPatemes:requestDic];
         }
+        
     }
     
 }
@@ -729,7 +826,59 @@ static NSString *relatedHeaderID = @"RelatedHeaderCollectionReusableView";
     [alert show];
 }
 
+#pragma mark - 网络请求服务器数据
 
+- (void)requestEditShoppingCarUrl:(NSString *)url withParemes:(NSDictionary *)pareme {
+    NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:pareme] forKey:@"data"];
+    
+    [[NPYHttpRequest sharedInstance] getWithUrlString:[NSString stringWithFormat:@"%@%@",BASE_URL,url] parameters:paremes success:^(id responseObject) {
+        NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+        
+        if ([dataDict[@"r"] intValue] == 1) {
+            //成功
+            //            NSDictionary *tpDict = dataDict[@"data"];
+            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+        } else {
+            //失败
+            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+        }
+        
+    } failure:^(NSError *error) {
+        NSLog(@"%@",error);
+        
+    }];
+    
+}
+
+- (void)requestDeleteGoodsFromShoppingCar:(NSString *)urlStr withPatemes:(NSDictionary *)pareme {
+    NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:pareme] forKey:@"data"];
+    
+    [[NPYHttpRequest sharedInstance] getWithUrlString:[NSString stringWithFormat:@"%@%@",BASE_URL,urlStr] parameters:paremes success:^(id responseObject) {
+        NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+        
+        if ([dataDict[@"r"] intValue] == 1) {
+            //成功
+            //            NSDictionary *tpDict = dataDict[@"data"];
+            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+        } else {
+            //失败
+            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+        }
+        
+    } failure:^(NSError *error) {
+        NSLog(@"%@",error);
+        
+    }];
+    
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context {
+    
+    if ([change objectForKey:@"new"]) {
+        [(AppDelegate *)[UIApplication sharedApplication].delegate verifyLoginWithViewController:self];
+    }
+    
+}
 
 - (NSMutableArray *)buyerLists
 {

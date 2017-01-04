@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="11201" systemVersion="15G31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11161"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" id="KGk-i7-Jjw" customClass="NPYShopCollectionTableViewCell">
+            <rect key="frame" x="0.0" y="0.0" width="320" height="70"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
+                <frame key="frameInset" width="320" height="69"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="tiantu_icon" translatesAutoresizingMaskIntoConstraints="NO" id="TeQ-Mw-KaF">
+                        <constraints>
+                            <constraint firstAttribute="height" constant="50" id="XGI-5o-tP2"/>
+                            <constraint firstAttribute="width" constant="50" id="flr-QB-I8M"/>
+                        </constraints>
+                    </imageView>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="大明食品旗舰店" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hlf-6i-2j1">
+                        <constraints>
+                            <constraint firstAttribute="height" constant="20" id="Bfo-Dh-aYg"/>
+                        </constraints>
+                        <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                        <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bian_sanjiao" translatesAutoresizingMaskIntoConstraints="NO" id="4B4-jB-3II">
+                        <constraints>
+                            <constraint firstAttribute="height" constant="13" id="ZUO-IR-IZE"/>
+                            <constraint firstAttribute="width" constant="13" id="cg6-dO-gLI"/>
+                        </constraints>
+                    </imageView>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="北京" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="r8o-gu-jbu">
+                        <constraints>
+                            <constraint firstAttribute="height" constant="20" id="q22-O5-ZbZ"/>
+                        </constraints>
+                        <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                        <color key="textColor" red="0.59999999999999998" green="0.59999999999999998" blue="0.59999999999999998" alpha="1" colorSpace="calibratedRGB"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                </subviews>
+                <constraints>
+                    <constraint firstItem="r8o-gu-jbu" firstAttribute="width" secondItem="hlf-6i-2j1" secondAttribute="width" id="DFu-XQ-5GU"/>
+                    <constraint firstItem="TeQ-Mw-KaF" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="14" id="Kgj-C1-rQo"/>
+                    <constraint firstAttribute="trailing" secondItem="hlf-6i-2j1" secondAttribute="trailing" constant="40" id="Lw8-yk-V0Y"/>
+                    <constraint firstAttribute="bottom" secondItem="TeQ-Mw-KaF" secondAttribute="bottom" constant="10" id="Oh0-hU-FYS"/>
+                    <constraint firstItem="hlf-6i-2j1" firstAttribute="top" secondItem="TeQ-Mw-KaF" secondAttribute="top" id="V64-mZ-Lgn"/>
+                    <constraint firstItem="hlf-6i-2j1" firstAttribute="leading" secondItem="TeQ-Mw-KaF" secondAttribute="trailing" constant="15" id="fHs-W9-lBu"/>
+                    <constraint firstItem="r8o-gu-jbu" firstAttribute="bottom" secondItem="TeQ-Mw-KaF" secondAttribute="bottom" id="iYR-5X-dyG"/>
+                    <constraint firstItem="4B4-jB-3II" firstAttribute="centerY" secondItem="TeQ-Mw-KaF" secondAttribute="centerY" id="kac-1f-cWj"/>
+                    <constraint firstAttribute="trailing" secondItem="4B4-jB-3II" secondAttribute="trailing" constant="16" id="wJ2-ya-Br8"/>
+                    <constraint firstItem="TeQ-Mw-KaF" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="10" id="wmw-uf-PjM"/>
+                    <constraint firstItem="r8o-gu-jbu" firstAttribute="leading" secondItem="hlf-6i-2j1" secondAttribute="leading" id="wwS-94-NWp"/>
+                </constraints>
+            </tableViewCellContentView>
+            <connections>
+                <outlet property="shopCity" destination="r8o-gu-jbu" id="Adk-8w-n1C"/>
+                <outlet property="shopIcon" destination="TeQ-Mw-KaF" id="4K9-gg-YTn"/>
+                <outlet property="shopName" destination="hlf-6i-2j1" id="Cky-1y-cxz"/>
+            </connections>
+            <point key="canvasLocation" x="-143" y="61"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <image name="bian_sanjiao" width="13" height="13"/>
+        <image name="tiantu_icon" width="40" height="40"/>
+    </resources>
+</document>

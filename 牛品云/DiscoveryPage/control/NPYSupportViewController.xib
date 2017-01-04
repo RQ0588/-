@@ -27,9 +27,9 @@
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="scw-Kl-LwM">
                     <subviews>
                         <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="IqW-3C-uYo">
-                            <color key="backgroundColor" red="1" green="0.074743433489999997" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                            <color key="backgroundColor" red="1" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                             <constraints>
-                                <constraint firstAttribute="width" constant="110" id="1M7-tu-lj5"/>
+                                <constraint firstAttribute="width" constant="140" id="1M7-tu-lj5"/>
                                 <constraint firstAttribute="height" constant="40" id="IYo-Lh-tCt"/>
                             </constraints>
                             <fontDescription key="fontDescription" type="system" pointSize="20"/>
@@ -42,18 +42,17 @@
                                 <constraint firstAttribute="width" constant="100" id="9AK-k0-ma8"/>
                                 <constraint firstAttribute="height" constant="40" id="A0G-z5-CsN"/>
                             </constraints>
-                            <fontDescription key="fontDescription" type="system" pointSize="20"/>
-                            <color key="textColor" red="1" green="0.074743433489999997" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                            <color key="textColor" red="0.97254901960784312" green="0.12156862745098039" blue="0.12156862745098039" alpha="1" colorSpace="calibratedRGB"/>
                             <nil key="highlightedColor"/>
                         </label>
-                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="总计：" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="RAm-ym-ezr">
-                            <frame key="frameInset" minX="105" minY="10" width="52" height="20"/>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="总计：" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="RAm-ym-ezr">
                             <constraints>
                                 <constraint firstAttribute="width" constant="52" id="XD3-xK-X1w"/>
                                 <constraint firstAttribute="height" constant="20" id="klc-5J-4d6"/>
                             </constraints>
-                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                            <nil key="textColor"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                            <color key="textColor" red="0.066666666669999999" green="0.066666666669999999" blue="0.066666666669999999" alpha="1" colorSpace="calibratedRGB"/>
                             <nil key="highlightedColor"/>
                         </label>
                     </subviews>
@@ -85,7 +84,7 @@
                 <constraint firstItem="uof-X4-3bV" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" id="co6-ZU-nkB"/>
                 <constraint firstAttribute="bottom" secondItem="scw-Kl-LwM" secondAttribute="bottom" id="zaF-Y0-vbC"/>
             </constraints>
-            <point key="canvasLocation" x="-280.5" y="48.5"/>
+            <point key="canvasLocation" x="39" y="61"/>
         </view>
     </objects>
 </document>

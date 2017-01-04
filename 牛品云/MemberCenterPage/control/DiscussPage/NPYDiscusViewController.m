@@ -17,6 +17,7 @@
     CGFloat _itemWH;
     CGFloat _margin;
     CGRect  editFrame;
+    UILabel *addL;
 }
 
 @property (nonatomic, strong) NPYPlaceHolderTextView    *wordView;
@@ -33,10 +34,13 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     
-    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:nil];
-    self.navigationItem.backBarButtonItem = item;
+    [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"hk_dingbu"] forBarMetrics:UIBarMetricsDefault];
     
-    [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"daohaglan_bg"] forBarMetrics:UIBarMetricsDefault];
+    UIButton *backBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 18, 18)];
+    [backBtn setImage:[UIImage imageNamed:@"icon_fanhui"] forState:0];
+    [backBtn addTarget:self action:@selector(backItem:) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithCustomView:backBtn];
+    self.navigationItem.leftBarButtonItem = item;
     
     self.tabBarController.tabBar.hidden = YES;
     
@@ -68,7 +72,8 @@
     
     editFrame = editView.frame;
     
-    self.wordView = [[NPYPlaceHolderTextView alloc] initWithFrame:CGRectMake(10, 10, WIDTH_SCREEN - 20, 120)];
+    self.wordView = [[NPYPlaceHolderTextView alloc] initWithFrame:CGRectMake(14, 10, WIDTH_SCREEN - 20, 120)];
+    self.wordView.font = XNFont(14.0);
     self.wordView.placeholder = @"限140字~";
     self.wordView.layer.borderWidth = 1.0;
     self.wordView.layer.borderColor = GRAY_BG.CGColor;
@@ -82,6 +87,12 @@
     
     [self.collectionView registerClass:[CollectionViewCell class] forCellWithReuseIdentifier:@"cell"];
     [editView addSubview:self.collectionView];
+    
+    addL = [[UILabel alloc] initWithFrame:CGRectMake(65, CGRectGetMaxY(editView.frame) - 45, 100, 20)];
+    addL.text = @"添加图片";
+    addL.textColor = XNColor(170, 170, 170, 1);
+    addL.font = XNFont(14.0);
+    [self.view addSubview:addL];
 }
 
 #pragma mark - 从相册获取图片
@@ -104,6 +115,7 @@
     _isSelectOriginalPhoto = isSelectOriginalPhoto;
     [_collectionView reloadData];
     
+    addL.frame = CGRectMake(_photosArray.count * 50 + 65, CGRectGetMinY(addL.frame), 100, 20);
 }
 
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath{
@@ -122,6 +134,7 @@
             _isSelectOriginalPhoto = isSelectOriginalPhoto;
             [_collectionView reloadData];
             _collectionView.contentSize = CGSizeMake(0, ((_photosArray.count + 2) / 3 ) * (_margin + _itemWH));
+            
         }];
         [self presentViewController:imagePickerVc animated:YES completion:nil];
     }
@@ -135,8 +148,7 @@
     CollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"cell" forIndexPath:indexPath];
     
     if (indexPath.row == _photosArray.count) {
-        cell.imagev.image = [UIImage imageNamed:@"AlbumAddBtn"];
-        //        cell.imagev.backgroundColor = [UIColor redColor];
+        cell.imagev.image = [UIImage imageNamed:@"tiantu_icon"];
         cell.deleteButton.hidden = YES;
         
     }else{
@@ -173,12 +185,12 @@
     [btn setTitle:@"发表评论" forState:UIControlStateNormal];
     [btn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [btn addTarget:self action:@selector(commentButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
+    btn.titleLabel.font = XNFont(18.0);
     [self.view addSubview:btn];
 }
 
 - (void)commentButtonPressed:(UIButton *)btn {
     //发表评论按钮点击,提交数据并返回
-    
     [self.navigationController popViewControllerAnimated:YES];
 }
 
@@ -201,10 +213,11 @@
 -(UICollectionView *)collectionView{
     if (!_collectionView) {
         _margin = 4;
-        _itemWH = (self.view.bounds.size.width - 2 * _margin - 4) / 3 - _margin;
+//        _itemWH = (self.view.bounds.size.width - 2 * _margin - 4) / 3 - _margin;
+        _itemWH = 40;
         UICollectionViewFlowLayout *flowLayOut = [[UICollectionViewFlowLayout alloc] init];
-        flowLayOut.itemSize = CGSizeMake((WIDTH_SCREEN - 50)/ 6, (WIDTH_SCREEN - 50)/ 6);
-        flowLayOut.sectionInset = UIEdgeInsetsMake(10, 10, 10, 10);
+        flowLayOut.itemSize = CGSizeMake(40, 40);
+        flowLayOut.sectionInset = UIEdgeInsetsMake(14, 10, 10, 10);
         self.collectionView = [[UICollectionView alloc] initWithFrame:CGRectMake(0, 100, WIDTH_SCREEN, 300) collectionViewLayout:flowLayOut];
         
         _collectionView.backgroundColor = [UIColor clearColor];
@@ -219,6 +232,10 @@
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
     [self.wordView resignFirstResponder];
     [self.view resignFirstResponder];
+}
+
+- (void)backItem:(UIButton *)sender {
+    [self.navigationController popViewControllerAnimated:YES];
 }
 
 - (void)didReceiveMemoryWarning {

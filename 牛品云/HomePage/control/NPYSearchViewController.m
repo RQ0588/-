@@ -10,7 +10,11 @@
 #import "NPYBaseConstant.h"
 #import "NPYGoodsListViewController.h"
 
-@interface NPYSearchViewController () <UITableViewDelegate,UITableViewDataSource,UITextFieldDelegate>
+#define searchUrl @"/index.php/app/Index/get_data"
+
+@interface NPYSearchViewController () <UITableViewDelegate,UITableViewDataSource,UITextFieldDelegate> {
+    
+}
 
 @property (nonatomic, strong) UITableView   *mainTabelView;
 @property (nonatomic, strong) UITextField   *searchTF;
@@ -32,6 +36,12 @@
     
     self.view.backgroundColor = GRAY_BG;
     
+    self.tableDatas = [[NSMutableArray alloc] initWithArray:[NPYSaveGlobalVariable readValueFromeLocalWithKey:@"searchData"]];
+    
+    if (self.tableDatas.count == 0) {
+        [self.tableDatas insertObject:@"历史搜索" atIndex:0];
+    }
+    
     [self navigationViewLoad];
     
     [self mainTableViewLoad];
@@ -42,23 +52,6 @@
     
     UIBarButtonItem *item = [UIBarButtonItem new];
     self.navigationItem.leftBarButtonItem = item;
-    
-    self.tabBarController.tabBar.hidden = YES;
-    
-    self.navigationController.navigationBar.translucent = NO;
-}
-
-- (void)viewWillDisappear:(BOOL)animated {
-    [super viewWillDisappear:animated];
-    
-    [self.searchTF removeFromSuperview];
-    self.searchTF = nil;
-}
-
-#pragma mark - UITableView
-
-- (void)navigationViewLoad {
-    [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"hk_dingbu"] forBarMetrics:UIBarMetricsDefault];
     
     UIImage *searchBGImg = [UIImage imageNamed:@"kuang_sousuoye"];
     self.searchTF = [[UITextField alloc] init];
@@ -71,9 +64,29 @@
     self.searchTF.returnKeyType = UIReturnKeySearch;
     self.searchTF.delegate = self;
     self.searchTF.leftView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 30, 0)];
+    [self.searchTF becomeFirstResponder];
     //设置显示模式为永远显示(默认不显示)
     self.searchTF.leftViewMode = UITextFieldViewModeAlways;
     [self.navigationController.navigationBar addSubview:self.searchTF];
+    
+    self.tabBarController.tabBar.hidden = YES;
+    
+    self.navigationController.navigationBar.translucent = NO;
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    
+    [self.searchTF removeFromSuperview];
+    self.searchTF = nil;
+    
+    [NPYSaveGlobalVariable saveValueAtLocal:self.tableDatas withKey:@"searchData"];
+}
+
+#pragma mark - UITableView
+
+- (void)navigationViewLoad {
+    [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"hk_dingbu"] forBarMetrics:UIBarMetricsDefault];
     
     UIBarButtonItem *cancel = [[UIBarButtonItem alloc] initWithTitle:@"取消" style:UIBarButtonItemStylePlain target:self action:@selector(cancelEvent)];
     self.navigationItem.rightBarButtonItem = cancel;
@@ -120,6 +133,7 @@
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:identifier];
         if (indexPath.row == 0) {
             cell.textLabel.textColor = XNColor(17, 17, 17, 1);
+            cell.userInteractionEnabled = NO;
             
         } else {
             cell.textLabel.textColor = XNColor(153, 153, 153, 1);
@@ -139,10 +153,13 @@
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    
     UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
     self.goodsListVC = [[NPYGoodsListViewController alloc] init];
     self.goodsListVC.isMore = NO;
     self.goodsListVC.searchStr = cell.textLabel.text;
+    self.goodsListVC.dataUrl = searchUrl;
     [self.navigationController pushViewController:self.goodsListVC animated:YES];
     
 }
