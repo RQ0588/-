@@ -17,6 +17,38 @@
             endingLineNumber = "235"
             landmarkName = "-requestAddGoodsToShoppingCarUrl:withParemes:"
             landmarkType = "7">
+            <Locations>
+               <Location
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "-[NPYSpecViewController requestAddGoodsToShoppingCarUrl:withParemes:]"
+                  moduleName = "&#x725b;&#x54c1;&#x4e91;"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/eric/Desktop/%E7%89%9B%E5%93%81%E4%BA%91/%E7%89%9B%E5%93%81%E4%BA%91/%E7%89%9B%E5%93%81%E4%BA%91/HomePage/GoodsAndBuyViewController/ViewController/NPYSpecViewController.m"
+                  timestampString = "505361945.699256"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "236"
+                  endingLineNumber = "236"
+                  offsetFromSymbolStart = "176">
+               </Location>
+               <Location
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "__69-[NPYSpecViewController requestAddGoodsToShoppingCarUrl:withParemes:]_block_invoke"
+                  moduleName = "&#x725b;&#x54c1;&#x4e91;"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/eric/Desktop/%E7%89%9B%E5%93%81%E4%BA%91/%E7%89%9B%E5%93%81%E4%BA%91/%E7%89%9B%E5%93%81%E4%BA%91/HomePage/GoodsAndBuyViewController/ViewController/NPYSpecViewController.m"
+                  timestampString = "505361945.701746"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "237"
+                  endingLineNumber = "237"
+                  offsetFromSymbolStart = "57">
+               </Location>
+            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -74,7 +106,7 @@
                   moduleName = "&#x725b;&#x54c1;&#x4e91;"
                   usesParentBreakpointCondition = "Yes"
                   urlString = "file:///Users/eric/Desktop/%E7%89%9B%E5%93%81%E4%BA%91/%E7%89%9B%E5%93%81%E4%BA%91/%E7%89%9B%E5%93%81%E4%BA%91/HomePage/control/NPYAddressDetailViewController.m"
-                  timestampString = "505207445.844249"
+                  timestampString = "505361945.956801"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "373"
@@ -89,7 +121,7 @@
                   moduleName = "&#x725b;&#x54c1;&#x4e91;"
                   usesParentBreakpointCondition = "Yes"
                   urlString = "file:///Users/eric/Desktop/%E7%89%9B%E5%93%81%E4%BA%91/%E7%89%9B%E5%93%81%E4%BA%91/%E7%89%9B%E5%93%81%E4%BA%91/HomePage/control/NPYAddressDetailViewController.m"
-                  timestampString = "505207445.846326"
+                  timestampString = "505361945.958811"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "374"
