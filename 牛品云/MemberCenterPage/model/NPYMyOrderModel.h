@@ -10,6 +10,7 @@
 
 @interface NPYMyOrderModel : NSObject
 
+@property (nonatomic, copy) NSString *shop_id;      //店铺id
 @property (nonatomic, copy) NSString *order_id;     //订单号
 @property (nonatomic, copy) NSString *shop_name;    //店铺名
 @property (nonatomic, copy) NSString *shop_img;     //店铺logo

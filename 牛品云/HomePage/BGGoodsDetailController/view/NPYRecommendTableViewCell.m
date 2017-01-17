@@ -27,6 +27,8 @@
 }
 @property (weak, nonatomic) IBOutlet UICollectionView *itemCell;
 
+@property (nonatomic, strong) NSMutableDictionary *cellDic;
+
 @end
 
 @implementation NPYRecommendTableViewCell
@@ -71,7 +73,21 @@
 
 - (__kindof UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     
-    NPYGoodsCollectionViewCell *goodsCell = [collectionView dequeueReusableCellWithReuseIdentifier:@"cellid" forIndexPath:indexPath];
+//    NPYGoodsCollectionViewCell *goodsCell = [collectionView dequeueReusableCellWithReuseIdentifier:@"cellid" forIndexPath:indexPath];
+//    NPYHomeGoodsModel *goodsModel = goodsArr[indexPath.row];
+//    goodsCell.goodsModel = goodsModel;
+    
+    // 每次先从字典中根据IndexPath取出唯一标识符
+    NSString *identifier = [_cellDic objectForKey:[NSString stringWithFormat:@"%@", indexPath]];
+    // 如果取出的唯一标示符不存在，则初始化唯一标示符，并将其存入字典中，对应唯一标示符注册Cell
+    if (identifier == nil) {
+        identifier = [NSString stringWithFormat:@"%@%@", @"DayCell", [NSString stringWithFormat:@"%@", indexPath]];
+        [_cellDic setValue:identifier forKey:[NSString stringWithFormat:@"%@", indexPath]];
+        // 注册Cell
+        [self.itemCell registerClass:[NPYGoodsCollectionViewCell class]  forCellWithReuseIdentifier:identifier];
+    }
+    
+    NPYGoodsCollectionViewCell *goodsCell = [collectionView dequeueReusableCellWithReuseIdentifier:identifier forIndexPath:indexPath];;
     NPYHomeGoodsModel *goodsModel = goodsArr[indexPath.row];
     goodsCell.goodsModel = goodsModel;
     
@@ -99,7 +115,7 @@
         
         if ([dataDict[@"r"] intValue] == 1) {
             //成功
-            [ZHProgressHUD showMessage:@"请求成功" inView:self.superview];
+//            [ZHProgressHUD showMessage:@"请求成功" inView:self.superview];
             NPYHomeModel *model = [[NPYHomeModel alloc] init];
             model.goodsArr = dataDict[@"data"];
             [model toDetailModel];
@@ -110,7 +126,7 @@
             
         } else {
             //失败
-            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.superview];
+//            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.superview];
         }
         
     } failure:^(NSError *error) {
@@ -123,6 +139,8 @@
 - (void)awakeFromNib {
     [super awakeFromNib];
     // Initialization code
+    
+    _cellDic = [NSMutableDictionary new];
     
     [self recommendedViewLoad];
     

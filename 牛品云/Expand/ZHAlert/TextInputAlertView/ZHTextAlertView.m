@@ -41,15 +41,12 @@
         self.titleLabel.text= @"请输入关键字";
         [self.bgView addSubview:self.titleLabel];
         
-        
         //内容
         self.textField = [[UITextField alloc]initWithFrame:CGRectMake(25, 55, kAlertWidth-50, 40)];
         self.textField.layer.borderColor = [UIColor lightGrayColor].CGColor;
         self.textField.layer.cornerRadius = 5;
         self.textField.layer.borderWidth = 0.5;
         [self.bgView addSubview:self.textField];
-        
-        
         
         UIButton *cancle = [UIButton buttonWithType:UIButtonTypeCustom];
         cancle.backgroundColor = [UIColor lightGrayColor];
@@ -61,7 +58,6 @@
         cancle.frame = CGRectMake(25, 105, 110, 40);
         self.cancleBtn = cancle;
         [self.bgView addSubview:cancle];
-        
         
         UIButton *sure = [UIButton buttonWithType:UIButtonTypeCustom];
         sure.backgroundColor = [UIColor redColor];

@@ -58,7 +58,7 @@
     
         //设置主题
         [self configTheme];
-
+        self.backgroundColor = [UIColor whiteColor];
     }
     return self;
 }
@@ -68,8 +68,8 @@
     _bgImageView = [UIImageView new];
     UIImage *bgImage = [[[UIImage imageNamed:@"LikeCmtBg"] stretchableImageWithLeftCapWidth:40 topCapHeight:30] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     _bgImageView.image = bgImage;
-    _bgImageView.backgroundColor = [UIColor clearColor];
-    [self addSubview:_bgImageView];
+    _bgImageView.backgroundColor = [UIColor whiteColor];
+//    [self addSubview:_bgImageView];
     
     _likeLabel = [MLLinkLabel new];
     _likeLabel.font = [UIFont systemFontOfSize:14];
@@ -87,7 +87,7 @@
     
     self.lee_theme
     .LeeAddBackgroundColor(DAY , [UIColor whiteColor])
-    .LeeAddBackgroundColor(NIGHT , [UIColor blackColor]);
+    .LeeAddBackgroundColor(NIGHT , [UIColor whiteColor]);
     
     _bgImageView.lee_theme
     .LeeAddTintColor(DAY , SDColor(230, 230, 230, 1.0f))

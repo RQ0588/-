@@ -11,6 +11,7 @@
 #import "SelctCityView.h"
 
 #define UPDATA_ADDRESS_URL @"/index.php/app/User/set_address"
+#define DELEGATE_ADDRESS_URL @"/index.php/app/User/delete_address"
 
 @interface NPYAddressDetailViewController () <UITableViewDelegate,UITableViewDataSource,UITextFieldDelegate,UITextViewDelegate> {
     UITableView     *mainTView;
@@ -252,7 +253,13 @@
     if (indexPath.section == 2) {
         //删除地址
         if (self.delegate && [self.delegate respondsToSelector:@selector(passDeleteIndexToParentView:)]) {
-            [self.delegate passDeleteIndexToParentView:self.index];
+            
+            NSDictionary *userDict = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+            NPYLoginMode *userModel = [NPYLoginMode mj_objectWithKeyValues:userDict[@"data"]];
+            
+            NSDictionary *request = [NSDictionary dictionaryWithObjectsAndKeys:[userDict valueForKey:@"sign"],@"sign",userModel.user_id,@"user_id",self.address_id,@"address_id", nil];
+            
+            [self requestDelegateAddressInfoWithUrlString:DELEGATE_ADDRESS_URL withParames:request];
         }
         
         [self.navigationController popViewControllerAnimated:YES];
@@ -324,14 +331,13 @@
     [_dataDict setValue:addressTView.text forKey:@"address"];
     
     NSString *tpye = @"";
+    NSString *address_id = @"-100";
     
     if (self.delegate && [self.delegate respondsToSelector:@selector(passValueToParentView:andValue:)]) {
         if (self.isEdit) {
-            [self.delegate passValueToParentView:self.index andValue:_dataDict];
             tpye = @"update";
-            
+            address_id = self.address_id;
         } else {
-            [self.delegate passValueToParentView:-1 andValue:_dataDict];
             tpye = @"add";
             
         }
@@ -345,7 +351,7 @@
     NSDictionary *userDict = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
     NPYLoginMode *userModel = [NPYLoginMode mj_objectWithKeyValues:userDict[@"data"]];
     
-    NSDictionary *request = [NSDictionary dictionaryWithObjectsAndKeys:[userDict valueForKey:@"sign"],@"sign",userModel.user_id,@"user_id",self.address_id,@"address_id",tpye,@"type",tf.text,@"receiver",tf1.text,@"phone",city,@"city",province,@"province",addressTView.text,@"detailed",_isDefault,@"default", nil];
+    NSDictionary *request = [NSDictionary dictionaryWithObjectsAndKeys:[userDict valueForKey:@"sign"],@"sign",userModel.user_id,@"user_id",tpye,@"type",tf.text,@"receiver",tf1.text,@"phone",city,@"city",province,@"province",addressTView.text,@"detailed",_isDefault,@"default",address_id,@"address_id", nil];
     
     [self requestUpdataAddressInfoWithUrlString:UPDATA_ADDRESS_URL withParames:request];
     
@@ -375,13 +381,49 @@
         
         if ([dataDict[@"r"] intValue] == 1) {
             //成功
-            [ZHProgressHUD showMessage:@"请求成功" inView:self.view];
+            [ZHProgressHUD showMessage:[NSString stringWithFormat:@"%@",dataDict[@"data"]] inView:self.view];
+            
+            if (self.delegate && [self.delegate respondsToSelector:@selector(passValueToParentView:andValue:)]) {
+                if (self.isEdit) {
+                    [self.delegate passValueToParentView:self.index andValue:_dataDict];
+                    
+                } else {
+                    [self.delegate passValueToParentView:-1 andValue:_dataDict];
+                    
+                }
+                
+            }
             
             [self.navigationController popViewControllerAnimated:YES];
             
         } else {
             //失败
-            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+//            [ZHProgressHUD showMessage:[NSString stringWithFormat:@"%@",dataDict[@"data"]] inView:self.view];
+        }
+        
+    } failure:^(NSError *error) {
+        NSLog(@"%@",error);
+        
+    }];
+}
+
+- (void)requestDelegateAddressInfoWithUrlString:(NSString *)urlStr withParames:(NSDictionary *)parame {
+    NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:parame] forKey:@"data"];
+    
+    [[NPYHttpRequest sharedInstance] getWithUrlString:[NSString stringWithFormat:@"%@%@",BASE_URL,urlStr] parameters:paremes success:^(id responseObject) {
+        NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+        
+        if ([dataDict[@"r"] intValue] == 1) {
+            //成功
+            [ZHProgressHUD showMessage:[NSString stringWithFormat:@"%@",dataDict[@"data"]] inView:self.view];
+            
+            [self.delegate passDeleteIndexToParentView:self.index];
+            
+            [self.navigationController popViewControllerAnimated:YES];
+            
+        } else {
+            //失败
+//            [ZHProgressHUD showMessage:[NSString stringWithFormat:@"%@",dataDict[@"data"]] inView:self.view];
         }
         
     } failure:^(NSError *error) {

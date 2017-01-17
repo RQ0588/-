@@ -11,14 +11,23 @@
 #import "NPYSupporMidTableViewCell.h"
 #import "NPYBaseConstant.h"
 #import "NPYAddressViewController.h"
+#import "NPYAddressModel.h"
+#import "NPYPaymentOrderViewController.h"
 
-@interface NPYSupportViewController () <UITableViewDelegate,UITableViewDataSource> {
+#define DIC_ORDER_URL   @"/index.php/app/Buy/many_home"
+#define DIC_ORDER_BUY_URL   @"/index.php/app/Buy/many"
+
+@interface NPYSupportViewController () <UITableViewDelegate,UITableViewDataSource,SupportMidTableViewCellDelegate> {
     UILabel *freightL;      //运费
+    NPYAddressModel *addressModel;
+    
+    NSString *signStr,*userID;
 }
 
-@property (nonatomic, strong) NPYSupporTopTableViewCell *topCell;
-@property (nonatomic, strong) NPYSupporMidTableViewCell *midCell;
-@property (nonatomic, strong) NPYAddressViewController  *addressVC;
+@property (nonatomic, strong) NPYSupporTopTableViewCell         *topCell;
+@property (nonatomic, strong) NPYSupporMidTableViewCell         *midCell;
+@property (nonatomic, strong) NPYAddressViewController          *addressVC;
+@property (nonatomic, strong) NPYPaymentOrderViewController     *paymentOrderVC;
 
 @end
 
@@ -40,6 +49,16 @@ static NSString *midCell = @"NPYSupporMidTableViewCell";
     [self navigationViewLoad];
     
     [self addMainViewToSelf];
+    
+    NSDictionary *userDict = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+    NPYLoginMode *userModel = [NPYLoginMode mj_objectWithKeyValues:userDict[@"data"]];
+    
+    NSDictionary *request = [NSDictionary dictionaryWithObjectsAndKeys:[userDict valueForKey:@"sign"],@"sign",userModel.user_id,@"user_id", nil];
+    
+    signStr = [userDict valueForKey:@"sign"];
+    userID = userModel.user_id;
+    
+    [self requestDicOrederInfoWithUrlString:DIC_ORDER_URL withParames:request];
 }
 
 - (void)navigationViewLoad {
@@ -83,11 +102,15 @@ static NSString *midCell = @"NPYSupporMidTableViewCell";
     if (indexPath.section == 0) {
         self.topCell = [tableView dequeueReusableCellWithIdentifier:topCell];
         self.topCell.selectionStyle = UITableViewCellSelectionStyleNone;
+        self.topCell.model = addressModel;
         return self.topCell;
         
     } else if (indexPath.section == 1) {
         self.midCell = [tableView dequeueReusableCellWithIdentifier:midCell forIndexPath:indexPath];
         [self configCell:self.midCell indexPath:indexPath];
+        self.midCell.delegate = self;
+        self.midCell.buyNumberL.text = [NSString stringWithFormat:@"%i",self.supportNumber];
+        self.midCell.model = self.model;
         return self.midCell;
         
     } else if (indexPath.section == 2) {
@@ -137,6 +160,36 @@ static NSString *midCell = @"NPYSupporMidTableViewCell";
     }
 }
 
+- (void)passTotalPriceToSuperView:(NSString *)totalPrice withBuyNumber:(int)buyNum{
+    self.totalPriceL.text = [NSString stringWithFormat:@"%@",totalPrice];
+    self.supportNumber = buyNum;
+    
+}
+
+- (void)requestDicOrederInfoWithUrlString:(NSString *)urlStr withParames:(NSDictionary *)parame {
+    NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:parame] forKey:@"data"];
+    
+    [[NPYHttpRequest sharedInstance] getWithUrlString:[NSString stringWithFormat:@"%@%@",BASE_URL,urlStr] parameters:paremes success:^(id responseObject) {
+        NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+        if ([dataDict[@"r"] intValue] == 1) {
+            //成功
+//            [ZHProgressHUD showMessage:@"网络请求成功" inView:self.view];
+            NSDictionary *tpDict = [NSDictionary dictionaryWithDictionary:dataDict[@"data"]];
+            addressModel = [NPYAddressModel mj_objectWithKeyValues:tpDict[@"address"]];
+            [self.mainTableView reloadData];
+            
+        } else {
+            //请求失败
+//            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+        }
+        
+        
+    } failure:^(NSError *error) {
+        NSLog(@"%@",error);
+        
+    }];
+}
+
 - (void)backItem:(UIButton *)sender {
     [self.navigationController popViewControllerAnimated:YES];
 }
@@ -155,5 +208,44 @@ static NSString *midCell = @"NPYSupporMidTableViewCell";
     // Pass the selected object to the new view controller.
 }
 */
+
+- (IBAction)supportButtonPressed:(id)sender {
+    self.paymentOrderVC = [[NPYPaymentOrderViewController alloc] init];
+    self.paymentOrderVC.user_id = userID;
+    self.paymentOrderVC.sign = signStr;
+    
+    self.paymentOrderVC.order_type = @"order";
+    
+    NSDictionary *request = [NSDictionary dictionaryWithObjectsAndKeys:signStr,@"sign",userID,@"user_id",self.model.id,@"repay_id",[NSString stringWithFormat:@"%i",self.supportNumber],@"num",addressModel.address_id,@"address_id", nil];
+    
+    
+    [self requestDicOrederBuyInfoWithUrlString:DIC_ORDER_BUY_URL withParames:request];
+}
+
+- (void)requestDicOrederBuyInfoWithUrlString:(NSString *)urlStr withParames:(NSDictionary *)parame {
+    NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:parame] forKey:@"data"];
+    
+    [[NPYHttpRequest sharedInstance] getWithUrlString:[NSString stringWithFormat:@"%@%@",BASE_URL,urlStr] parameters:paremes success:^(id responseObject) {
+        NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+        if ([dataDict[@"r"] intValue] == 1) {
+            //成功
+//            [ZHProgressHUD showMessage:@"网络请求成功" inView:self.view];
+            NSDictionary *resultDict = [NSDictionary dictionaryWithDictionary:dataDict[@"data"]];
+            
+            self.paymentOrderVC.order_id = [resultDict valueForKey:@"order_id"];
+            self.paymentOrderVC.price = [resultDict valueForKey:@"price"];
+            self.paymentOrderVC.order_type = @"many";
+            [self.navigationController pushViewController:self.paymentOrderVC animated:YES];
+        } else {
+            //请求失败
+//            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+        }
+        
+        
+    } failure:^(NSError *error) {
+        NSLog(@"%@",error);
+        
+    }];
+}
 
 @end

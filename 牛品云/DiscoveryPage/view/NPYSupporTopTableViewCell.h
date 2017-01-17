@@ -7,7 +7,14 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "NPYAddressModel.h"
 
 @interface NPYSupporTopTableViewCell : UITableViewCell
+
+@property (nonatomic, strong) NPYAddressModel *model;
+
+@property (weak, nonatomic) IBOutlet UILabel *nameL;
+@property (weak, nonatomic) IBOutlet UILabel *addressL;
+@property (weak, nonatomic) IBOutlet UILabel *phoneL;
 
 @end

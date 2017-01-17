@@ -9,7 +9,20 @@
 #import <UIKit/UIKit.h>
 #import "NPYBaseConstant.h"
 
+@protocol MessageTableViewCellDelegate <NSObject>
+
+@optional
+- (void)acceptButtonPressedWithCellIndex:(int)index;
+- (void)refuseButtonPressedWithCellIndex:(int)index;
+
+@end
+
 @interface NPYMessageTableViewCell : UITableViewCell
+
+@property (nonatomic, assign) int typeIndex;
+@property (nonatomic, assign) int cellIndex;
+
+@property (nonatomic, weak) id<MessageTableViewCellDelegate>delegate;
 
 @property (weak, nonatomic) IBOutlet UILabel *timeLabel;
 @property (weak, nonatomic) IBOutlet UIImageView *mesIcon;

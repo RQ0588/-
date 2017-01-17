@@ -249,7 +249,7 @@
         
     } success:^(NSURLSessionDataTask *_Nonnull task, id _Nullable responseObject) {
         //上传成功
-        [ZHProgressHUD showMessage:[responseObject valueForKey:@"data"] inView:self.view];
+//        [ZHProgressHUD showMessage:[responseObject valueForKey:@"data"] inView:self.view];
         
         [self.navigationController popViewControllerAnimated:YES];
         

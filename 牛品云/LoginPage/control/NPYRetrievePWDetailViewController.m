@@ -165,7 +165,7 @@
             
         } else {
             //用户账号不存在
-            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+//            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
         }
         
     } failure:^(NSError *error) {

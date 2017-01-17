@@ -85,6 +85,17 @@
     mainTV.dataSource = self;
     mainTV.showsVerticalScrollIndicator = NO;
     mainTV.separatorStyle = UITableViewCellSeparatorStyleNone;
+    
+    mainTV.mj_header = [MJRefreshNormalHeader headerWithRefreshingBlock:^{
+       
+        NSDictionary *userDict = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+        NPYLoginMode *userModel = [NPYLoginMode mj_objectWithKeyValues:userDict[@"data"]];
+        
+        NSDictionary *request = [NSDictionary dictionaryWithObjectsAndKeys:[userDict valueForKey:@"sign"],@"sign",userModel.user_id,@"user_id", nil];
+        
+        [self requestAddressInfoWithUrlString:GET_ADDRESS_URL withParames:request];
+        
+    }];
 }
 
 #pragma mark - UITableView
@@ -125,7 +136,7 @@
     if (self.delegate && [self.delegate respondsToSelector:@selector(popValue:)]) {
         NPYAddressModel *model = addressArray[indexPath.row];
         
-        NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:model.receiver,@"name",model.phone,@"phone",model.detailed,@"address",model.city,@"city", nil];
+        NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:model.receiver,@"name",model.phone,@"phone",model.detailed,@"address",model.city,@"city",model.address_id,@"address_id", nil];
         
         [self.delegate popValue:dict];
         
@@ -140,21 +151,22 @@
     NPYAddressModel *model = [NPYAddressModel mj_objectWithKeyValues:dic];
     if (index == -1) {
         
-        [addressArray insertObject:model atIndex:0];
+//        [addressArray insertObject:model atIndex:0];
         
     } else {
         
-        [addressArray replaceObjectAtIndex:index withObject:model];
+//        [addressArray replaceObjectAtIndex:index withObject:model];
         
     }
     
-    [mainTV reloadData];
+//    [mainTV reloadData];
+    [mainTV.mj_header beginRefreshing];
 }
 
 - (void)passDeleteIndexToParentView:(NSInteger)index {
     [addressArray removeObjectAtIndex:index];
-    
-    [mainTV reloadData];
+    [mainTV.mj_header beginRefreshing];
+//    [mainTV reloadData];
 }
 
 - (void)passCellIndex:(NSInteger)index {
@@ -195,7 +207,7 @@
         
         if ([dataDict[@"r"] intValue] == 1) {
             //成功
-            [ZHProgressHUD showMessage:@"请求成功" inView:self.view];
+//            [ZHProgressHUD showMessage:@"请求成功" inView:self.view];
             
             [addressArray removeAllObjects];
             
@@ -208,12 +220,13 @@
                 [addressArray addObject:model];
             }
             
+            [mainTV.mj_header endRefreshing];
             
             [mainTV reloadData];
             
         } else {
             //失败
-            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+//            [ZHProgressHUD showMessage:[NSString stringWithFormat:@"%@",dataDict[@"data"]] inView:self.view];
         }
         
     } failure:^(NSError *error) {

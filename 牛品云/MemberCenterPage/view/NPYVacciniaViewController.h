@@ -12,4 +12,10 @@
 
 @property (weak, nonatomic) IBOutlet UIScrollView *mainScroller;
 
+- (IBAction)shareButtonPressed:(id)sender;
+
+- (IBAction)wxClick:(id)sender;
+- (IBAction)wxFriendClick:(id)sender;
+- (IBAction)wbClick:(id)sender;
+
 @end

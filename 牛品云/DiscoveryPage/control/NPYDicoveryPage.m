@@ -38,6 +38,7 @@
     self.tabBarController.tabBar.hidden = NO;
     
     [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"hk_dingbu"] forBarMetrics:UIBarMetricsDefault];
+    self.navigationController.navigationBar.translucent = NO;
 }
 
 - (void)viewDidLoad {
@@ -66,7 +67,7 @@
     //右侧消息按钮
     UIButton *rightMesg = [[UIButton alloc] init];
     [rightMesg setFrame:CGRectMake(0, 0, 50, 20)];
-    [rightMesg setTitle:@"信息" forState:0];
+    [rightMesg setTitle:@"消息" forState:0];
     [rightMesg setTitleColor:XNColor(51, 51, 51, 1) forState:0];
     rightMesg.titleLabel.font = [UIFont systemFontOfSize:15.0];
     [rightMesg addTarget:self
@@ -87,6 +88,14 @@
     self.mainTableView.showsVerticalScrollIndicator = NO;
     self.mainTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     [self.view addSubview:self.mainTableView];
+    
+    self.mainTableView.mj_header = [MJRefreshNormalHeader headerWithRefreshingBlock:^{
+        NSDictionary *requestDict = [NSDictionary dictionaryWithObjectsAndKeys:@"npy_we874646sf",@"key",@"0",@"num", nil];
+        
+        [self requestManyDataWithUrlstring:ManyData_Url withParame:requestDict];
+    }];
+    
+    [self.mainTableView.mj_header beginRefreshing];
     
     [self topADImageViewLoad];
 }
@@ -167,7 +176,8 @@
         NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
         if ([dataDict[@"r"] intValue] == 1) {
             //成功
-            [ZHProgressHUD showMessage:@"网络请求成功" inView:self.view];
+            [tabelViewDatas removeAllObjects];
+//            [ZHProgressHUD showMessage:@"网络请求成功" inView:self.view];
             NSDictionary *tpDict = [NSDictionary dictionaryWithDictionary:dataDict[@"data"]];
             
             ADImages = @[[[tpDict valueForKey:@"ad1"] valueForKey:@"img"], [[tpDict valueForKey:@"ad2"] valueForKey:@"img"], [[tpDict valueForKey:@"ad3"] valueForKey:@"img"], [[tpDict valueForKey:@"ad4"] valueForKey:@"img"]];
@@ -183,11 +193,13 @@
                 [tabelViewDatas addObject:model];
             }
             
+            [self.mainTableView.mj_header endRefreshing];
+            
             [self.mainTableView reloadData];
             
         } else {
             //请求失败
-            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+//            [ZHProgressHUD showMessage:[NSString stringWithFormat:@"%@",dataDict[@"data"]] inView:self.view];
         }
         
         

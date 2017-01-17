@@ -13,6 +13,8 @@
 
 @protocol DicMainDetailCellDelegate <NSObject>
 
+- (void)passBuyValueToSuperView:(int)number;
+
 - (void)selectedSportWithIndexPath:(NSIndexPath *)path;
 
 - (void)desSelectSpotWithIndexPath:(NSIndexPath *)path;

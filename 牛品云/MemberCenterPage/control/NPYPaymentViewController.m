@@ -8,6 +8,13 @@
 
 #import "NPYPaymentViewController.h"
 #import "NPYBaseConstant.h"
+#import "NPYMyOrderDetailModel.h"
+#import "NPYAddressModel.h"
+#import "NPYPaymentOrderViewController.h"
+
+#define OrderDetailUrl @"/index.php/app/Order/get_detailed"
+
+#define ManyOrderDetailUrl @"/index.php/app/Order/get_many_id"
 
 @interface NPYPaymentViewController () <UITableViewDelegate,UITableViewDataSource> {
     UILabel *totalMoneyL;   //总计金额
@@ -21,10 +28,17 @@
     UIImageView *proIcon,*proImage;
     UILabel *proName,*proDetail,*proPrice,*proTotal,*proCount,*proPrice2,*proState;
     UIButton *proRemark,*oneBtn,*twoBtn;
+    
+    NSDictionary *addressDic;
+    
+    dispatch_source_t _timer;
 }
 
 @property (nonatomic, strong) UITableView *mainTView;
 @property (nonatomic, strong) UIView *bottomView;
+
+@property (nonatomic, strong) NPYMyOrderDetailModel *model;
+@property (nonatomic, strong) NPYPaymentOrderViewController     *paymentOrderVC;
 
 @end
 
@@ -33,6 +47,13 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
+    
+    NSDictionary *dic = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+    NPYLoginMode *model = [NPYLoginMode mj_objectWithKeyValues:dic[@"data"]];
+    
+    NSDictionary *request = [NSDictionary dictionaryWithObjectsAndKeys:[dic valueForKey:@"sign"],@"sign",model.user_id,@"user_id",self.order_id ? self.order_id : @"",@"order_id", nil];
+    
+    [self requestOrderInfoWithUrlString:_isManyOrder ? ManyOrderDetailUrl : OrderDetailUrl withParames:request];
     
     self.view.backgroundColor = GRAY_BG;
     
@@ -71,7 +92,7 @@
 
 - (void)mainViewLoad {
     //
-    self.mainTView = [[UITableView alloc] initWithFrame:CGRectMake(0, 1, WIDTH_SCREEN, HEIGHT_SCREEN) style:UITableViewStyleGrouped];
+    self.mainTView = [[UITableView alloc] initWithFrame:CGRectMake(0, 1, WIDTH_SCREEN, self.isManyOrder ? HEIGHT_SCREEN - 60 : HEIGHT_SCREEN - 1) style:UITableViewStyleGrouped];
     self.mainTView.backgroundColor = [UIColor clearColor];
     self.mainTView.dataSource = self;
     self.mainTView.delegate = self;
@@ -87,7 +108,7 @@
 - (void)bottomViewLoad {
     //
     self.bottomView = [[UIView alloc] init];
-    self.bottomView.frame = CGRectMake(0, HEIGHT_SCREEN - 50, WIDTH_SCREEN, 50);
+    self.bottomView.frame = CGRectMake(0, self.isManyOrder ? HEIGHT_SCREEN - 114 : HEIGHT_SCREEN - 50, WIDTH_SCREEN, 50);
     self.bottomView.backgroundColor = [UIColor whiteColor];
     self.bottomView.layer.borderWidth = 0.5;
     self.bottomView.layer.borderColor = GRAY_BG.CGColor;
@@ -145,8 +166,8 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     NSString *identifier = @"mainCell";
-    UITableViewCell *mainCell = [tableView dequeueReusableCellWithIdentifier:identifier];
-    
+//    UITableViewCell *mainCell = [tableView dequeueReusableCellWithIdentifier:identifier];
+    UITableViewCell *mainCell;
     if (mainCell == nil) {
         mainCell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:identifier];
         //        mainCell.textLabel.text = @"Test!!";
@@ -162,9 +183,10 @@
             
             timeL = [[UILabel alloc] initWithFrame:CGRectMake(WIDTH_SCREEN - 130, 20, 100, 30)];
             [mainCell.contentView addSubview:timeL];
-            timeL.text = @"20:00";
+            timeL.text =@"20:00";
             timeL.font = [UIFont systemFontOfSize:22.0];
             timeL.textAlignment = NSTextAlignmentRight;
+            timeL.adjustsFontSizeToFitWidth = YES;
             timeL.textColor = XNColor(235, 134, 6, 1);
         }
         //收货详情
@@ -177,16 +199,17 @@
             [mainCell.contentView addSubview:consigneeL];
             
             consigneeName = [[UILabel alloc] init];
-            consigneeName.frame = CGRectMake(CGRectGetMaxX(consigneeL.frame), CGRectGetMinY(consigneeL.frame), 80, 20);
-            consigneeName.text = @"牛品云";
+            consigneeName.frame = CGRectMake(CGRectGetMaxX(consigneeL.frame), CGRectGetMinY(consigneeL.frame), 100, 20);
+            consigneeName.text = [addressDic valueForKey:@"name"];//@"牛品云";
             consigneeName.font = [UIFont systemFontOfSize:14.0];
             consigneeName.textColor = XNColor(17, 17, 17, 1);
             consigneeName.textAlignment = NSTextAlignmentLeft;
+            consigneeName.adjustsFontSizeToFitWidth = YES;
             [mainCell.contentView addSubview:consigneeName];
             
             phonNumber = [[UILabel alloc] init];
             phonNumber.frame = CGRectMake(CGRectGetMaxX(consigneeName.frame) + Height_Space, CGRectGetMinY(consigneeL.frame), 100, 20);
-            phonNumber.text = @"15888888888";
+            phonNumber.text = [addressDic valueForKey:@"phone"];//@"15888888888";
             phonNumber.font = [UIFont systemFontOfSize:14.0];
             phonNumber.textColor = XNColor(17, 17, 17, 1);
             [mainCell.contentView addSubview:phonNumber];
@@ -200,7 +223,7 @@
             
             address = [[UILabel alloc] init];
             address.frame = CGRectMake(CGRectGetMaxX(addressL.frame) + Height_Space, CGRectGetMinY(addressL.frame) - 10, WIDTH_SCREEN  - CGRectGetWidth(addressL.frame) - 30, 40);
-            address.text = @"苏州高新区科技城致远大厦1010室";
+            address.text = [addressDic valueForKey:@"address"];//@"苏州高新区科技城致远大厦1010室";
             address.font = [UIFont systemFontOfSize:14.0];
             address.textColor = XNColor(64, 65, 66, 1);
             address.numberOfLines = 0;
@@ -211,15 +234,16 @@
         if (indexPath.section == 2) {
             proIcon = [[UIImageView alloc] init];
             proIcon.frame = CGRectMake(14, 10, 20, 20);
-            proIcon.image = [UIImage imageNamed:@"anli1_gouwu"];
-            proIcon.contentMode = UIViewContentModeScaleAspectFill;
+//            proIcon.image = [UIImage imageNamed:@"anli1_gouwu"];
+            [proIcon sd_setImageWithURL:[NSURL URLWithString:self.model.shop_img] placeholderImage:[UIImage imageNamed:@"tiantu_icon"]];
+            proIcon.contentMode = UIViewContentModeScaleToFill;
             [mainCell.contentView addSubview:proIcon];
             
             proName = [[UILabel alloc] init];
             proName.frame = CGRectMake(CGRectGetMaxX(proIcon.frame) + 10, 10, WIDTH_SCREEN - 60, 20);
             proName.textColor = XNColor(17, 17, 17, 1);
             proName.font = [UIFont systemFontOfSize:15.0];
-            proName.text = @"五常稻花香大米";
+            proName.text = self.model.shop_name;//@"五常稻花香大米";
             [mainCell.contentView addSubview:proName];
             
             proState = [[UILabel alloc] init];
@@ -227,23 +251,23 @@
             proState.textColor = XNColor(255, 80, 0, 1);
             proState.textAlignment = NSTextAlignmentRight;
             proState.font = XNFont(13.0);
-            proState.text = @"待付款";
+            proState.text = [self orderStateString][0];//@"待付款";
             [mainCell.contentView addSubview:proState];
             
             UIView *bg = [[UIView alloc] init];
-            bg.frame = CGRectMake(0, CGRectGetMaxY(proIcon.frame) + 10, WIDTH_SCREEN, 140);
+            bg.frame = CGRectMake(0, CGRectGetMaxY(proIcon.frame) + 10, WIDTH_SCREEN, 105);
             bg.backgroundColor = XNColor(247, 247, 247, 1);
             [mainCell.contentView addSubview:bg];
             
             proImage = [[UIImageView alloc] init];
             proImage.frame = CGRectMake(CGRectGetMinX(proIcon.frame), 10, 80, 80);
-            [proImage sd_setImageWithURL:[NSURL URLWithString:@""] placeholderImage:[UIImage imageNamed:@"anli1_gouwu"]];
+            [proImage sd_setImageWithURL:[NSURL URLWithString:self.model.goods_img] placeholderImage:[UIImage imageNamed:@"tiantu_icon"]];
             proImage.contentMode = UIViewContentModeScaleToFill;
             [bg addSubview:proImage];
             
             proDetail = [[UILabel alloc] init];
             proDetail.frame = CGRectMake(CGRectGetMaxX(proImage.frame) + 11, CGRectGetMinY(proImage.frame), bg.frame.size.width - CGRectGetWidth(proImage.frame) - 40, 30);
-            proDetail.text = @"八杂市 2016年新米东北五常稻花香大米2.5kg黑龙江五常粳米5斤";
+            proDetail.text = self.model.goods_name;//@"八杂市 2016年新米东北五常稻花香大米2.5kg黑龙江五常粳米5斤";
             proDetail.textColor = XNColor(35, 35, 35, 1);
             proDetail.font = [UIFont systemFontOfSize:12.0];
             proDetail.numberOfLines = 0;
@@ -253,12 +277,12 @@
             proPrice.frame = CGRectMake(CGRectGetMaxX(proImage.frame) + 10, CGRectGetMaxY(proImage.frame) - 20, 80, 20);
             proPrice.adjustsFontSizeToFitWidth = YES;
             proPrice.numberOfLines = 0;
-            proPrice.attributedText = [self attributedStringWithSegmentationString:@"￥" withOriginalString:[NSString stringWithFormat:@"￥%.2f",38.80] withOneColor:XNColor(248, 31, 31, 1) withTwoColor:XNColor(248, 31, 31, 1) withOneFontSize:12.0 twoFontSize:17.0];
+            proPrice.attributedText = [self attributedStringWithSegmentationString:@"￥" withOriginalString:[NSString stringWithFormat:@"￥%@",self.model.price] withOneColor:XNColor(248, 31, 31, 1) withTwoColor:XNColor(248, 31, 31, 1) withOneFontSize:12.0 twoFontSize:17.0];
             [bg addSubview:proPrice];
             
             proCount = [[UILabel alloc] init];
             proCount.frame = CGRectMake(WIDTH_SCREEN - 60, CGRectGetMinY(proPrice.frame), 30, 23);
-            proCount.text = [NSString stringWithFormat:@"X%i",1];
+            proCount.text = [NSString stringWithFormat:@"X%@",self.model.num];
             proCount.textColor = XNColor(35, 35, 35, 1);
             proCount.font = [UIFont systemFontOfSize:14.0];
             proCount.textAlignment = NSTextAlignmentCenter;
@@ -273,11 +297,11 @@
             proRemark.titleLabel.font = [UIFont systemFontOfSize:12.0];
             proRemark.backgroundColor = [UIColor whiteColor];
             proRemark.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
-            [bg addSubview:proRemark];
+//            [bg addSubview:proRemark];
             
             proTotal = [[UILabel alloc] init];
             proTotal.frame = CGRectMake(0, CGRectGetMaxY(bg.frame) + 10, WIDTH_SCREEN - 96, 20);
-            proTotal.text = [NSString stringWithFormat:@"共 %@ 件商品 合计：",proCount.text];
+            proTotal.text = [NSString stringWithFormat:@"共 %@ 件商品 合计：",self.model.num];
             proTotal.textAlignment = NSTextAlignmentRight;
             proTotal.font = [UIFont systemFontOfSize:13.0];
             proTotal.textColor = XNColor(51, 51, 51, 1);
@@ -288,7 +312,7 @@
             proPrice2.adjustsFontSizeToFitWidth = YES;
             proPrice2.numberOfLines = 0;
             proPrice2.textAlignment = NSTextAlignmentRight;
-            proPrice2.attributedText = proPrice.attributedText;
+            proPrice2.attributedText = [self attributedStringWithSegmentationString:@"￥" withOriginalString:[NSString stringWithFormat:@"￥%.2f",[self.model.price doubleValue] * [self.model.num intValue] ] withOneColor:XNColor(248, 31, 31, 1) withTwoColor:XNColor(248, 31, 31, 1) withOneFontSize:12.0 twoFontSize:17.0];
             [mainCell.contentView addSubview:proPrice2];
             
         }
@@ -302,15 +326,15 @@
             freightL = [[UILabel alloc] init];
             freightL.frame = CGRectMake(WIDTH_SCREEN - 116, 10, 100, 30);
             freightL.textColor = XNColor(166, 166, 166, 1);
-            freightL.text = @"+￥0.00";
+            freightL.text = [NSString stringWithFormat:@"+￥%@",self.model.postage];//@"+￥0.00";
             freightL.textAlignment = NSTextAlignmentRight;
             freightL.font = XNFont(13.0);
             [mainCell.contentView addSubview:freightL];
             if (indexPath.row == 1) {
-                freightL.text = @"-￥0.00";
+                freightL.text = [NSString stringWithFormat:@"-￥%@",self.model.integral];//@"-￥0.00";
             }
             if (indexPath.row == 2) {
-                freightL.text = @"-￥0.00";
+                freightL.text = [NSString stringWithFormat:@"-￥%@",self.model.coupon];//@"-￥0.00";
             }
             mainCell.accessoryType = UITableViewCellAccessoryNone;
         }
@@ -323,10 +347,10 @@
             freightL.font = [UIFont systemFontOfSize:13.0];
             mainCell.textLabel.text = @"订单编号";
             [mainCell.contentView addSubview:freightL];
-            freightL.text = @"6546565652300";
+            freightL.text = self.model.order_id;//@"6546565652300";
             if (indexPath.row == 1) {
                 mainCell.textLabel.text = @"购买时间";
-                freightL.text = @"2016-11-18";
+                freightL.text = [self calutTimeFromeTime:self.model.buy_time withType:1];//@"2016-11-18";
             }
             
         }
@@ -345,7 +369,7 @@
     } else if (indexPath.section == 1) {
         return 77;
     } else if (indexPath.section == 2) {
-        return 215;
+        return 215 - 25;
     } else {
         return 50;
     }
@@ -406,12 +430,109 @@
 }
 
 - (void)canceButtonPressed:(UIButton *)btn {
+    //取消订单
     
 }
 
 - (void)payButtonPressed:(UIButton *)btn {
     //    NSLog(@"继续支付");
+    NSDictionary *userDict = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+    NPYLoginMode *userModel = [NPYLoginMode mj_objectWithKeyValues:userDict[@"data"]];
     
+    self.paymentOrderVC = [[NPYPaymentOrderViewController alloc] init];
+    self.paymentOrderVC.sign = [userDict valueForKey:@"sign"];
+    self.paymentOrderVC.user_id = userModel.user_id;
+    self.paymentOrderVC.order_id = self.model.order_id;
+    self.paymentOrderVC.price = [NSString stringWithFormat:@"%.2f",[self.model.price doubleValue] * [self.model.num intValue] + [self.model.postage intValue]];
+    if (_isManyOrder) {
+        self.paymentOrderVC.order_type = @"many";
+    } else {
+        self.paymentOrderVC.order_type = @"order";
+    }
+    
+    
+    [self.navigationController pushViewController:self.paymentOrderVC animated:YES];
+}
+
+#pragma mark -
+
+- (NSString *)calutTimeFromeTime:(NSString *)timeStr withType:(int)type {
+    NSString *stringTime = @"";
+    //创建日期格式化对象
+    NSDateFormatter *dateFormatter=[[NSDateFormatter alloc] init];
+    //    [dateFormatter setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
+    if (type == 1) {
+        [dateFormatter setDateFormat:@"yyyy.MM.dd"];
+        
+    } else {
+        [dateFormatter setDateFormat:@"HH:mm"];
+        
+    }
+    
+    NSDate *timeDate = [NSDate dateWithTimeIntervalSince1970:[timeStr intValue]];
+    
+    stringTime = [dateFormatter stringFromDate:timeDate];
+    
+    return stringTime;
+}
+
+- (NSArray *)orderStateString {
+    NSArray *StringArr = [NSArray new];
+    NSString *str = @"";
+    NSString *btnTitle = @"";
+    NSString *btnTitle2 = @"";
+    switch ([self.model.type intValue]) {
+        case 0:
+            str = @"待付款";
+            btnTitle = @"删除订单";
+            btnTitle2 = @"立即付款";
+            break;
+            
+        case 1:
+            str = @"发货中";
+            btnTitle = @"售后/退款";
+            btnTitle2 = @"确认收货";
+            
+            if (_isManyOrder) {
+                str = @"已付款";
+            }
+            
+            break;
+            
+        case 2:
+            str = @"已发货";
+            btnTitle = @"售后/退款";
+            btnTitle2 = @"确认收货";
+            break;
+            
+        case 3:
+            str = @"已完成";
+            btnTitle = @"售后/退款";
+            btnTitle2 = @"立即评价";
+            break;
+            
+        case 4:
+            str = @"已完成";
+            btnTitle = @"售后/退款";
+            btnTitle2 = @"立即评价";
+            break;
+            
+        case 5:
+            str = @"售后";
+            btnTitle2 = @"售后中";
+            break;
+            
+        case -1:
+            str = @"已取消";
+            break;
+            
+        default:
+            break;
+    }
+    
+    StringArr = @[str,btnTitle,btnTitle2];
+    
+    return StringArr;
 }
 
 - (void)backItem:(UIButton *)sender {
@@ -447,6 +568,117 @@
     CGSize size=[str sizeWithAttributes:attrs];
     
     return size;
+}
+
+- (void)requestOrderInfoWithUrlString:(NSString *)urlStr withParames:(NSDictionary *)parame {
+    NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:parame] forKey:@"data"];
+    
+    [[NPYHttpRequest sharedInstance] getWithUrlString:[NSString stringWithFormat:@"%@%@",BASE_URL,urlStr] parameters:paremes success:^(id responseObject) {
+        NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+        
+        if ([dataDict[@"r"] intValue] == 1) {
+            //成功
+//            [ZHProgressHUD showMessage:@"请求成功" inView:self.view];
+            NSDictionary *tpDict = dataDict[@"data"];
+            NPYAddressModel *addressModel = [NPYAddressModel mj_objectWithKeyValues:dataDict[@"address"]];
+            
+            addressDic = [NSDictionary dictionaryWithObjectsAndKeys:addressModel.receiver,@"name",addressModel.phone,@"phone",addressModel.detailed,@"address",addressModel.address_id,@"address_id", nil];
+            
+            self.model = [NPYMyOrderDetailModel mj_objectWithKeyValues:tpDict];
+            
+            [totalMoneyL setAttributedText:[self attributedStringWithSegmentationString:@"￥" withOriginalString:[NSString stringWithFormat:@"￥%.2f",[self.model.price doubleValue] * [self.model.num intValue] + [self.model.postage intValue]] withOneColor:XNColor(248, 31, 31, 1) withTwoColor:XNColor(248, 31, 31, 1) withOneFontSize:12.0 twoFontSize:17.0]];
+            
+            [self.mainTView reloadData];
+            
+            [self time];
+            
+        } else {
+            //失败
+//            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+            
+        }
+        
+    } failure:^(NSError *error) {
+        NSLog(@"%@",error);
+        
+    }];
+}
+
+-(NSString *)getyyyymmdd{
+    NSDate *now = [NSDate date];
+    NSDateFormatter *formatDay = [[NSDateFormatter alloc] init];
+    formatDay.dateFormat = @"yyyy-MM-dd";
+    NSString *dayStr = [formatDay stringFromDate:now];
+    
+    return dayStr;
+    
+}
+
+- (void)time {
+    NSDateFormatter *dateFormatter=[[NSDateFormatter alloc] init];
+    [dateFormatter setDateFormat:@"yyyy-MM-dd"];
+    
+    NSDate *endDate = [dateFormatter dateFromString:[self getyyyymmdd]];
+    NSDate *endDate_tomorrow = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate:([endDate timeIntervalSinceReferenceDate] + 24*3600)];
+    NSDate *startDate = [NSDate date];
+    NSTimeInterval timeInterval =[endDate_tomorrow timeIntervalSinceDate:startDate];
+    
+    if (_timer==nil) {
+        __block int timeout = timeInterval; //倒计时时间
+        
+        if (timeout!=0) {
+            dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+            _timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0,queue);
+            dispatch_source_set_timer(_timer,dispatch_walltime(NULL, 0),1.0*NSEC_PER_SEC, 0); //每秒执行
+            dispatch_source_set_event_handler(_timer, ^{
+                if(timeout<=0){ //倒计时结束，关闭
+                    dispatch_source_cancel(_timer);
+                    _timer = nil;
+                    dispatch_async(dispatch_get_main_queue(), ^{
+//                        self.dayLabel.text = @"";
+//                        self.hourLabel.text = @"00";
+//                        self.minuteLabel.text = @"00";
+//                        self.secondLabel.text = @"00";
+                        timeL.text = @"00:00:00";
+                    });
+                    
+                }else{
+                    int days = (int)(timeout/(3600*24));
+                    if (days==0) {
+//                        self.dayLabel.text = @"";
+                    }
+                    int hours = (int)((timeout-days*24*3600)/3600);
+                    int minute = (int)(timeout-days*24*3600-hours*3600)/60;
+                    int second = timeout-days*24*3600-hours*3600-minute*60;
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        if (days==0) {
+//                            self.dayLabel.text = @"0天";
+                        }else{
+//                            self.dayLabel.text = [NSString stringWithFormat:@"%d天",days];
+                        }
+                        if (hours<10) {
+//                            self.hourLabel.text = [NSString stringWithFormat:@"0%d",hours];
+                        }else{
+//                            self.hourLabel.text = [NSString stringWithFormat:@"%d",hours];
+                        }
+                        if (minute<10) {
+//                            self.minuteLabel.text = [NSString stringWithFormat:@"0%d",minute];
+                        }else{
+//                            self.minuteLabel.text = [NSString stringWithFormat:@"%d",minute];
+                        }
+                        if (second<10) {
+//                            self.secondLabel.text = [NSString stringWithFormat:@"0%d",second];
+                        }else{
+//                            self.secondLabel.text = [NSString stringWithFormat:@"%d",second];
+                        }
+                        timeL.text = [NSString stringWithFormat:@"%i:%i:%i",hours,minute,second];
+                    });
+                    timeout--;
+                }
+            });
+            dispatch_resume(_timer);
+        }
+    }
 }
 
 - (void)didReceiveMemoryWarning {

@@ -10,4 +10,6 @@
 
 @interface NPYDiscusViewController : UIViewController
 
+@property (nonatomic, strong) NSString *order_id;
+
 @end

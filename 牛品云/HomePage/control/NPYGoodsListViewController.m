@@ -22,6 +22,8 @@
 
 @property (nonatomic, strong) BuyViewController *goodsView;
 
+@property (nonatomic, strong) NSMutableDictionary *cellDic;
+
 @end
 
 @implementation NPYGoodsListViewController
@@ -41,6 +43,8 @@
     // Do any additional setup after loading the view.
     
     self.view.backgroundColor = GRAY_BG;
+    
+    _cellDic = [NSMutableDictionary new];
     
 //    self.navigationItem.title = @"";
     
@@ -95,10 +99,24 @@
 }
 
 - (__kindof UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
+//    NPYHomeGoodsModel *goodsModel = goodsArr[indexPath.row];
+//    
+//    NPYGoodsCollectionViewCell *goodsCell = [collectionView dequeueReusableCellWithReuseIdentifier:@"cellid" forIndexPath:indexPath];
+//    
+//    goodsCell.goodsModel = goodsModel;
+    
+    // 每次先从字典中根据IndexPath取出唯一标识符
+    NSString *identifier = [_cellDic objectForKey:[NSString stringWithFormat:@"%@", indexPath]];
+    // 如果取出的唯一标示符不存在，则初始化唯一标示符，并将其存入字典中，对应唯一标示符注册Cell
+    if (identifier == nil) {
+        identifier = [NSString stringWithFormat:@"%@%@", @"DayCell", [NSString stringWithFormat:@"%@", indexPath]];
+        [_cellDic setValue:identifier forKey:[NSString stringWithFormat:@"%@", indexPath]];
+        // 注册Cell
+        [self.recommendView registerClass:[NPYGoodsCollectionViewCell class]  forCellWithReuseIdentifier:identifier];
+    }
+    
+    NPYGoodsCollectionViewCell *goodsCell = [collectionView dequeueReusableCellWithReuseIdentifier:identifier forIndexPath:indexPath];;
     NPYHomeGoodsModel *goodsModel = goodsArr[indexPath.row];
-    
-    NPYGoodsCollectionViewCell *goodsCell = [collectionView dequeueReusableCellWithReuseIdentifier:@"cellid" forIndexPath:indexPath];
-    
     goodsCell.goodsModel = goodsModel;
     
     return goodsCell;
@@ -113,7 +131,7 @@
 }
 
 - (void)requestHomeDataWithSearchString:(NSString *)text withListNumber:(NSString *)number {
-    NSDictionary *requestDic = [NSDictionary dictionaryWithObjectsAndKeys:@"npy_we874646sf",@"key",number,@"num",@"枣",@"text", nil];
+    NSDictionary *requestDic = [NSDictionary dictionaryWithObjectsAndKeys:@"npy_we874646sf",@"key",number,@"num",text,@"text", nil];
     NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:requestDic] forKey:@"data"];
     
     [[NPYHttpRequest sharedInstance] getWithUrlString:[NSString stringWithFormat:@"%@%@",BASE_URL,self.dataUrl] parameters:paremes success:^(id responseObject) {
@@ -121,7 +139,7 @@
         
         if ([dataDict[@"r"] intValue] == 1) {
             //成功
-            [ZHProgressHUD showMessage:@"请求成功" inView:self.view];
+//            [ZHProgressHUD showMessage:@"请求成功" inView:self.view];
             NPYHomeModel *model = [[NPYHomeModel alloc] init];
             model.goodsArr = dataDict[@"data"];
             [model toDetailModel];
@@ -132,7 +150,7 @@
             
         } else {
             //失败
-            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+//            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
         }
         
     } failure:^(NSError *error) {

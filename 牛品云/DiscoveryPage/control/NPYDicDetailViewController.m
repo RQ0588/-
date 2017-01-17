@@ -23,10 +23,13 @@
     NSMutableArray *selecArr;
     BOOL isOpenCell;
     NSIndexPath *selectedIndexPath;
+    NSIndexPath *oldSelectedIndexPath;
     
     NSUInteger CellCount;
     
     NSMutableArray *dataArr;
+    
+    int supporNumber;
 }
 
 @property (nonatomic, strong) NPYDicTopDetailTableViewCell      *topCell;
@@ -85,15 +88,15 @@ static NSString *dicOpenMainCell = @"Expand";
     UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithCustomView:backBtn];
     self.navigationItem.leftBarButtonItem = item;
     
-    UIButton *shareBtn = [[UIButton alloc] init];
-    [shareBtn setFrame:CGRectMake(0, 0, 18, 18)];
-    [shareBtn setImage:[UIImage imageNamed:@"share_icon"] forState:UIControlStateNormal];
-    [shareBtn addTarget:self
-     
-                  action:@selector(shareButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
-    
-    UIBarButtonItem *rightBtnItem = [[UIBarButtonItem alloc] initWithCustomView:shareBtn];
-    self.navigationItem.rightBarButtonItem = rightBtnItem;
+//    UIButton *shareBtn = [[UIButton alloc] init];
+//    [shareBtn setFrame:CGRectMake(0, 0, 18, 18)];
+//    [shareBtn setImage:[UIImage imageNamed:@"share_icon"] forState:UIControlStateNormal];
+//    [shareBtn addTarget:self
+//     
+//                  action:@selector(shareButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
+//    
+//    UIBarButtonItem *rightBtnItem = [[UIBarButtonItem alloc] initWithCustomView:shareBtn];
+//    self.navigationItem.rightBarButtonItem = rightBtnItem;
 }
 
 - (void)mainViewLoad {
@@ -160,6 +163,7 @@ static NSString *dicOpenMainCell = @"Expand";
         self.topCell.delegate = self;
         self.topCell.homeModel = self.homeModel;
         self.topCell.selectionStyle = UITableViewCellSelectionStyleNone;
+        self.topCell.userInteractionEnabled = NO;
         return self.topCell;
         
     } else if (indexPath.section == 1) {
@@ -177,7 +181,8 @@ static NSString *dicOpenMainCell = @"Expand";
             }
             
             cell.model = dataArr[idx];
-            
+//            cell.userInteractionEnabled = NO;
+            cell.selectionStyle = UITableViewCellSelectionStyleNone;
             return cell;
             
         } else {
@@ -190,7 +195,8 @@ static NSString *dicOpenMainCell = @"Expand";
             cell.YQGImg.hidden = YES;
             
             cell.detailModel = dataArr[idx];
-            
+//            cell.userInteractionEnabled = NO;
+            cell.selectionStyle = UITableViewCellSelectionStyleNone;
             [self configCell:cell indexPath:indexPath];
             return cell;
         }
@@ -230,11 +236,11 @@ static NSString *dicOpenMainCell = @"Expand";
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     
-    if (indexPath.section == 1) {
-        self.supportVC = [[NPYSupportViewController alloc] initWithNibName:@"NPYSupportViewController" bundle:nil];
-        [self.navigationController pushViewController:self.supportVC animated:YES];
-        
-    }
+//    if (indexPath.section == 1) {
+//        self.supportVC = [[NPYSupportViewController alloc] initWithNibName:@"NPYSupportViewController" bundle:nil];
+//        [self.navigationController pushViewController:self.supportVC animated:YES];
+//        
+//    }
 }
 
 #pragma mark - 更改tableView的分割线顶格显示
@@ -279,12 +285,32 @@ static NSString *dicOpenMainCell = @"Expand";
 
 #pragma mark - DicMainDetailCellDelegate
 
+- (void)passBuyValueToSuperView:(int)number {
+    supporNumber = number;
+}
+
 - (void)selectedSportWithIndexPath:(NSIndexPath *)path {
-    NPYDicMainDetailTableViewCell *cell = [self.mainTableView cellForRowAtIndexPath:path];
-    cell.path = path;
-    cell.selectBtn.hidden = YES;
-    cell.selectedView.hidden = NO;
-    cell.countL.text = @"1";
+    if (oldSelectedIndexPath == nil || oldSelectedIndexPath == path) {
+        NPYDicMainDetailTableViewCell *cell = [self.mainTableView cellForRowAtIndexPath:path];
+        cell.path = path;
+        cell.selectBtn.hidden = YES;
+        cell.selectedView.hidden = NO;
+        
+    } else {
+        NPYDicMainDetailTableViewCell *oldCell = [self.mainTableView cellForRowAtIndexPath:oldSelectedIndexPath];
+        oldCell.path = oldSelectedIndexPath;
+        oldCell.selectBtn.hidden = NO;
+        oldCell.selectedView.hidden = YES;
+//        oldCell.countL.text = @"1";
+        
+        NPYDicMainDetailTableViewCell *cell = [self.mainTableView cellForRowAtIndexPath:path];
+        cell.path = path;
+        cell.selectBtn.hidden = YES;
+        cell.selectedView.hidden = NO;
+    }
+    
+    oldSelectedIndexPath = path;
+//    cell.countL.text = @"1";
 }
 
 - (void)desSelectSpotWithIndexPath:(NSIndexPath *)path {
@@ -294,6 +320,7 @@ static NSString *dicOpenMainCell = @"Expand";
     cell.selectedView.hidden = YES;
     cell.selectBtn.selected = NO;
     cell.countL.text = @"0";
+    oldSelectedIndexPath = nil;
 }
 
 - (void)openSubDetailViewWithIndexPath:(NSIndexPath *)path withIsOpen:(BOOL)open {
@@ -366,7 +393,7 @@ static NSString *dicOpenMainCell = @"Expand";
         NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
         if ([dataDict[@"r"] intValue] == 1) {
             //成功
-            [ZHProgressHUD showMessage:@"网络请求成功" inView:self.view];
+//            [ZHProgressHUD showMessage:@"网络请求成功" inView:self.view];
             NSDictionary *tpDict = [NSDictionary dictionaryWithDictionary:dataDict[@"data"]];
             
             self.homeModel = [NPYDicHomeModel mj_objectWithKeyValues:tpDict[@"many"]];
@@ -383,7 +410,7 @@ static NSString *dicOpenMainCell = @"Expand";
             
         } else {
             //请求失败
-            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+//            [ZHProgressHUD showMessage:[NSString stringWithFormat:@"%@",dataDict[@"data"]] inView:self.view];
         }
         
         
@@ -419,6 +446,17 @@ static NSString *dicOpenMainCell = @"Expand";
 }
 
 - (IBAction)supportButtonPressed:(id)sender {
+    if (oldSelectedIndexPath == nil || supporNumber == 0) {
+        [ZHProgressHUD showMessage:@"没有支持的档位或者支持的数量小于1" inView:self.view];
+        return;
+    }
+    
+    [(AppDelegate *)[UIApplication sharedApplication].delegate verifyLoginWithViewController:self];
+    
+    self.supportVC = [[NPYSupportViewController alloc] initWithNibName:@"NPYSupportViewController" bundle:nil];
+    self.supportVC.model = dataArr[oldSelectedIndexPath.row];
+    self.supportVC.supportNumber = supporNumber;
+    [self.navigationController pushViewController:self.supportVC animated:YES];
     
 }
 @end

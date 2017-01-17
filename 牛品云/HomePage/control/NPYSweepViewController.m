@@ -15,6 +15,10 @@
 #import "ZHActionSheet.h"
 #import "ZHActionSheetView.h"
 
+#import "NPYBaseConstant.h"
+
+#define ADDFRIEND_URL @"/index.php/app/Moments/set_friends"
+
 @interface NPYSweepViewController () <AVCaptureMetadataOutputObjectsDelegate,ZHTextAlertDelegate,ZHAttAlertDelegate,DownSheetDelegate> {
     int number;
     NSTimer *timer;
@@ -38,14 +42,21 @@
 
 @implementation NPYSweepViewController
 
+- (void)backItem:(UIButton *)sender {
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     
     self.tabBarController.tabBar.hidden = YES;
 //    self.navigationController.navigationBar.translucent = YES;
     
-    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:nil];
-    self.navigationItem.backBarButtonItem = item;
+    UIButton *backBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 18, 18)];
+    [backBtn setImage:[UIImage imageNamed:@"icon_fanhui"] forState:0];
+    [backBtn addTarget:self action:@selector(backItem:) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithCustomView:backBtn];
+    self.navigationItem.leftBarButtonItem = item;
     
     if (_session && ![_session isRunning]) {
         [_session startRunning];
@@ -55,7 +66,7 @@
     AVAuthorizationStatus authStatus = [AVCaptureDevice authorizationStatusForMediaType:mediaType];//读取设备授权状态
     if(authStatus == AVAuthorizationStatusRestricted || authStatus == AVAuthorizationStatusDenied){
         NSString *errorStr = @"应用相机权限受限,请在设置中启用";
-        [ZHProgressHUD showMessage:errorStr inView:self.view];
+//        [ZHProgressHUD showMessage:errorStr inView:self.view];
         return;
     } else if (authStatus == AVAuthorizationStatusNotDetermined){
         //许可对话没有出现，发起授权许可
@@ -68,7 +79,7 @@
                     [self setupCamera];
                     
                 } else {
-                    [ZHProgressHUD showMessage:@"相机不可用" inView:self.view];
+//                    [ZHProgressHUD showMessage:@"相机不可用" inView:self.view];
                 }
                 
             }else{
@@ -83,7 +94,7 @@
             [self setupCamera];
             
         }else {
-            [ZHProgressHUD showMessage:@"相机不可用" inView:self.view];
+//            [ZHProgressHUD showMessage:@"相机不可用" inView:self.view];
         }
     }
     
@@ -256,7 +267,42 @@
     [self stopReading];
     if (stringValue && _count == 1) {
         //扫描完成
+        //npy:add这是前缀
+        stringValue = [stringValue substringFromIndex:6];
+        
+        NSDictionary *userDict = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+        NPYLoginMode *userModel = [NPYLoginMode mj_objectWithKeyValues:userDict[@"data"]];
+        
+        NSDictionary *request = [NSDictionary dictionaryWithObjectsAndKeys:[userDict valueForKey:@"sign"],@"sign",userModel.user_id,@"user_id",stringValue,@"friend_user_id", nil];
+        
+        [self requestAddFriendInfoWithUrlString:ADDFRIEND_URL withParames:request];
+        
     }
+}
+
+#pragma mark - 
+- (void)requestAddFriendInfoWithUrlString:(NSString *)urlStr withParames:(NSDictionary *)parame {
+    NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:parame] forKey:@"data"];
+    
+    [[NPYHttpRequest sharedInstance] getWithUrlString:[NSString stringWithFormat:@"%@%@",BASE_URL,urlStr] parameters:paremes success:^(id responseObject) {
+        NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+        
+        if ([dataDict[@"r"] intValue] == 1) {
+            //成功
+            [ZHProgressHUD showMessage:@"添加成功" inView:self.view];
+            
+            [self.navigationController popViewControllerAnimated:YES];
+            
+        } else {
+            //失败
+//            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+            
+        }
+        
+    } failure:^(NSError *error) {
+        NSLog(@"%@",error);
+        
+    }];
 }
 
 #pragma mark - ZHAlertView

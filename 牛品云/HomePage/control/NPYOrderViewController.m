@@ -11,8 +11,14 @@
 #import "NPYBaseConstant.h"
 #import "NPYAddressViewController.h"
 #import "NPYPaymentOrderViewController.h"
+#import "NPYAddressModel.h"
+#import "NPYTicketViewController.h"
+#import "NPYTicketModel.h"
 
-@interface NPYOrderViewController () <UITableViewDelegate,UITableViewDataSource,AddressValueToSuperViewDelegate> {
+#define ORDER_BUY_URL   @"/index.php/app/Buy/one_home"
+#define ORDER_BUY_ONEGOODS_URL  @"/index.php/app/Buy/one_goods"
+
+@interface NPYOrderViewController () <UITableViewDelegate,UITableViewDataSource,AddressValueToSuperViewDelegate,TicketViewControllerDelegate> {
     UILabel *totalMoneyL;   //总计金额
     UILabel *timeL;         //倒计时
     UILabel *addAddressL;   //地址
@@ -32,6 +38,12 @@
     BOOL isAddress;
     
     NSDictionary *addressDic;
+    
+    NSString *couponNumber,*uer_integralNumber;
+    
+    NSIndexPath *selectedTicketPath;
+    NPYTicketModel *selectedTicketModel;
+    NSString *useIntegral;//使用牛豆（0-不使用、1-使用）
 }
 
 @property (nonatomic, strong) UITableView *mainTView;
@@ -56,6 +68,9 @@
     
     [self bottomViewLoad];
     
+    NSDictionary *request = [NSDictionary dictionaryWithObjectsAndKeys:self.sign,@"sign",self.user_id,@"user_id",self.shop_id,@"shop_id",self.goods_id,@"goods_id", nil];
+    
+    [self requestOrderInfoWithUrlString:ORDER_BUY_URL withParames:request];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -108,7 +123,7 @@
 - (void)bottomViewLoad {
     //
     self.bottomView = [[UIView alloc] init];
-    self.bottomView.frame = CGRectMake(0, HEIGHT_SCREEN - 104, WIDTH_SCREEN, 40);
+    self.bottomView.frame = CGRectMake(0, HEIGHT_SCREEN - 40, WIDTH_SCREEN, 40);
     self.bottomView.backgroundColor = [UIColor whiteColor];
     [self.view addSubview:self.bottomView];
     
@@ -126,7 +141,8 @@
     totalMoneyL = [[UILabel alloc] init];
     totalMoneyL.frame = CGRectMake(CGRectGetMaxX(tmpL.frame), 0, 100, CGRectGetHeight(tmpL.frame));
     [self.bottomView addSubview:totalMoneyL];
-    totalMoneyL.attributedText = [self attributedStringWithSegmentationString:@"￥" withOriginalString:[NSString stringWithFormat:@"￥%.2f",38.80] withOneColor:XNColor(248, 31, 31, 1) withTwoColor:XNColor(248, 31, 31, 1) withOneFontSize:12.0 twoFontSize:17.0];
+    totalMoneyL.attributedText = [self attributedStringWithSegmentationString:@"￥" withOriginalString:[NSString stringWithFormat:@"￥%.2f",[self.goodsModel.promotion_price doubleValue] * self.buyNumber + [[self.goodsSpe valueForKey:@"postage"] intValue]] withOneColor:XNColor(248, 31, 31, 1) withTwoColor:XNColor(248, 31, 31, 1) withOneFontSize:12.0 twoFontSize:17.0];
+    totalMoneyL.adjustsFontSizeToFitWidth = YES;
     
     UIButton *submitBtn = [[UIButton alloc] init];
     submitBtn.frame = CGRectMake(CGRectGetMaxX(totalMoneyL.frame), 0, WIDTH_SCREEN - CGRectGetMaxX(totalMoneyL.frame), CGRectGetHeight(self.bottomView.frame));
@@ -184,11 +200,12 @@
                 [mainCell.contentView addSubview:consigneeL];
                 
                 consigneeName = [[UILabel alloc] init];
-                consigneeName.frame = CGRectMake(CGRectGetMaxX(consigneeL.frame), CGRectGetMinY(consigneeL.frame), 80, 20);
+                consigneeName.frame = CGRectMake(CGRectGetMaxX(consigneeL.frame), CGRectGetMinY(consigneeL.frame), 100, 20);
                 consigneeName.text = [addressDic valueForKey:@"name"];
                 consigneeName.font = [UIFont systemFontOfSize:14.0];
                 consigneeName.textColor = XNColor(17, 17, 17, 1);
                 consigneeName.textAlignment = NSTextAlignmentLeft;
+                consigneeName.adjustsFontSizeToFitWidth = YES;
                 [mainCell.contentView addSubview:consigneeName];
                 
                 phonNumber = [[UILabel alloc] init];
@@ -221,31 +238,32 @@
         if (indexPath.section == 1) {
             proIcon = [[UIImageView alloc] init];
             proIcon.frame = CGRectMake(14, 10, 20, 20);
-            proIcon.image = [UIImage imageNamed:@"anli1_gouwu"];
-            proIcon.contentMode = UIViewContentModeScaleAspectFill;
+//            proIcon.image = [UIImage imageNamed:@"anli1_gouwu"];
+            [proIcon sd_setImageWithURL:[NSURL URLWithString:self.shopModel.shop_img] placeholderImage:[UIImage imageNamed:@"tiantu_icon"]];//
+            proIcon.contentMode = UIViewContentModeScaleToFill;
             [mainCell.contentView addSubview:proIcon];
             
             proName = [[UILabel alloc] init];
             proName.frame = CGRectMake(CGRectGetMaxX(proIcon.frame) + 10, 10, WIDTH_SCREEN - 60, 20);
             proName.textColor = XNColor(17, 17, 17, 1);
             proName.font = [UIFont systemFontOfSize:15.0];
-            proName.text = @"五常稻花香大米";
+            proName.text = self.shopModel.shop_name;//
             [mainCell.contentView addSubview:proName];
             
             UIView *bg = [[UIView alloc] init];
-            bg.frame = CGRectMake(0, CGRectGetMaxY(proIcon.frame) + 10, WIDTH_SCREEN, 140);
+            bg.frame = CGRectMake(0, CGRectGetMaxY(proIcon.frame) + 10, WIDTH_SCREEN, 105);
             bg.backgroundColor = XNColor(247, 247, 247, 1);
             [mainCell.contentView addSubview:bg];
             
             proImage = [[UIImageView alloc] init];
             proImage.frame = CGRectMake(CGRectGetMinX(proIcon.frame), 10, 80, 80);
-            [proImage sd_setImageWithURL:[NSURL URLWithString:@""] placeholderImage:[UIImage imageNamed:@"anli1_gouwu"]];
+            [proImage sd_setImageWithURL:[NSURL URLWithString:self.goodsModel.goods_img] placeholderImage:[UIImage imageNamed:@"tiantu_icon"]];//
             proImage.contentMode = UIViewContentModeScaleToFill;
             [bg addSubview:proImage];
             
             proDetail = [[UILabel alloc] init];
             proDetail.frame = CGRectMake(CGRectGetMaxX(proImage.frame) + 11, CGRectGetMinY(proImage.frame), bg.frame.size.width - CGRectGetWidth(proImage.frame) - 40, 30);
-            proDetail.text = @"八杂市 2016年新米东北五常稻花香大米2.5kg黑龙江五常粳米5斤";
+            proDetail.text = self.goodsModel.goods_name;//
             proDetail.textColor = XNColor(35, 35, 35, 1);
             proDetail.font = [UIFont systemFontOfSize:12.0];
             proDetail.numberOfLines = 0;
@@ -255,7 +273,7 @@
             proPrice.frame = CGRectMake(CGRectGetMaxX(proImage.frame) + 10, CGRectGetMaxY(proImage.frame) - 20, 80, 20);
             proPrice.adjustsFontSizeToFitWidth = YES;
             proPrice.numberOfLines = 0;
-            proPrice.attributedText = [self attributedStringWithSegmentationString:@"￥" withOriginalString:[NSString stringWithFormat:@"￥%.2f",38.80] withOneColor:XNColor(248, 31, 31, 1) withTwoColor:XNColor(248, 31, 31, 1) withOneFontSize:12.0 twoFontSize:17.0];
+            proPrice.attributedText = [self attributedStringWithSegmentationString:@"￥" withOriginalString:[NSString stringWithFormat:@"￥%@",self.goodsModel.promotion_price] withOneColor:XNColor(248, 31, 31, 1) withTwoColor:XNColor(248, 31, 31, 1) withOneFontSize:12.0 twoFontSize:17.0];//
             [bg addSubview:proPrice];
             
             cutBtn = [[UIButton alloc] init];
@@ -267,7 +285,7 @@
             
             proCount = [[UILabel alloc] init];
             proCount.frame = CGRectMake(CGRectGetMaxX(cutBtn.frame), CGRectGetMinY(proPrice.frame), 30, 23);
-            proCount.text = @"999";
+            proCount.text = [NSString stringWithFormat:@"%i",self.buyNumber];
             proCount.textColor = XNColor(17, 17, 17, 1);
             proCount.font = [UIFont systemFontOfSize:14.0];
             proCount.textAlignment = NSTextAlignmentCenter;
@@ -289,11 +307,11 @@
             proRemark.titleLabel.font = [UIFont systemFontOfSize:12.0];
             proRemark.backgroundColor = [UIColor whiteColor];
             proRemark.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
-            [bg addSubview:proRemark];
+//            [bg addSubview:proRemark];
             
             proTotal = [[UILabel alloc] init];
             proTotal.frame = CGRectMake(0, CGRectGetMaxY(bg.frame) + 10, WIDTH_SCREEN - 96, 20);
-            proTotal.text = [NSString stringWithFormat:@"共 %@ 件商品 合计：",proCount.text];
+            proTotal.text = [NSString stringWithFormat:@"共 %i 件商品 合计：",self.buyNumber];
             proTotal.textAlignment = NSTextAlignmentRight;
             proTotal.font = [UIFont systemFontOfSize:13.0];
             proTotal.textColor = XNColor(51, 51, 51, 1);
@@ -304,7 +322,8 @@
             proPrice2.adjustsFontSizeToFitWidth = YES;
             proPrice2.numberOfLines = 0;
             proPrice2.textAlignment = NSTextAlignmentRight;
-            proPrice2.attributedText = proPrice.attributedText;
+            proPrice2.attributedText = [self attributedStringWithSegmentationString:@"￥" withOriginalString:[NSString stringWithFormat:@"￥%.2f",[self.goodsModel.promotion_price doubleValue] * self.buyNumber ] withOneColor:XNColor(248, 31, 31, 1) withTwoColor:XNColor(248, 31, 31, 1) withOneFontSize:12.0 twoFontSize:17.0];
+            [bg addSubview:proPrice];
             [mainCell.contentView addSubview:proPrice2];
             
         }
@@ -316,14 +335,14 @@
             mainCell.textLabel.textColor = XNColor(17, 17, 17, 1);
             
             freightL = [[UILabel alloc] init];
-            freightL.frame = CGRectMake(WIDTH_SCREEN - 140, 10, 100, 30);
+            freightL.frame = CGRectMake(WIDTH_SCREEN - 130, 10, 100, 30);
             freightL.textColor = XNColor(166, 166, 166, 1);
-            freightL.text = @"免邮";
+            freightL.text = [NSString stringWithFormat:@"%@元",[self.goodsSpe valueForKey:@"postage"]];
             freightL.textAlignment = NSTextAlignmentRight;
             freightL.font = XNFont(13.0);
             [mainCell.contentView addSubview:freightL];
             if (indexPath.row == 1) {
-                freightL.text = @"两张可用";
+                freightL.text = [NSString stringWithFormat:@"%@张可用",couponNumber];
                 mainCell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
             } else {
                 mainCell.accessoryType = UITableViewCellAccessoryNone;
@@ -331,13 +350,14 @@
             
             if (indexPath.row == 2) {
                 CGSize strSize = [self calculateStringSize:[NSString stringWithFormat:@"%@",mainCell.textLabel.text] withFontSize:13.0];
-                freightL.frame = CGRectMake(strSize.width + 5, 10, 100, 30);
-                freightL.text = @"(可用20牛豆)";
+                freightL.frame = CGRectMake(strSize.width + 10, 10, 100, 30);
+                freightL.text = [NSString stringWithFormat:@"(可用%@牛豆)",uer_integralNumber];
                 NPYSwitch = [[UISwitch alloc] initWithFrame:CGRectMake(WIDTH_SCREEN - 60, 10, 100, 20)];
                 [NPYSwitch setOn:YES];
                 NPYSwitch.transform = CGAffineTransformMakeScale(0.75, 0.75);
                 [NPYSwitch addTarget:self action:@selector(switchAction:) forControlEvents:UIControlEventValueChanged];
                 [mainCell.contentView addSubview:NPYSwitch];
+                useIntegral = NPYSwitch.isOn ? @"1" : @"0";
             }
         }
         
@@ -349,7 +369,7 @@
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section == 1) {
-        return 215;
+        return 185;
     }
     if (isAddress && indexPath.section == 0) {
         return 90;
@@ -372,6 +392,29 @@
         self.addressVC.delegate = self;
         [self.navigationController pushViewController:self.addressVC animated:YES];
     }
+    
+    if (indexPath.section == 2 && indexPath.row == 1 && [couponNumber intValue] > 0) {
+        //优惠券
+        NPYTicketViewController *ticketVC = [[NPYTicketViewController alloc] init];
+        ticketVC.isTicketManage = NO;
+        ticketVC.sign = self.sign;
+        ticketVC.user_id = self.user_id;
+        ticketVC.money = [NSString stringWithFormat:@"%.2f",[self.goodsModel.promotion_price doubleValue] * self.buyNumber + [[self.goodsSpe valueForKey:@"postage"] intValue]];//总价
+        ticketVC.shop_id = self.shop_id;
+        ticketVC.delegate = self;
+        if (selectedTicketPath) {
+            ticketVC.selectedIndex = selectedTicketPath;
+            ticketVC.isSelectTicket = YES;
+        }
+        [self.navigationController pushViewController:ticketVC animated:YES];
+        
+    }
+}
+
+- (void)selectedTicketAtIndexPath:(NSIndexPath *)indexPath withTicketInfo:(NPYTicketModel *)ticketModel{
+    selectedTicketPath = indexPath;
+    selectedTicketModel = ticketModel;
+    
 }
 
 - (void)popValue:(NSDictionary *)dic {
@@ -442,7 +485,7 @@
         case 5000:
             value--;
             if (value <= 0) {
-                value = 0;
+                value = 1;
             }
             proCount.text = [NSString stringWithFormat:@"%i",value];
             break;
@@ -460,13 +503,27 @@
     
     proPrice2.attributedText = [self attributedStringWithSegmentationString:@"￥" withOriginalString:[NSString stringWithFormat:@"￥%.2f",value * b] withOneColor:XNColor(248, 31, 31, 1) withTwoColor:XNColor(248, 31, 31, 1) withOneFontSize:12.0 twoFontSize:17.0];
     
+    self.buyNumber = value;
+    
     totalMoneyL.attributedText = proPrice2.attributedText;
 }
 
 - (void)submitButtonPressed:(UIButton *)btn {
 //    NSLog(@"提交订单");
     self.paymentOrderVC = [[NPYPaymentOrderViewController alloc] init];
-    [self.navigationController pushViewController:self.paymentOrderVC animated:YES];
+    
+    self.paymentOrderVC.sign = self.sign;
+    self.paymentOrderVC.user_id = self.user_id;
+    self.paymentOrderVC.goods_id = self.goods_id;
+    self.paymentOrderVC.spec_id = [self.goodsSpe valueForKey:@"id"];
+    self.paymentOrderVC.address_id = [addressDic valueForKey:@"address_id"];
+    self.paymentOrderVC.coupon_id = selectedTicketModel.coupon_id ? selectedTicketModel.coupon_id : @"0";
+    self.paymentOrderVC.integral = useIntegral;
+    self.paymentOrderVC.num = proCount.text;
+    
+    NSDictionary *request = [NSDictionary dictionaryWithObjectsAndKeys:self.sign,@"sign",self.user_id,@"user_id",self.goods_id,@"goods_id",[self.goodsSpe valueForKey:@"id"],@"spec_id",[addressDic valueForKey:@"address_id"],@"address_id",self.paymentOrderVC.coupon_id,@"coupon_id",useIntegral,@"integral",proCount.text,@"num", nil];
+    
+    [self requetUpdataOrderInfoWithUrlString:ORDER_BUY_ONEGOODS_URL withParames:request];
     
 }
 
@@ -474,9 +531,11 @@
     UISwitch *switchButton = (UISwitch*)sender;
     BOOL isButtonOn = [switchButton isOn];
     if (isButtonOn) {
-        NSLog(@"使用牛豆");
+//        NSLog(@"使用牛豆");
+        useIntegral = @"1";
     }else {
-        NSLog(@"不用牛豆");
+//        NSLog(@"不用牛豆");
+        useIntegral = @"0";
     }
 }
 
@@ -490,20 +549,61 @@
         
         if ([dataDict[@"r"] intValue] == 1) {
             //成功
-            [ZHProgressHUD showMessage:@"请求成功" inView:self.view];
+//            [ZHProgressHUD showMessage:@"请求成功" inView:self.view];
             NSDictionary *tpDict = dataDict[@"data"];
+            NPYAddressModel *addressModel = [NPYAddressModel mj_objectWithKeyValues:tpDict[@"address"]];
             
+            addressDic = [NSDictionary dictionaryWithObjectsAndKeys:addressModel.receiver,@"name",addressModel.phone,@"phone",addressModel.detailed,@"address",addressModel.address_id,@"address_id", nil];
+            
+            isAddress = YES;
+            
+            couponNumber = tpDict[@"coupon"];
+            
+            uer_integralNumber = tpDict[@"integral"];
+            
+            [self.mainTView reloadData];
             
         } else {
             //失败
-            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
-            //            [self.navigationController popViewControllerAnimated:YES];
+//            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+            
         }
         
     } failure:^(NSError *error) {
         NSLog(@"%@",error);
         
     }];
+}
+
+- (void)requetUpdataOrderInfoWithUrlString:(NSString *)urlStr withParames:(NSDictionary *)parame {
+    NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:parame] forKey:@"data"];
+    
+    [[NPYHttpRequest sharedInstance] getWithUrlString:[NSString stringWithFormat:@"%@%@",BASE_URL,urlStr] parameters:paremes success:^(id responseObject) {
+        NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+        
+        if ([dataDict[@"r"] intValue] == 1) {
+            //成功
+//            [ZHProgressHUD showMessage:@"请求成功" inView:self.view];
+            
+            NSDictionary *resultDict = dataDict[@"data"];
+            
+            self.paymentOrderVC.order_id = [resultDict valueForKey:@"order_id"];
+            self.paymentOrderVC.price = [resultDict valueForKey:@"price"];
+            self.paymentOrderVC.order_type = @"order";
+            
+            [self.navigationController pushViewController:self.paymentOrderVC animated:YES];
+            
+        } else {
+            //失败
+//            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+            
+        }
+        
+    } failure:^(NSError *error) {
+        NSLog(@"%@",error);
+        
+    }];
+    
 }
 
 - (void)backItem:(UIButton *)sender {

@@ -5,6 +5,7 @@
 //  Created by Eric on 16/10/24.
 //  Copyright © 2016年 Eric. All rights reserved.
 //
+//13133015776 账号
 
 #import "AppDelegate.h"
 #import "NPYBaseConstant.h"
@@ -27,7 +28,163 @@
     //验证登录是否失效
 //    [self verifyLogin];
     
+    //如果已经获得发送通知的授权则创建本地通知，否则请求授权(注意：如果不请求授权在设置中是没有对应的通知设置项的，也就是说如果从来没有发送过请求，即使通过设置也打不开消息允许设置)
+    if ([[UIApplication sharedApplication]currentUserNotificationSettings].types!=UIUserNotificationTypeNone) {
+//        [self addLocalNotification];
+        /**
+         *  注册阿里推送
+         */
+        [self initCloudPush];
+        
+        [self registerAPNS:application];
+    }else{
+        [[UIApplication sharedApplication]registerUserNotificationSettings:[UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeAlert|UIUserNotificationTypeBadge|UIUserNotificationTypeSound  categories:nil]];
+    }
+    
+    
+    //点击通知将App从关闭状态启动时，将通知打开回执上报
+    [CloudPushSDK sendNotificationAck:launchOptions];
+    
     return YES;
+}
+
+/**
+ *  注册阿里推送
+ *  appKey && appSecret
+ */
+- (void)initCloudPush {
+    [CloudPushSDK asyncInit:@"23538701" appSecret:@"8c738b653cf549c2f424b3beb5c4ea23" callback:^(CloudPushCallbackResult *res) {
+        if (res.success) {
+            NSLog(@"Push SDK init success,deviceld:%@",[CloudPushSDK getDeviceId]);
+            
+        } else {
+            NSLog(@"Push SDK init failed,error:%@",res.error);
+            
+        }
+        
+    }];
+    
+}
+
+- (void)registerAPNS:(UIApplication *)application {
+    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 10.0) {
+        center = [UNUserNotificationCenter currentNotificationCenter];
+        [center requestAuthorizationWithOptions:UNAuthorizationOptionAlert | UNAuthorizationOptionBadge | UNAuthorizationOptionSound completionHandler:^(BOOL granted, NSError * _Nullable error) {
+            if (granted) {
+                // granted
+                NSLog(@"User authored notification.");
+                [application registerForRemoteNotifications];
+            } else {
+                // not granted
+                NSLog(@"User denied notification.");
+            }
+        }];
+    }
+    
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.0) {
+        // iOS 8 Notifications
+        [application registerUserNotificationSettings:
+         [UIUserNotificationSettings settingsForTypes:
+          (UIUserNotificationTypeSound | UIUserNotificationTypeAlert | UIUserNotificationTypeBadge)
+                                           categories:nil]];
+        [application registerForRemoteNotifications];
+    }
+    else {
+        // iOS < 8 Notifications
+        [[UIApplication sharedApplication] registerForRemoteNotificationTypes:
+         (UIRemoteNotificationTypeAlert | UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeSound)];
+    }
+    
+}
+
+#pragma mark 注册推送通知之后
+//在此接收设备令牌
+-(void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken{
+    /*返回的deviceToken上传到CloudPush服务器*/
+    [CloudPushSDK registerDevice:deviceToken withCallback:^(CloudPushCallbackResult *res) {
+        if (res.success) {
+            NSLog(@"Register deviceToken success.");
+            
+        } else {
+            NSLog(@"Register deviceToken failed,error:%@",res.error);
+            
+        }
+    }];
+    
+    NSLog(@"device token:%@",deviceToken);
+}
+#pragma mark 获取device token失败后
+-(void)application:(UIApplication *)application didFailToRegisterForRemoteNotificationsWithError:(NSError *)error{
+    NSLog(@"didFailToRegisterForRemoteNotificationsWithError:%@",error.localizedDescription);
+    
+}
+
+/**
+ *  注册推送消息的监听
+ */
+- (void)registerMessageReceive {
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(onMessageReceived:)
+                                                 name:CCPDidReceiveMessageNotification
+                                               object:nil];
+}
+
+/**
+ *  移除监听
+ */
+- (void)removeObserver {
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:CCPDidReceiveMessageNotification
+                                                  object:nil];
+    
+}
+
+/**
+ *  处理推送消息
+ */
+- (void)onMessageReceived:(NSNotification *)notification {
+    CCPSysMessage *message = [notification object];
+    NSString *title = [[NSString alloc] initWithData:message.title encoding:NSUTF8StringEncoding];
+    NSString *body = [[NSString alloc] initWithData:message.body encoding:NSUTF8StringEncoding];
+    NSLog(@"Receive message title:%@, content:%@.",title,body);
+    
+}
+
+- (void)application:(UIApplication *)application
+didReceiveRemoteNotification:(NSDictionary *)userInfo {
+    NSInteger num = [UIApplication sharedApplication].applicationIconBadgeNumber;
+    num += 1;
+    [[UIApplication sharedApplication] setApplicationIconBadgeNumber:num];
+    
+}
+
+/**
+ *  App处于启动状态时，通知打开回调
+ */
+- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
+    NSLog(@"Receive one notication.");
+    //取得APNs通知内容
+    NSDictionary *aps = [userInfo valueForKey:@"aps"];
+    //内容
+    NSString *content = [aps valueForKey:@"alert"];
+    //badge数量
+    NSInteger badge = [[aps valueForKey:@"badge"] integerValue];
+    //播放声音
+    NSString *sound = [aps valueForKey:@"sound"];
+    //取得Extras字段内容
+    NSString *Extras = [userInfo valueForKey:@"Extras"];//服务端的key自己定义
+     NSLog(@"content = [%@], badge = [%ld], sound = [%@], Extras = [%@]", content, (long)badge, sound, Extras);
+    // iOS badge 清0
+    application.applicationIconBadgeNumber = 0;
+    // 通知打开回执上报
+    [CloudPushSDK sendNotificationAck:userInfo];
+    
+    [self registerMessageReceive];
+}
+
+- (void)removeObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath context:(void *)context {
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:CCPDidReceiveMessageNotification object:nil];
 }
 
 //切换RootViewController
@@ -62,11 +219,11 @@
         
         if ([dataDict[@"r"] intValue] == 1) {
             //不需要重新登录
-            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.window];
+//            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.window];
             _iSNEEDLOGIN = NO;
         } else {
             //需要重新登录
-            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.window];
+//            [ZHProgressHUD showMessage:[NSString stringWithFormat:@"%@",dataDict[@"data"]] inView:self.window];
             _iSNEEDLOGIN = YES;
             [self loginWithViewController:viewController];
             
@@ -89,6 +246,9 @@
     
 }
 
+/**
+ *  支付宝支付回调
+ */
 - (BOOL)application:(UIApplication *)application
             openURL:(NSURL *)url
   sourceApplication:(NSString *)sourceApplication
@@ -164,6 +324,8 @@
 - (void)applicationDidEnterBackground:(UIApplication *)application {
     // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
     // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
+    
+    [[UIApplication sharedApplication] setApplicationIconBadgeNumber:0];
 }
 
 

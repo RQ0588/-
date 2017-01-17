@@ -156,7 +156,7 @@
 
 - (void)drawRect:(CGRect)rect
 {
-    self.number_label.text = @"0分";
+    self.number_label.text = @"0";
     self.fell_label.text = @"很差，不推荐";
     
 }
@@ -207,16 +207,16 @@
     if(count==0){
         count = 0;
         [self.starImageView1 setImage:[UIImage imageNamed:@"huixing_fabiao"]];
-        self.number_label.text = @"0分";
+        self.number_label.text = @"0";
         self.fell_label.text = @"很差，不推荐";
     }
     self.count = count;
     [self checkCount:count];
     if(count==5){
-        self.number_label.text = @"5分";
+        self.number_label.text = @"5";
         self.fell_label.text = @"😄";
     }else{
-        self.number_label.text = [NSString stringWithFormat:@"%ld分",count];
+        self.number_label.text = [NSString stringWithFormat:@"%ld",count];
     }
 }
 -(NSInteger)changeImg:(float)x image:(UIImageView*)img{

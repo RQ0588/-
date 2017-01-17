@@ -11,12 +11,19 @@
 #import "NPYTableViewCell.h"
 #import "NPYPaymentViewController.h"
 #import "NPYOrdeDetailViewController.h"
+#import "NPYPaymentOrderViewController.h"
+#import "NPYDiscusViewController.h"
+#import "NPYAfter_SalesViewController.h"
 
 #import "NPYMyOrderModel.h"
 
 #define OrderUrl @"/index.php/app/Order/get"
+#define DeleteOrderUrl @"/index.php/app/Order/del"
+#define SureOrderUrl @"/index.php/app/Order/yes"
 
-@interface NPYMyOrderViewController () <UITableViewDelegate,UITableViewDataSource> {
+#define ManyOrderUrl @"/index.php/app/Order/get_many"//我的众筹订单
+
+@interface NPYMyOrderViewController () <UITableViewDelegate,UITableViewDataSource,MyOrederTableViewCellDelegate,ZHAttAlertDelegate> {
     NSInteger number_Tag;       //记录选中按钮的tag值
     
     NSMutableArray *dataArr;
@@ -25,8 +32,11 @@
 @property (nonatomic, strong) UIView        *topMenuView;
 @property (nonatomic, strong) UITableView   *mainTableView;
 
-@property (nonatomic, strong) NPYPaymentViewController      *paymentVC;
-@property (nonatomic, strong) NPYOrdeDetailViewController   *orderDetailVC;
+@property (nonatomic, strong) NPYPaymentViewController      *paymentVC;//
+@property (nonatomic, strong) NPYOrdeDetailViewController   *orderDetailVC;//
+@property (nonatomic, strong) NPYPaymentOrderViewController     *paymentOrderVC;//支付
+@property (nonatomic, strong) NPYDiscusViewController           *discusVC;//评论
+@property (nonatomic, strong) NPYAfter_SalesViewController      *afterSalesVC;//售后
 
 @end
 
@@ -36,6 +46,7 @@
     [super viewWillAppear:animated];
     
     self.tabBarController.tabBar.hidden = YES;
+    
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -49,7 +60,9 @@
     // Do any additional setup after loading the view from its nib.
     
     self.view.backgroundColor = GRAY_BG;
-    self.navigationItem.title = @"我的订单";
+    
+    
+    self.navigationItem.title = _isManyOrder ? @"我的众筹订单" : @"我的订单";
     
     dataArr = [NSMutableArray new];
     
@@ -61,15 +74,22 @@
     UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithCustomView:backBtn];
     self.navigationItem.leftBarButtonItem = item;
     
-    [self topMenuViewLoad];
+    if (_isManyOrder) {
+        self.navigationController.navigationBar.translucent = NO;
+    } else {
+        //我的订单头部
+        [self topMenuViewLoad];
+        
+    }
     
     [self mainTableViewLoad];
     
     NSDictionary *dic = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
     NPYLoginMode *model = [NPYLoginMode mj_objectWithKeyValues:dic[@"data"]];
     
-    NSDictionary *request = [NSDictionary dictionaryWithObjectsAndKeys:[dic valueForKey:@"sign"],@"sign",model.user_id,@"user_id",@"all",@"type",@"0",@"num", nil];
-    [self requestOrderInfoWithUrlString:OrderUrl withParames:request];
+    NSDictionary *request = [NSDictionary dictionaryWithObjectsAndKeys:[dic valueForKey:@"sign"],@"sign",model.user_id,@"user_id",self.typeString,@"type",@"0",@"num", nil];
+    
+    [self requestOrderInfoWithUrlString:_isManyOrder ? ManyOrderUrl : OrderUrl withParames:request];
 }
 
 //midMenuView
@@ -95,10 +115,10 @@
         selectedImgView.tag = menuBtn.tag + 100;
         selectedImgView.frame = CGRectMake(0, CGRectGetHeight(menuBtn.frame) - 2, CGRectGetWidth(menuBtn.frame), 2);
         [menuBtn addSubview:selectedImgView];
-        if (i == 0) {
+        if (i == self.menuIndex) {
             menuBtn.selected = YES;
             selectedImgView.hidden = NO;
-            number_Tag = 2000;
+            number_Tag = 2000 + self.menuIndex;
         } else {
             menuBtn.selected = NO;
             selectedImgView.hidden = YES;
@@ -120,6 +140,16 @@
     self.mainTableView.estimatedRowHeight = 100;
     self.mainTableView.rowHeight = UITableViewAutomaticDimension;
     [self.view addSubview:self.mainTableView];
+    
+    self.mainTableView.mj_header = [MJRefreshNormalHeader headerWithRefreshingBlock:^{
+        NSDictionary *dic = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+        NPYLoginMode *model = [NPYLoginMode mj_objectWithKeyValues:dic[@"data"]];
+        
+        NSDictionary *request = [NSDictionary dictionaryWithObjectsAndKeys:[dic valueForKey:@"sign"],@"sign",model.user_id,@"user_id",self.typeString,@"type",@"0",@"num", nil];
+        
+        [self requestOrderInfoWithUrlString:_isManyOrder ? ManyOrderUrl : OrderUrl withParames:request];
+        
+    }];
     
     self.mainTableView.separatorColor = GRAY_BG;
 }
@@ -151,10 +181,10 @@
         cell = [[[NSBundle mainBundle] loadNibNamed:@"NPYTableViewCell" owner:nil options:nil] firstObject];
     }
     
+    cell.isManyOrder = self.isManyOrder;
     cell.model = dataArr[indexPath.section];
-    
+    cell.delegate = self;
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
-    
     
     return cell;
 }
@@ -162,14 +192,23 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     //
     NPYTableViewCell *cell = (NPYTableViewCell *)[tableView cellForRowAtIndexPath:indexPath];
+    
     if ([cell.orderState.text isEqualToString:@"待付款"]) {
         //待付款单独界面
+        NPYMyOrderModel *model = dataArr[indexPath.section];
+        
         self.paymentVC = [[NPYPaymentViewController alloc] init];
+        self.paymentVC.isManyOrder = self.isManyOrder;
+        self.paymentVC.order_id = model.order_id;
         [self.navigationController pushViewController:self.paymentVC animated:YES];
         
     } else {
         //订单详情统一界面
+        NPYMyOrderModel *model = dataArr[indexPath.section];
+        
         self.orderDetailVC = [[NPYOrdeDetailViewController alloc] init];
+        self.orderDetailVC.isManyOrder = self.isManyOrder;
+        self.orderDetailVC.order_id = model.order_id;
         [self.navigationController pushViewController:self.orderDetailVC animated:YES];
         
     }
@@ -195,6 +234,229 @@
     tmpImgView2.hidden = YES;
     
     number_Tag = btn.tag;
+    
+//    NSString *typeStr;
+    
+    switch (btn.tag - 2000) {
+        case 0:
+            self.typeString = @"all";
+            break;
+            
+        case 1:
+            self.typeString = @"0";
+            break;
+            
+        case 2:
+            self.typeString = @"1";
+            break;
+            
+        case 3:
+            self.typeString = @"2";
+            break;
+            
+        case 4:
+            self.typeString = @"3";
+            break;
+            
+        default:
+            break;
+    }
+    
+//    NSDictionary *dic = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+//    NPYLoginMode *model = [NPYLoginMode mj_objectWithKeyValues:dic[@"data"]];
+//    
+//    NSDictionary *request = [NSDictionary dictionaryWithObjectsAndKeys:[dic valueForKey:@"sign"],@"sign",model.user_id,@"user_id",self.typeString,@"type",@"0",@"num", nil];
+//    
+//    [self requestOrderInfoWithUrlString:OrderUrl withParames:request];
+    
+    [self.mainTableView.mj_header beginRefreshing];
+    
+}
+
+#pragma mark - MyOrederTableViewCellDelegate
+
+- (void)cellButtonEventWithType:(int)typeValue withIndexPath:(NSIndexPath *)path{
+    NSDictionary *userDict = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+    NPYLoginMode *userModel = [NPYLoginMode mj_objectWithKeyValues:userDict[@"data"]];
+    
+    NPYMyOrderModel *model = dataArr[path.section];
+    
+    ZHAttAlertView *alert = [ZHAttAlertView alertViewDefault];
+    
+    switch (typeValue) {
+        case 0:
+//            str = @"待付款";
+//            btnTitle = @"删除订单";
+//            btnTitle2 = @"立即付款";
+            
+            self.paymentOrderVC = [[NPYPaymentOrderViewController alloc] init];
+            self.paymentOrderVC.sign = [userDict valueForKey:@"sign"];
+            self.paymentOrderVC.user_id = userModel.user_id;
+            self.paymentOrderVC.order_id = model.order_id;
+            self.paymentOrderVC.price = model.price;
+            self.paymentOrderVC.order_type = @"order";
+            
+            [self.navigationController pushViewController:self.paymentOrderVC animated:YES];
+            
+            break;
+            
+        case 1:
+//            str = @"发货中";
+//            btnTitle = @"删除订单";
+//            btnTitle2 = @"确认收货";
+            
+            alert.content = [[NSAttributedString alloc] initWithString:@"您确定要收货吗？"];
+            alert.buttonArray = @[@"取消",@"确定"];
+            alert.tag = -2000;
+            alert.delegate = self;
+            [alert.expandArr addObject:model.order_id];
+            [alert show];
+            
+            break;
+            
+        case 2:
+//            str = @"已发货";
+//            btnTitle = @"删除订单";
+//            btnTitle2 = @"确认收货";
+            break;
+            
+        case 3:
+//            str = @"已完成";
+//            btnTitle = @"售后/退款";
+//            btnTitle2 = @"立即评价";
+            
+            self.discusVC = [[NPYDiscusViewController alloc] init];
+            self.discusVC.order_id = model.order_id;
+            [self.navigationController pushViewController:self.discusVC animated:YES];
+        
+            break;
+            
+        case 4:
+//            str = @"已完成";
+//            btnTitle = @"售后/退款";
+//            btnTitle2 = @"已完成";
+            
+            break;
+            
+        case 5:
+//            str = @"售后";
+//            btnTitle2 = @"售后中";
+            break;
+            
+        case -1:
+//            str = @"已取消";
+            break;
+            
+        default:
+            break;
+    }
+}
+
+- (void)cellLeftButtonEventWithType:(int)typeValue withIndexPath:(NSIndexPath *)path {
+    
+    NPYMyOrderModel *model = dataArr[path.section];
+    
+    ZHAttAlertView *alert = [ZHAttAlertView alertViewDefault];
+    
+    switch (typeValue) {
+        case 0:
+            //            str = @"待付款";
+            //            btnTitle = @"删除订单";
+            //            btnTitle2 = @"立即付款";
+            //删除
+            alert.content = [[NSAttributedString alloc] initWithString:@"您确定要删除订单吗？"];
+            alert.buttonArray = @[@"取消",@"确定"];
+            alert.tag = -1000;
+            alert.delegate = self;
+//            alert.title = model.order_id;
+            [alert.expandArr addObject:model.order_id];
+            [alert show];
+//
+            
+            break;
+            
+        case 1:
+            //            str = @"发货中";
+            //            btnTitle = @"售后/退款";
+            //            btnTitle2 = @"确认收货";
+            self.afterSalesVC = [[NPYAfter_SalesViewController alloc] init];
+            self.afterSalesVC.model = model;
+            
+            [self.navigationController pushViewController:self.afterSalesVC animated:YES];
+            
+            break;
+            
+        case 2:
+            //            str = @"已发货";
+            //            btnTitle = @"售后/退款";
+            //            btnTitle2 = @"确认收货";
+            self.afterSalesVC = [[NPYAfter_SalesViewController alloc] init];
+            self.afterSalesVC.model = model;
+            
+            [self.navigationController pushViewController:self.afterSalesVC animated:YES];
+            
+            break;
+            
+        case 3:
+            //            str = @"已完成";
+            //            btnTitle = @"售后/退款";
+            //            btnTitle2 = @"立即评价";
+            
+            self.afterSalesVC = [[NPYAfter_SalesViewController alloc] init];
+            self.afterSalesVC.model = model;
+            
+            [self.navigationController pushViewController:self.afterSalesVC animated:YES];
+            
+            break;
+            
+        case 4:
+            //            str = @"已完成";
+            //            btnTitle = @"售后/退款";
+            //            btnTitle2 = @"立即评价";
+            
+            self.afterSalesVC = [[NPYAfter_SalesViewController alloc] init];
+            self.afterSalesVC.model = model;
+            
+            [self.navigationController pushViewController:self.afterSalesVC animated:YES];
+            
+            break;
+            
+        case 5:
+            //            str = @"售后";
+            //            btnTitle2 = @"售后中";
+            break;
+            
+        case -1:
+            //            str = @"已取消";
+            break;
+            
+        default:
+            break;
+    }
+}
+
+#pragma mark - 
+
+- (void)alertView:(ZHAttAlertView *)alertView clickedCustomButtonAtIndex:(NSInteger)buttonIndex {
+//    NSLog(@"%li",buttonIndex);
+    
+    NSDictionary *userDict = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+    NPYLoginMode *userModel = [NPYLoginMode mj_objectWithKeyValues:userDict[@"data"]];
+    
+    NSDictionary *request = [NSDictionary dictionaryWithObjectsAndKeys:[userDict valueForKey:@"sign"],@"sign",userModel.user_id,@"user_id",alertView.expandArr[0],@"order_id", nil];
+    
+    if (buttonIndex == 1 && alertView.tag == -1000) {
+        //确定执行网络请求删除订单
+        [self requestEventOfOrderWithUrlString:DeleteOrderUrl withParames:request];
+    }
+    
+    if (buttonIndex == 1 && alertView.tag == -2000) {
+        //确定执行网络请求删除订单
+        [self requestEventOfOrderWithUrlString:SureOrderUrl withParames:request];
+    }
+    
+    [self.mainTableView.mj_header beginRefreshing];
+    
 }
 
 #pragma mark - 网络请求
@@ -207,19 +469,48 @@
         
         if ([dataDict[@"r"] intValue] == 1) {
             //成功
-            [ZHProgressHUD showMessage:@"请求成功" inView:self.view];
+            [dataArr removeAllObjects];
+//            [ZHProgressHUD showMessage:@"请求成功" inView:self.view];
             for (NSDictionary *dic in dataDict[@"data"]) {
                 NPYMyOrderModel *model = [NPYMyOrderModel mj_objectWithKeyValues:dic];
                 
                 [dataArr addObject:model];
             }
             
+            [self.mainTableView.mj_header endRefreshing];
+            
             [self.mainTableView reloadData];
+            
+            if (dataArr.count > 0) {
+                [self.mainTableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0] atScrollPosition:UITableViewScrollPositionTop animated:YES];
+                
+            }
             
         } else {
             //失败
+//            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+            
+        }
+        
+    } failure:^(NSError *error) {
+        NSLog(@"%@",error);
+        
+    }];
+}
+
+- (void)requestEventOfOrderWithUrlString:(NSString *)urlStr withParames:(NSDictionary *)parame {
+    NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:parame] forKey:@"data"];
+    
+    [[NPYHttpRequest sharedInstance] getWithUrlString:[NSString stringWithFormat:@"%@%@",BASE_URL,urlStr] parameters:paremes success:^(id responseObject) {
+        NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+        
+        if ([dataDict[@"r"] intValue] == 1) {
+            //成功
             [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
-            //            [self.navigationController popViewControllerAnimated:YES];
+        } else {
+            //失败
+//            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+            
         }
         
     } failure:^(NSError *error) {

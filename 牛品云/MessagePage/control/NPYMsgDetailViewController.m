@@ -9,8 +9,12 @@
 #import "NPYMsgDetailViewController.h"
 #import "NPYBaseConstant.h"
 #import "NPYMessageTableViewCell.h"
+#import "NPYCouponMessageModel.h"
+#import "NPYCommentsInfoViewController.h"
 
-@interface NPYMsgDetailViewController () <UITableViewDelegate,UITableViewDataSource> {
+#define MessageUrl @"/index.php/app/Push/get"
+
+@interface NPYMsgDetailViewController () <UITableViewDelegate,UITableViewDataSource,MessageTableViewCellDelegate> {
     NSMutableArray *dataMArr;
     
 }
@@ -50,18 +54,60 @@
     self.navigationItem.leftBarButtonItem = item;
     
      [self.view addSubview:self.mainTableView];
+    
+    NSDictionary *userDict =[NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+    NPYLoginMode *userModel = [NPYLoginMode mj_objectWithKeyValues:userDict[@"data"]];
+    
+    if ([self.titleName isEqualToString:@"通知消息"]) {
+        NSDictionary *request = [NSDictionary dictionaryWithObjectsAndKeys:[userDict valueForKey:@"sign"],@"sign",userModel.user_id,@"user_id",@"1",@"num", nil];
+        [self requestCouponMessageWithUrlString:MessageUrl withParames:request];
+        
+    } else {
+        NSDictionary *request = [NSDictionary dictionaryWithObjectsAndKeys:[userDict valueForKey:@"sign"],@"sign",userModel.user_id,@"user_id",@"1",@"num",@"coupon",@"type", nil];
+        [self requestCouponMessageWithUrlString:MessageUrl withParames:request];
+    }
+    
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return 5;
+    return dataMArr.count;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     if ([self.titleName isEqualToString:@"通知消息"]) {
-        NPYMessageTableViewCell *cell = [[[NSBundle mainBundle] loadNibNamed:@"NPYMessageTableViewCell" owner:self options:nil] objectAtIndex:indexPath.row%2];
+        NPYCouponMessageModel *model = dataMArr[indexPath.row];
+        int selectedCellIndex;
+        BOOL isHidenButton;
+        switch (model.type) {
+            case 1:
+                selectedCellIndex = 1;
+                break;
+                
+            case 2:
+                selectedCellIndex = 0;
+                isHidenButton = YES;
+                break;
+                
+            case 3:
+                selectedCellIndex = 0;
+                break;
+                
+            case 5:
+                selectedCellIndex = 1;
+                break;
+                
+            case 6:
+                selectedCellIndex = 0;
+                isHidenButton = YES;
+                break;
+                
+            default:
+                break;
+        }
+        
+        NPYMessageTableViewCell *cell = [[[NSBundle mainBundle] loadNibNamed:@"NPYMessageTableViewCell" owner:self options:nil] objectAtIndex:selectedCellIndex];
         cell.backgroundColor = [UIColor clearColor];
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
-        
         [self configCell:cell indexPath:indexPath];
         
         return cell;
@@ -82,9 +128,92 @@
     return nil;
 }
 
-- (void)configCell:(NPYMessageTableViewCell *)cell indexPath:(NSIndexPath *)indexPath {
-    cell.timeLabel.text = @"2016-12-12";
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
     
+    NPYCouponMessageModel *model = dataMArr[indexPath.row];
+    if (model.type == 2) {
+        NPYCommentsInfoViewController *commentsVC = [[NPYCommentsInfoViewController alloc] init];
+        commentsVC.moments_id = [NSString stringWithFormat:@"%i",model.moments_id];
+        [self.navigationController pushViewController:commentsVC animated:YES];
+    }
+}
+
+- (void)configCell:(NPYMessageTableViewCell *)cell indexPath:(NSIndexPath *)indexPath {
+    NPYCouponMessageModel *model = dataMArr[indexPath.row];
+    cell.cellIndex = (int)indexPath.row;
+    cell.delegate = self;
+    int selectedCellIndex;
+    BOOL isHidenButton;
+    NSString *urlStr = @"";
+    switch (model.type) {
+        case 1:
+            selectedCellIndex = 1;
+            cell.mesTitle.text = @"订单消息";
+            urlStr = model.goods_img;
+            cell.mesStateLabel.text = model.order_num;
+            break;
+            
+        case 2:
+            selectedCellIndex = 0;
+            isHidenButton = YES;
+            cell.mesTitle.text = @"朋友圈消息";
+            break;
+            
+        case 3:
+            selectedCellIndex = 0;
+            cell.mesTitle.text = @"好友请求消息";
+            break;
+            
+        case 5:
+            selectedCellIndex = 1;
+            cell.mesTitle.text = @"众筹订单消息";
+            urlStr = model.many_img;
+            cell.mesStateLabel.text = model.many_num;
+            break;
+            
+        case 6:
+            selectedCellIndex = 0;
+            isHidenButton = YES;
+            cell.mesTitle.text = @"好友请求消息";
+            break;
+            
+        default:
+            break;
+    }
+    
+    cell.acceptBtn.hidden = isHidenButton;
+    cell.refuseBtn.hidden = isHidenButton;
+    cell.timeLabel.text = model.time;
+    [cell.mesIcon sd_setImageWithURL:[NSURL URLWithString:urlStr] placeholderImage:[UIImage imageNamed:@"tongzhi_xiaoxi"]];
+    cell.mesContent.text = model.data;
+    
+}
+
+- (void)acceptButtonPressedWithCellIndex:(int)index {
+    NPYCouponMessageModel *model = dataMArr[index];
+    //接受
+    NSDictionary *userDict =[NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+    NPYLoginMode *userModel = [NPYLoginMode mj_objectWithKeyValues:userDict[@"data"]];
+    
+    NSDictionary *request = [NSDictionary dictionaryWithObjectsAndKeys:[userDict valueForKey:@"sign"],@"sign",userModel.user_id,@"user_id",[NSString stringWithFormat:@"%i",model.push_id],@"push_id",[NSString stringWithFormat:@"%i",model.friend_id],@"friend_id", nil];
+    
+    NSString *urlStr = @"/index.php/app/Moments/set_friends_yes";
+    
+    [self requestFriendMessageWithUrlString:urlStr withParames:request];
+}
+
+- (void)refuseButtonPressedWithCellIndex:(int)index {
+    NPYCouponMessageModel *model = dataMArr[index];
+    //拒绝
+    NSDictionary *userDict =[NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+    NPYLoginMode *userModel = [NPYLoginMode mj_objectWithKeyValues:userDict[@"data"]];
+    
+    NSDictionary *request = [NSDictionary dictionaryWithObjectsAndKeys:[userDict valueForKey:@"sign"],@"sign",userModel.user_id,@"user_id",[NSString stringWithFormat:@"%i",model.push_id],@"push_id",[NSString stringWithFormat:@"%i",model.friend_id],@"friend_id", nil];
+    
+    NSString *urlStr = @"/index.php/app/Moments/set_friends_no";
+    
+    [self requestFriendMessageWithUrlString:urlStr withParames:request];
 }
 
 - (UITableView *)mainTableView {
@@ -101,9 +230,62 @@
     return _mainTableView;
 }
 
+- (void)requestCouponMessageWithUrlString:(NSString *)urlStr withParames:(NSDictionary *)parame {
+    NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:parame] forKey:@"data"];
+    
+    [[NPYHttpRequest sharedInstance] getWithUrlString:[NSString stringWithFormat:@"%@%@",BASE_URL,urlStr] parameters:paremes success:^(id responseObject) {
+        NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+        
+        if ([dataDict[@"r"] intValue] == 1) {
+            //成功
+            dataMArr  = [NSMutableArray new];
+            
+            NSArray *tp = dataDict[@"data"];
+            for (int i = 0; i < tp.count; i++) {
+                NPYCouponMessageModel *msgModel = [NPYCouponMessageModel mj_objectWithKeyValues:tp[i]];
+                [dataMArr addObject:msgModel];
+            }
+            
+            [self.mainTableView reloadData];
+            
+        } else {
+            //失败
+//            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+            
+        }
+        
+    } failure:^(NSError *error) {
+        NSLog(@"%@",error);
+        
+    }];
+}
+
+- (void)requestFriendMessageWithUrlString:(NSString *)urlStr withParames:(NSDictionary *)parame {
+    NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:parame] forKey:@"data"];
+    
+    [[NPYHttpRequest sharedInstance] getWithUrlString:[NSString stringWithFormat:@"%@%@",BASE_URL,urlStr] parameters:paremes success:^(id responseObject) {
+        NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+        
+        if ([dataDict[@"r"] intValue] == 1) {
+            //成功
+            [self.mainTableView reloadData];
+            
+        } else {
+            //失败
+//            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+            
+        }
+        
+    } failure:^(NSError *error) {
+        NSLog(@"%@",error);
+        
+    }];
+}
+
 - (void)backItem:(UIButton *)sender {
     [self.navigationController popViewControllerAnimated:YES];
 }
+
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];

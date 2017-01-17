@@ -10,6 +10,8 @@
 
 @interface SDTimeLineCellOperationMenu : UIView
 
+@property (nonatomic, assign) BOOL isShowDeleterButton;
+
 @property (nonatomic, assign, getter = isShowing) BOOL show;
 
 @property (nonatomic, copy) void (^likeButtonClickedOperation)();

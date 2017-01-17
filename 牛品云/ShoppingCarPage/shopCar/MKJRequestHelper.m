@@ -91,20 +91,22 @@ static id _requestHelp;
             NSArray *tpArr = dataDict[@"data"];
             
             NSMutableArray *goodsMArr = [NSMutableArray new];
-            NSMutableDictionary *goodsMDict = [NSMutableDictionary new];
             
             NSMutableArray *specMArr = [NSMutableArray new];
-            NSMutableDictionary *specMDict = [NSMutableDictionary new];
             
             shopMArr = [NSMutableArray new];
             NSMutableDictionary *shopMDict = [NSMutableDictionary new];
             
+            
             for (int i = 0; i < tpArr.count; i++) {
                 NSDictionary *tpDict = tpArr[i];
+                NSMutableDictionary *specMDict = [NSMutableDictionary new];
                 [specMDict setObject:[tpDict valueForKey:@"spec_id"] forKey:@"key"];
                 [specMDict setObject:[tpDict valueForKey:@"spec_name"] forKey:@"type_name"];
+                [specMDict setObject:[tpDict valueForKey:@"postage"] forKey:@"value"];//邮费
                 [specMArr addObject:specMDict];
                 
+                NSMutableDictionary *goodsMDict = [NSMutableDictionary new];
                 [goodsMDict setObject:[tpDict valueForKey:@"goods_id"] forKey:@"prod_id"];
                 [goodsMDict setObject:[tpDict valueForKey:@"goods_img"] forKey:@"image"];
                 [goodsMDict setObject:[tpDict valueForKey:@"goods_name"] forKey:@"title"];
@@ -113,16 +115,46 @@ static id _requestHelp;
                 [goodsMDict setObject:[tpDict valueForKey:@"goods_price"] forKey:@"cn_price"];
                 [goodsMDict setObject:specMArr forKey:@"model_detail"];
                 [goodsMDict setObject:[tpDict valueForKey:@"number"] forKey:@"count"];
-                
+                [goodsMDict setObject:[tpDict valueForKey:@"spec_id"] forKey:@"remark"];
                 [goodsMArr addObject:goodsMDict];
                 
-                [shopMDict setObject:[tpDict valueForKey:@"shopping_id"] forKey:@"buyer_id"];
-                [shopMDict setObject:[tpDict valueForKey:@"shop_name"] forKey:@"nick_name"];
-                [shopMDict setObject:goodsMArr forKey:@"prod_list"];
-                [shopMDict setObject:[tpDict valueForKey:@"shop_img"] forKey:@"user_avatar"];
-                [shopMDict setObject:[tpDict valueForKey:@"postage"] forKey:@"trans_fee"];
+            }
+            
+            for (int i = 0; i < tpArr.count; i++) {
+                NSDictionary *tpDict = tpArr[i];
+                NSString *str = [tpDict valueForKey:@"shop_id"];
                 
-                [shopMArr addObject:shopMDict];
+                if (i == 0) {
+                    [shopMDict setObject:[tpDict valueForKey:@"shopping_id"] forKey:@"buyer_shopping_id"];
+                    [shopMDict setObject:[tpDict valueForKey:@"shop_id"] forKey:@"buyer_id"];
+                    [shopMDict setObject:[tpDict valueForKey:@"shop_name"] forKey:@"nick_name"];
+                    [shopMDict setObject:goodsMArr forKey:@"prod_list"];
+                    [shopMDict setObject:[tpDict valueForKey:@"shop_img"] forKey:@"user_avatar"];
+                    [shopMDict setObject:[tpDict valueForKey:@"postage"] forKey:@"trans_fee"];
+                    
+                    [shopMArr addObject:shopMDict];
+                    
+                }
+                
+                for (int i = 1; i < tpArr.count; i++) {
+                    NSDictionary *tpDict2 = tpArr[i];
+                    NSString *str2 = [tpDict2 valueForKey:@"shop_id"];
+                    
+                    if ([str2 isEqualToString:str]) {
+                        
+                    } else {
+                        [shopMDict setObject:[tpDict valueForKey:@"shopping_id"] forKey:@"buyer_shopping_id"];
+                        [shopMDict setObject:[tpDict valueForKey:@"shop_id"] forKey:@"buyer_id"];
+                        [shopMDict setObject:[tpDict valueForKey:@"shop_name"] forKey:@"nick_name"];
+                        [shopMDict setObject:goodsMArr forKey:@"prod_list"];
+                        [shopMDict setObject:[tpDict valueForKey:@"shop_img"] forKey:@"user_avatar"];
+                        [shopMDict setObject:[tpDict valueForKey:@"postage"] forKey:@"trans_fee"];
+                        
+                        [shopMArr addObject:shopMDict];
+                    }
+                    
+                }
+                
             }
             
             [BuyerInfo mj_setupObjectClassInArray:^NSDictionary *{

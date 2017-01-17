@@ -94,7 +94,7 @@
     //右侧消息按钮
     UIButton *rightMesg = [[UIButton alloc] init];
     [rightMesg setFrame:CGRectMake(0, 0, 50, 30)];
-    [rightMesg setTitle:@"信息" forState:0];
+    [rightMesg setTitle:@"消息" forState:0];
     [rightMesg setTitleColor:XNColor(51, 51, 51, 1) forState:0];
     rightMesg.titleLabel.font = [UIFont systemFontOfSize:15];
     [rightMesg addTarget:self action:@selector(rightMessageButtonPressed:) forControlEvents:7];
@@ -219,10 +219,11 @@
     NPYFeatureStoreTVCell *cell = [tableView dequeueReusableCellWithIdentifier:identifier];
     if (!cell) {
         cell = [[NPYFeatureStoreTVCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:identifier];
-        cell.index = indexPath.row;
-        cell.model = shopArr[indexPath.row];
-        cell.delegate = self;
     }
+    
+    cell.index = indexPath.row;
+    cell.model = shopArr[indexPath.row];
+    cell.delegate = self;
     
     return cell;
 }
@@ -271,7 +272,7 @@
         
         if ([dataDict[@"r"] intValue] == 1) {
             //成功
-            [ZHProgressHUD showMessage:@"请求成功" inView:self.view];
+//            [ZHProgressHUD showMessage:@"请求成功" inView:self.view];
             NPYHomeModel *model = [[NPYHomeModel alloc] init];
             model.shopArr = dataDict[@"data"];
             [model toDetailModel];
@@ -283,7 +284,7 @@
             
         } else {
             //失败
-            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+//            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
         }
         
         [self.mainTView reloadData];

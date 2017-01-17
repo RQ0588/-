@@ -77,7 +77,7 @@
 
 +(void)showGif:(NSString *)msg inView:(UIView *)view{
     
-    UIImage *image = [UIImage sd_animatedGIFNamed:@"(NQHT]OS[GEOTRZKRSYQ3%1"];
+    UIImage *image = [UIImage sd_animatedGIFNamed:@"ZHProgressHUDImg"];
     UIImageView *gifView = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0, 80, 80)];
     gifView.image = image;
     MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:view animated:YES];

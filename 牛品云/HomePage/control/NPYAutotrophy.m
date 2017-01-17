@@ -63,6 +63,8 @@
 @property (nonatomic, strong) NPYSearchViewController   *searchVC;
 @property (nonatomic, strong) BuyViewController *goodsView;
 
+@property (nonatomic, strong) NSMutableDictionary *cellDic;
+
 @end
 
 @implementation NPYAutotrophy
@@ -76,6 +78,8 @@
     height_Space = Height_Space;
     height_ScrollView = 300.0;
     isMove = YES;
+    
+    _cellDic = [NSMutableDictionary new];
     
     NSDictionary *dic = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
     NPYLoginMode *model = [NPYLoginMode mj_objectWithKeyValues:dic[@"data"]];
@@ -149,7 +153,7 @@
     //右侧消息按钮
     UIButton *rightMesg = [[UIButton alloc] init];
     [rightMesg setFrame:CGRectMake(0, 0, 30, 30)];
-    [rightMesg setTitle:@"信息" forState:0];
+    [rightMesg setTitle:@"消息" forState:0];
     [rightMesg setTitleColor:XNColor(132, 134, 145, 1) forState:0];
     rightMesg.titleLabel.font = [UIFont systemFontOfSize:9.0];
     UIImage *mesgImg = [UIImage imageNamed:@"xiaoxi_hui"];
@@ -359,13 +363,29 @@
 
 - (__kindof UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     
+//    NPYHomeGoodsModel *goodsModel = goodsArr[indexPath.row];
+//    
+//    NPYGoodsCollectionViewCell *goodsCell = [collectionView dequeueReusableCellWithReuseIdentifier:@"goodsCell" forIndexPath:indexPath];
+//    
+//    goodsCell.goodsModel = goodsModel;
+//
+    
+    // 每次先从字典中根据IndexPath取出唯一标识符
+    NSString *identifier = [_cellDic objectForKey:[NSString stringWithFormat:@"%@", indexPath]];
+    // 如果取出的唯一标示符不存在，则初始化唯一标示符，并将其存入字典中，对应唯一标示符注册Cell
+    if (identifier == nil) {
+        identifier = [NSString stringWithFormat:@"%@%@", @"DayCell", [NSString stringWithFormat:@"%@", indexPath]];
+        [_cellDic setValue:identifier forKey:[NSString stringWithFormat:@"%@", indexPath]];
+        // 注册Cell
+        [self.recommendView registerClass:[NPYGoodsCollectionViewCell class]  forCellWithReuseIdentifier:identifier];
+    }
+    
+    NPYGoodsCollectionViewCell *goodsCell = [collectionView dequeueReusableCellWithReuseIdentifier:identifier forIndexPath:indexPath];;
     NPYHomeGoodsModel *goodsModel = goodsArr[indexPath.row];
-    
-    NPYGoodsCollectionViewCell *goodsCell = [collectionView dequeueReusableCellWithReuseIdentifier:@"goodsCell" forIndexPath:indexPath];
-    
     goodsCell.goodsModel = goodsModel;
-    
     return goodsCell;
+    
+    
     
 }
 
@@ -420,7 +440,7 @@
         
         if ([dataDict[@"r"] intValue] == 1) {
             //成功
-            [ZHProgressHUD showMessage:@"请求成功" inView:self.view];
+//            [ZHProgressHUD showMessage:@"请求成功" inView:self.view];
             NSDictionary *tpDict = dataDict[@"data"];
             
             NPYHomeModel *model = [[NPYHomeModel alloc] init];
@@ -430,9 +450,13 @@
             
             NSString *collectState = tpDict[@"collect"];
             
+            if ([collectState isEqualToString:@"true"]) {
+                
+            }
+            
             isCollected = [collectState boolValue];
             
-            [collectBtn2 setSelected:YES];
+            [collectBtn2 setSelected:isCollected];
             
 //            [self topTitleViewLoad];
             
@@ -451,7 +475,7 @@
             
         } else {
             //失败
-            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+//            [ZHProgressHUD showMessage:[NSString stringWithFormat:@"%@",dataDict[@"data"]] inView:self.view];
 //            [self.navigationController popViewControllerAnimated:YES];
         }
         
@@ -470,10 +494,10 @@
         
         if ([dataDict[@"r"] intValue] == 1) {
             //成功
-            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+            [ZHProgressHUD showMessage:[NSString stringWithFormat:@"%@",dataDict[@"data"]] inView:self.view];
         } else {
             //失败
-            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+//            [ZHProgressHUD showMessage:[NSString stringWithFormat:@"%@",dataDict[@"data"]] inView:self.view];
         }
         
     } failure:^(NSError *error) {

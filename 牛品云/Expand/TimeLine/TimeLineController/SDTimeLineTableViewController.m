@@ -51,6 +51,7 @@
 #define kTimeLineTableViewCellId @"SDTimeLineCell"
 
 #define Moments_Url @"/index.php/app/Moments/get"
+#define Deleter_Moment_Url @"/index.php/app/Moments/delete"
 
 static CGFloat textFieldH = 40;
 
@@ -156,44 +157,12 @@ static CGFloat textFieldH = 40;
     
     NSDictionary *requeatDict = [NSDictionary dictionaryWithObjectsAndKeys:[dic valueForKey:@"sign"],@"sign",model.user_id,@"user_id",@"0",@"num", nil];
     [self requestMomentDataWithUrlString:Moments_Url withParame:requeatDict];
-
     
-//    __weak typeof(self) weakSelf = self;
-//    
-////     上拉加载
-//    _refreshFooter = [SDTimeLineRefreshFooter refreshFooterWithRefreshingText:@"正在加载数据..."];
-//    __weak typeof(_refreshFooter) weakRefreshFooter = _refreshFooter;
-//    [_refreshFooter addToScrollView:self.tableView refreshOpration:^{
-//        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-//            [weakSelf.dataArray addObjectsFromArray:[weakSelf creatModelsWithCount:10]];
-//            
-//            NSDictionary *dic = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
-//            NPYLoginMode *model = [NPYLoginMode mj_objectWithKeyValues:dic[@"data"]];
-//            
-//            NSDictionary *requeatDict = [NSDictionary dictionaryWithObjectsAndKeys:[dic valueForKey:@"sign"],@"sign",model.user_id,@"user_id",[NSString stringWithFormat:@"%i",refreshNumber+1],@"num", nil];
-//            [weakSelf requestMomentDataWithUrlString:Moments_Url withParame:requeatDict];
-//            
-//            /**
-//             [weakSelf.tableView reloadDataWithExistedHeightCache]
-//             作用等同于
-//             [weakSelf.tableView reloadData]
-//             只是“reloadDataWithExistedHeightCache”刷新tableView但不清空之前已经计算好的高度缓存，用于直接将新数据拼接在旧数据之后的tableView刷新
-//             */
-//            [weakSelf.tableView reloadDataWithExistedHeightCache];
-//            
-//            [weakRefreshFooter endRefreshing];
-//        });
-//    }];
-    
-//    SDTimeLineTableHeaderView *headerView = [SDTimeLineTableHeaderView new];
-//    headerView.frame = CGRectMake(0, 0, 0, 260);
-//    self.tableView.tableHeaderView = headerView;
-    
-    UIView *headView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 0, 130)];
+    UIView *headView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 0, 65)];
     
     UIView *bgView = [[UIView alloc] initWithFrame:CGRectMake(0, 60, WIDTH_SCREEN, 60)];
     bgView.backgroundColor = [UIColor whiteColor];
-    [headView addSubview:bgView];
+//    [headView addSubview:bgView];
     
     UIImageView *bgImgView = [[UIImageView alloc] initWithFrame:CGRectMake((WIDTH_SCREEN - 126)/2, 15, 126, 31)];
     bgImgView.image = [UIImage imageNamed:@"圆角矩形-1"];
@@ -249,32 +218,6 @@ static CGFloat textFieldH = 40;
 {
     [super viewDidAppear:animated];
     
-//    if (!_refreshHeader.superview) {
-//        
-//        _refreshHeader = [SDTimeLineRefreshHeader refreshHeaderWithCenter:CGPointMake(40, 45)];
-//        _refreshHeader.scrollView = self.tableView;
-//        __weak typeof(_refreshHeader) weakHeader = _refreshHeader;
-//        __weak typeof(self) weakSelf = self;
-//        [_refreshHeader setRefreshingBlock:^{
-//            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-////                weakSelf.dataArray = [[weakSelf creatModelsWithCount:10] mutableCopy];
-//                
-////                NSDictionary *dic = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
-////                NPYLoginMode *model = [NPYLoginMode mj_objectWithKeyValues:dic[@"data"]];
-////                
-////                NSDictionary *requeatDict = [NSDictionary dictionaryWithObjectsAndKeys:[dic valueForKey:@"sign"],@"sign",model.user_id,@"user_id",@"0",@"num", nil];
-////                [weakSelf requestMomentDataWithUrlString:Moments_Url withParame:requeatDict];
-//                
-//                [weakHeader endRefreshing];
-//                dispatch_async(dispatch_get_main_queue(), ^{
-//                    [weakSelf.tableView reloadData];
-//                });
-//            });
-//        }];
-//        [self.tableView.superview addSubview:_refreshHeader];
-//    } else {
-//        [self.tableView.superview bringSubviewToFront:_refreshHeader];
-//    }
 }
 
 - (void)dealloc
@@ -298,9 +241,9 @@ static CGFloat textFieldH = 40;
     
     _textField.lee_theme
     .LeeAddBackgroundColor(DAY , [UIColor whiteColor])
-    .LeeAddBackgroundColor(NIGHT , [UIColor blackColor])
+    .LeeAddBackgroundColor(NIGHT , [UIColor whiteColor])
     .LeeAddTextColor(DAY , [UIColor blackColor])
-    .LeeAddTextColor(NIGHT , [UIColor grayColor])
+    .LeeAddTextColor(NIGHT , [UIColor blackColor])
     .LeeAddCustomConfig(DAY , ^(UITextField *item){
     
         item.keyboardAppearance = UIKeyboardAppearanceDefault;
@@ -536,34 +479,46 @@ static CGFloat textFieldH = 40;
     
 }
 
+//自己的就删除
 - (void)didClickLikeButtonInCell:(UITableViewCell *)cell
 {
     NSIndexPath *index = [self.tableView indexPathForCell:cell];
     SDTimeLineCellModel *model = self.dataArray[index.row];
     NSMutableArray *temp = [NSMutableArray arrayWithArray:model.likeItemsArray];
     
-    if (!model.isLiked) {
-        SDTimeLineCellLikeItemModel *likeModel = [SDTimeLineCellLikeItemModel new];
-        likeModel.userName = @"GSD_iOS";
-        likeModel.userId = @"gsdios";
-        [temp addObject:likeModel];
-        model.liked = YES;
+    //判断是否是删除按钮
+    NSDictionary *userDict = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+    NPYLoginMode *userModel = [NPYLoginMode mj_objectWithKeyValues:userDict[@"data"]];
+    if ([userModel.user_id isEqualToString:model.user_id]) {
+        //删除
+        NSDictionary *request = [NSDictionary dictionaryWithObjectsAndKeys:[userDict valueForKey:@"sign"],@"sign",userModel.user_id,@"user_id",model.moments_id,@"moments_id", nil];
+        [self requestDeleteMomentsWithUrlString:Deleter_Moment_Url withParames:request];
+        
     } else {
-        SDTimeLineCellLikeItemModel *tempLikeModel = nil;
-        for (SDTimeLineCellLikeItemModel *likeModel in model.likeItemsArray) {
-            if ([likeModel.userId isEqualToString:@"gsdios"]) {
-                tempLikeModel = likeModel;
-                break;
+        if (!model.isLiked) {
+            SDTimeLineCellLikeItemModel *likeModel = [SDTimeLineCellLikeItemModel new];
+            likeModel.userName = model.name;
+            likeModel.userId = model.user_id;
+            [temp addObject:likeModel];
+            model.liked = YES;
+        } else {
+            SDTimeLineCellLikeItemModel *tempLikeModel = nil;
+            for (SDTimeLineCellLikeItemModel *likeModel in model.likeItemsArray) {
+                if ([likeModel.userId isEqualToString:model.user_id]) {
+                    tempLikeModel = likeModel;
+                    break;
+                }
             }
+            [temp removeObject:tempLikeModel];
+            model.liked = NO;
         }
-        [temp removeObject:tempLikeModel];
-        model.liked = NO;
+        model.likeItemsArray = [temp copy];
+        
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            [self.tableView reloadRowsAtIndexPaths:@[index] withRowAnimation:UITableViewRowAnimationNone];
+        });
     }
-    model.likeItemsArray = [temp copy];
     
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [self.tableView reloadRowsAtIndexPaths:@[index] withRowAnimation:UITableViewRowAnimationNone];
-    });
 }
 
 
@@ -690,7 +645,7 @@ static CGFloat textFieldH = 40;
         NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
         if ([dataDict[@"r"] intValue] == 1) {
             //成功
-            [ZHProgressHUD showMessage:@"网络请求成功" inView:self.view];
+//            [ZHProgressHUD showMessage:@"网络请求成功" inView:self.view];
             NSArray *tpDataArr = [NSArray arrayWithArray:dataDict[@"data"]];
             /*moments_id，朋友圈id  text，朋友圈内容  img1，朋友圈图片  reply_json，该条的评论*/
             [self.dataArray removeAllObjects];
@@ -732,7 +687,7 @@ static CGFloat textFieldH = 40;
             
         } else {
             //请求失败
-            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+//            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
         }
         
         
@@ -751,11 +706,36 @@ static CGFloat textFieldH = 40;
         
         if ([dataDict[@"r"] intValue] == 1) {
             //成功
-            [ZHProgressHUD showMessage:@"网络请求成功" inView:self.view];
+//            [ZHProgressHUD showMessage:@"网络请求成功" inView:self.view];
             
         } else {
             //请求失败
-            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+//            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+        }
+        
+        
+    } failure:^(NSError *error) {
+        NSLog(@"%@",error);
+        
+    }];
+    
+}
+
+- (void)requestDeleteMomentsWithUrlString:(NSString *)urlStr withParames:(NSDictionary *)parame {
+    NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:parame] forKey:@"data"];
+    
+    [[NPYHttpRequest sharedInstance] getWithUrlString:[NSString stringWithFormat:@"%@%@",BASE_URL,urlStr] parameters:paremes success:^(id responseObject) {
+        NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+        
+        if ([dataDict[@"r"] intValue] == 1) {
+            //成功
+            [ZHProgressHUD showMessage:@"删除成功" inView:self.view];
+            
+            [self.tableView.mj_header beginRefreshing];
+            
+        } else {
+            //请求失败
+//            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
         }
         
         

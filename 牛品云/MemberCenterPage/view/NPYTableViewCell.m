@@ -42,6 +42,11 @@
     [self.delOrderBtn setTitle:[self orderStateString][1] forState:UIControlStateNormal];
     [self.buyBtn setTitle:[self orderStateString][2] forState:UIControlStateNormal];
     
+    if (_isManyOrder) {
+        self.delOrderBtn.hidden = YES;
+        self.buyBtn.hidden = YES;
+    }
+    
 }
 
 - (NSArray *)orderStateString {
@@ -49,44 +54,57 @@
     NSString *str = @"";
     NSString *btnTitle = @"";
     NSString *btnTitle2 = @"";
+    
+//    NSLog(@"%@-%@",self.model.order_id,self.model.type);
+    
     switch ([self.model.type intValue]) {
         case 0:
             str = @"待付款";
             btnTitle = @"删除订单";
             btnTitle2 = @"立即付款";
+            
             break;
             
         case 1:
             str = @"发货中";
-            btnTitle = @"删除订单";
+            btnTitle = @"售后/退款";
             btnTitle2 = @"确认收货";
+            
+            if (_isManyOrder) {
+                str = @"已付款";
+            }
+            
             break;
             
         case 2:
             str = @"已发货";
-            btnTitle = @"删除订单";
+            btnTitle = @"售后/退款";
             btnTitle2 = @"确认收货";
             break;
             
         case 3:
-            str = @"已完成";
+            str = @"待评价";
             btnTitle = @"售后/退款";
             btnTitle2 = @"立即评价";
             break;
             
         case 4:
             str = @"已完成";
-            btnTitle = @"售后/退款";
-            btnTitle2 = @"立即评价";
+//            btnTitle = @"售后/退款";
+            self.delOrderBtn.hidden = YES;
+            btnTitle2 = @"已完成";
             break;
             
         case 5:
             str = @"售后";
+            self.delOrderBtn.hidden = YES;
             btnTitle2 = @"售后中";
             break;
             
         case -1:
             str = @"已取消";
+            self.delOrderBtn.hidden = YES;
+            self.buyBtn.hidden = YES;
             break;
             
         default:
@@ -99,11 +117,19 @@
 }
 
 - (IBAction)oneButton:(id)sender {
-    NSLog(@"左侧的按钮");
+//    NSLog(@"左侧的按钮");
+    if (self.delegate && [self.delegate respondsToSelector:@selector(cellButtonEventWithType:withIndexPath:)]) {
+        [self.delegate cellLeftButtonEventWithType:[self.model.type intValue] withIndexPath:self.cellPath];
+        
+    }
 }
 
 - (IBAction)twoButton:(id)sender {
-    NSLog(@"右侧按钮");
+//    NSLog(@"右侧按钮");
+    if (self.delegate && [self.delegate respondsToSelector:@selector(cellButtonEventWithType:withIndexPath:)]) {
+        [self.delegate cellButtonEventWithType:[self.model.type intValue] withIndexPath:self.cellPath];
+        
+    }
 }
 
 - (NSMutableAttributedString *)attributedStringWithSegmentationString:(NSString *)segStr withOriginalString:(NSString *)orStr withOneColor:(UIColor *)oneColor withTwoColor:(UIColor *)twoColor withOneFontSize:(CGFloat)oneSize twoFontSize:(CGFloat)twoSize {

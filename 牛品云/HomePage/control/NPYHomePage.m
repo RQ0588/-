@@ -50,6 +50,8 @@
 @property (nonatomic, strong) UIView *menuView;
 @property (nonatomic, strong) UICollectionView *recommendView;
 
+@property (nonatomic, strong) NSMutableDictionary *cellDic;
+
 @property (nonatomic, strong) NPYSweepViewController *sweepVC;
 @property (nonatomic, strong) NPYMessageViewController *msgVC;
 @property (nonatomic, strong) ScanViewController *scanVC;
@@ -66,11 +68,18 @@
 
 @implementation NPYHomePage
 
+- (void)dealloc {
+    [self removeObserver];
+    
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
     topImgArray = [NSMutableArray arrayWithObjects:@"",@"",@"", nil];
+    
+    self.cellDic = [[NSMutableDictionary alloc] init];
     
     itemHeight = 180;
     
@@ -107,10 +116,47 @@
     
     [self navigationLoad];
     
+    [self registerMessageReceive];
+    
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
+    
+}
+
+/**
+ *  注册推送消息的监听
+ */
+- (void)registerMessageReceive {
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(onMessageReceived:)
+                                                 name:CCPDidReceiveMessageNotification
+                                               object:nil];
+}
+
+/**
+ *  处理推送消息
+ */
+- (void)onMessageReceived:(NSNotification *)notification {
+    CCPSysMessage *message = [notification object];
+    NSString *title = [[NSString alloc] initWithData:message.title encoding:NSUTF8StringEncoding];
+    NSString *body = [[NSString alloc] initWithData:message.body encoding:NSUTF8StringEncoding];
+    NSLog(@"Receive message title:%@, content:%@.",title,body);
+    
+    topRightBtn.badgeBgColor = [UIColor redColor];
+    topRightBtn.badgeCenterOffset = CGPointMake(5, 0);
+    [topRightBtn showBadgeWithStyle:WBadgeStyleRedDot value:0 animationType:WBadgeAnimTypeNone];
+    
+}
+
+/**
+ *  移除监听
+ */
+- (void)removeObserver {
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:CCPDidReceiveMessageNotification
+                                                  object:nil];
     
 }
 
@@ -158,7 +204,7 @@
     //右侧消息按钮
     UIButton *rightMesg = [[UIButton alloc] init];
     [rightMesg setFrame:CGRectMake(0, 0, 30, 30)];
-    [rightMesg setTitle:@"信息" forState:0];
+    [rightMesg setTitle:@"消息" forState:0];
     [rightMesg setTitleColor:XNColor(255, 255, 255, 1) forState:0];
     rightMesg.titleLabel.font = [UIFont systemFontOfSize:9.0];
     UIImage *mesgImg = [UIImage imageNamed:@"xiaoxi_icon"];
@@ -260,11 +306,21 @@
 
 - (__kindof UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     
+    // 每次先从字典中根据IndexPath取出唯一标识符
+    NSString *identifier = [_cellDic objectForKey:[NSString stringWithFormat:@"%@", indexPath]];
+    // 如果取出的唯一标示符不存在，则初始化唯一标示符，并将其存入字典中，对应唯一标示符注册Cell
+    if (identifier == nil) {
+        identifier = [NSString stringWithFormat:@"%@%@", @"DayCell", [NSString stringWithFormat:@"%@", indexPath]];
+        [_cellDic setValue:identifier forKey:[NSString stringWithFormat:@"%@", indexPath]];
+        // 注册Cell
+        [self.recommendView registerClass:[NPYGoodsCollectionViewCell class]  forCellWithReuseIdentifier:identifier];
+    }
+    
+    NPYGoodsCollectionViewCell *goodsCell = [collectionView dequeueReusableCellWithReuseIdentifier:identifier forIndexPath:indexPath];;
     NPYHomeGoodsModel *goodsModel = goodsArr[indexPath.row];
-    
-    NPYGoodsCollectionViewCell *goodsCell = [collectionView dequeueReusableCellWithReuseIdentifier:@"cellid" forIndexPath:indexPath];
-    
     goodsCell.goodsModel = goodsModel;
+
+    // 此处可以对Cell做你想做的操作了...
     
     return goodsCell;
     
@@ -450,7 +506,7 @@
             
         } else {
             //失败
-            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+//            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
         }
         
     } failure:^(NSError *error) {

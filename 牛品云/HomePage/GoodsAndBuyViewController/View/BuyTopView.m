@@ -73,7 +73,7 @@
 //    self.rightRefresh = refresh;
 //    refresh.scrollview = self.detailView;
 //    [refresh contentWidth:images.count*screenW];
-//    [self.detailView reloadData];
+    [self.detailView reloadData];
 }
 
 #pragma mark -- UICollectionViewDataSource, UICollectionViewDelegate

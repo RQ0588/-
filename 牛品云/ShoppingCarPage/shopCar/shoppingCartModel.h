@@ -12,6 +12,8 @@
 
 @interface BuyerInfo : NSObject
 
+@property (nonatomic, copy) NSString *buyer_shopping_id;
+
 @property (nonatomic,copy) NSString *buyer_id;
 @property (nonatomic,copy) NSString *last_update_ts;
 @property (nonatomic,copy) NSString *nick_name;
@@ -36,10 +38,11 @@
 @property (nonatomic,assign) CGFloat order_price;
 @property (nonatomic,assign) CGFloat price;
 @property (nonatomic,copy) NSString *prod_id;
-@property (nonatomic,copy) NSString *remark;
+@property (nonatomic,copy) NSString *remark;    //规格id
 @property (nonatomic,copy) NSString *title;
 @property (nonatomic,strong) NSArray *model_detail;
 
+@property (nonatomic, strong) NSString *coupon_id;
 // 商品左侧按钮是否选中
 @property (nonatomic,assign) BOOL productIsChoosed;
 

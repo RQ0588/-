@@ -50,6 +50,8 @@
     self.openBtn.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
     self.openBtn.titleEdgeInsets = UIEdgeInsetsMake(0, -40, 0.0, 0.0);
     self.openBtn.imageEdgeInsets = UIEdgeInsetsMake(0, 0, 0, -40);
+    
+    self.countL.adjustsFontSizeToFitWidth = YES;
 }
 
 - (void)layoutSubviews {
@@ -71,15 +73,23 @@
     int sportNumber = [self.detailModel.money intValue] == 0 ? [self.detailModel.yes intValue] : [self.detailModel.yes intValue] / [self.detailModel.money intValue];
     
     self.number.text = [NSString stringWithFormat:@"%i位支持者（剩余%i份）",sportNumber,(perNumber - sportNumber)];
+    
+    self.surplusValue = perNumber - sportNumber;
+    
 }
 
 //选择按钮
 - (IBAction)selectedButtonPressed:(id)sender {
     UIButton *btn = (UIButton *)sender;
-    btn.selected = btn.selected ? NO : YES;
+    btn.hidden = YES;
     
     if (self.delegate && [self.delegate respondsToSelector:@selector(selectedSportWithIndexPath:)]) {
         [self.delegate selectedSportWithIndexPath:self.path];
+        
+    }
+    
+    if (self.delegate && [self.delegate respondsToSelector:@selector(passBuyValueToSuperView:)]) {
+        [self.delegate passBuyValueToSuperView:self.countValue];
         
     }
 }
@@ -107,10 +117,14 @@
     }
     self.countL.text = [NSString stringWithFormat:@"%i",self.countValue];
     
+    if (self.delegate && [self.delegate respondsToSelector:@selector(passBuyValueToSuperView:)]) {
+        [self.delegate passBuyValueToSuperView:self.countValue];
+        
+    }
 }
 
 - (IBAction)sumButtonPressed:(id)sender {
-    self.surplusValue = 5;  //模拟数据
+//    self.surplusValue = 5;  //模拟数据
     self.countValue = [self.countL.text intValue];
     self.countValue ++;
     if (self.countValue > self.surplusValue) {
@@ -119,6 +133,10 @@
     }
     self.countL.text = [NSString stringWithFormat:@"%i",self.countValue];
     
+    if (self.delegate && [self.delegate respondsToSelector:@selector(passBuyValueToSuperView:)]) {
+        [self.delegate passBuyValueToSuperView:self.countValue];
+        
+    }
 }
 
 @end

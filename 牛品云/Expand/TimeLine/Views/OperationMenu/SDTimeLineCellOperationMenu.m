@@ -30,8 +30,8 @@
     self.layer.cornerRadius = 5;
     self.backgroundColor = SDColor(69, 74, 76, 1);
     
-    _likeButton = [self creatButtonWithTitle:@"赞" image:[UIImage imageNamed:@"AlbumLike"] selImage:[UIImage imageNamed:@""] target:self selector:@selector(likeButtonClicked)];
-    _commentButton = [self creatButtonWithTitle:@"评论" image:[UIImage imageNamed:@"AlbumComment"] selImage:[UIImage imageNamed:@""] target:self selector:@selector(commentButtonClicked)];
+    _likeButton = [self creatButtonWithTitle:@"删除" image:[UIImage imageNamed:@"laiji_pyq"] selImage:[UIImage imageNamed:@""] target:self selector:@selector(likeButtonClicked)];
+    _commentButton = [self creatButtonWithTitle:@"评论" image:[UIImage imageNamed:@"pinglun_pyq"] selImage:[UIImage imageNamed:@""] target:self selector:@selector(commentButtonClicked)];
     
     UIView *centerLine = [UIView new];
     centerLine.backgroundColor = [UIColor grayColor];
@@ -101,6 +101,13 @@
         } else {
             self.fixedWidth = nil;
             [self setupAutoWidthWithRightView:_commentButton rightMargin:5];
+            
+            if (_isShowDeleterButton) {
+                
+            } else {
+                [_likeButton setTitle:@"赞" forState:UIControlStateNormal];
+                [_likeButton setImage:[UIImage imageNamed:@"Like"] forState:UIControlStateNormal];
+            }
         }
         [self updateLayoutWithCellContentView:self.superview];
     }];

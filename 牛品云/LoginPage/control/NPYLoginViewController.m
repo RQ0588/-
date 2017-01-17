@@ -171,6 +171,13 @@
             [NPYSaveGlobalVariable saveValueAtLocal:dataDict withKey:LoginData_Local];
             [NPYSaveGlobalVariable saveValueAtLocal:dataDict[@"r"] withKey:LoginState];
             
+            //发送别名给阿里
+            [CloudPushSDK addAlias:model.user_id withCallback:^(CloudPushCallbackResult *res) {
+                if (res.success) {
+                    NSLog(@"success");
+                }
+            }];
+            
             [self.navigationController popToRootViewControllerAnimated:YES];
             
         } else {

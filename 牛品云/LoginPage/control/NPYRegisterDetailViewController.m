@@ -126,7 +126,7 @@
         
         if ([dataDict[@"r"] intValue] == 1) {
             //成功
-            [ZHProgressHUD showMessage:@"请求成功" inView:self.view];
+//            [ZHProgressHUD showMessage:@"请求成功" inView:self.view];
             
             NPYLoginMode *model = [NPYLoginMode mj_objectWithKeyValues:dataDict[@"data"]];
             model.r = dataDict[@"r"];
@@ -139,7 +139,7 @@
             
         } else {
             //失败
-            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+//            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
         }
         
     } failure:^(NSError *error) {

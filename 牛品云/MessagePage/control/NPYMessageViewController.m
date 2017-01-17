@@ -10,6 +10,8 @@
 #import "NPYBaseConstant.h"
 #import "NPYMsgDetailViewController.h"
 
+#define MESSAGENUMBER @"/index.php/app/Push/get_num"
+
 @interface NPYMessageViewController () <UITableViewDelegate,UITableViewDataSource> {
     NSArray *msgNames,*imges;
     
@@ -17,6 +19,8 @@
 }
 
 @property (nonatomic, strong) NPYMsgDetailViewController *msgDetailVC;
+
+@property (nonatomic, strong) NSDictionary *noticNumberDict;
 
 @end
 
@@ -29,6 +33,12 @@
     msgNames = @[@"优惠消息",@"通知消息"];
     imges = @[@"youhui_xiaoxi",@"tongzhi_xiaoxi"];
     
+    NSDictionary *userDict = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+    NPYLoginMode *userModel = [NPYLoginMode mj_objectWithKeyValues:userDict[@"data"]];
+    
+    NSDictionary *request = [NSDictionary dictionaryWithObjectsAndKeys:[userDict valueForKey:@"sign"],@"sign",userModel.user_id,@"user_id", nil];
+    
+    [self requestMessageNumberWithUrlString:MESSAGENUMBER withParames:request];
     
     [self navigationViewLoad];
     
@@ -77,6 +87,7 @@
     mainTableView.backgroundColor = GRAY_BG;
     mainTableView.separatorColor = GRAY_BG;
     mainTableView.tableFooterView = [[UIView alloc] initWithFrame:CGRectZero];
+    mainTableView.scrollEnabled = NO;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
@@ -92,6 +103,8 @@
     UITableViewCell *mainCell = [tableView dequeueReusableCellWithIdentifier:identifier];
     if (!mainCell) {
         mainCell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:identifier];
+        
+        
     }
     
     mainCell.imageView.image = [UIImage imageNamed:imges[indexPath.row]];
@@ -104,10 +117,41 @@
     
     mainCell.textLabel.font = XNFont(16.0);
     
+    if (_noticNumberDict && indexPath.row == 0) {
+        NSString *str = [self.noticNumberDict valueForKey:@"coupon_num"];
+        mainCell.imageView.badge.text = str;
+        mainCell.imageView.badgeTextColor = [UIColor whiteColor];
+        mainCell.imageView.badgeFont = XNFont(10.0);
+        mainCell.imageView.badgeBgColor = [UIColor redColor];
+        mainCell.imageView.badgeMaximumBadgeNumber = 99;
+        mainCell.imageView.badgeFrame = CGRectMake(CGRectGetHeight(mainCell.imageView.frame) -6, -6, 10, 10);
+       [mainCell.imageView showBadge];
+        
+    }
+    
+    if (_noticNumberDict && indexPath.row == 1) {
+        NSString *str = [self.noticNumberDict valueForKey:@"coupon_num"];
+        mainCell.imageView.badge.badgeTextColor = [UIColor whiteColor];
+        mainCell.imageView.badge.badgeFont = XNFont(11.0);
+        mainCell.imageView.badgeBgColor = [UIColor redColor];
+        mainCell.imageView.badgeMaximumBadgeNumber = 99;
+        mainCell.imageView.badgeCenterOffset = CGPointMake(-10, 10);
+        [mainCell showBadgeWithStyle:WBadgeStyleRedDot value:[str integerValue] animationType:WBadgeAnimTypeNone];
+        if ([str integerValue] == 0) {
+            [mainCell.imageView clearBadge];
+        }
+        
+    }
+   
+    
+    
     return mainCell;
 }
 //跳转（优惠、通知）
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    UITableViewCell *mainCell = [tableView cellForRowAtIndexPath:indexPath];
+    [mainCell.imageView clearBadge];
+    
     self.msgDetailVC = [[NPYMsgDetailViewController alloc] init];
     self.msgDetailVC.titleName = msgNames[indexPath.row];
     [self.navigationController pushViewController:self.msgDetailVC animated:YES];
@@ -136,7 +180,44 @@
         [cell setLayoutMargins:UIEdgeInsetsZero];
     }
 }
+
+#pragma mark - 
+
+- (void)requestMessageNumberWithUrlString:(NSString *)urlStr withParames:(NSDictionary *)parame {
+    NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:parame] forKey:@"data"];
+    
+    [[NPYHttpRequest sharedInstance] getWithUrlString:[NSString stringWithFormat:@"%@%@",BASE_URL,urlStr] parameters:paremes success:^(id responseObject) {
+        NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+        
+        if ([dataDict[@"r"] intValue] == 1) {
+            //成功
+//            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+            
+            _noticNumberDict = [NSDictionary dictionaryWithObjectsAndKeys:[dataDict[@"data"] valueForKey:@"coupon_num"],@"coupon_num",[dataDict[@"data"] valueForKey:@"notice_num"],@"notice_num", nil];
+            
+            [mainTableView reloadData];
+            
+        } else {
+            //失败
+//            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+            
+        }
+        
+    } failure:^(NSError *error) {
+        NSLog(@"%@",error);
+        
+    }];
+}
+
 #pragma mark - ...
+
+- (NSDictionary *)noticNumberDict {
+    if (_noticNumberDict == nil) {
+        _noticNumberDict = [NSDictionary new];
+    }
+    
+    return _noticNumberDict;
+}
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];

@@ -10,4 +10,8 @@
 
 @interface NPYOrdeDetailViewController : UIViewController
 
+@property (nonatomic, assign) BOOL isManyOrder;
+
+@property (nonatomic, strong) NSString *order_id;
+
 @end

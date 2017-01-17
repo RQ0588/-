@@ -7,7 +7,10 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "NPYMyOrderModel.h"
 
 @interface NPYAfter_SalesViewController : UIViewController
+
+@property (nonatomic, strong) NPYMyOrderModel *model;
 
 @end

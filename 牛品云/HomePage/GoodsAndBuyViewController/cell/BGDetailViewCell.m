@@ -7,6 +7,7 @@
 //
 
 #import "BGDetailViewCell.h"
+#import "NPYBaseConstant.h"
 
 @interface BGDetailViewCell()
 
@@ -29,8 +30,8 @@
         self.img.image = image;
         
     } else if ([image isKindOfClass:[NSString class]]) {
-        self.img.image = [UIImage imageNamed:image];
-        
+//        self.img.image = [UIImage imageNamed:image];
+        [self.img sd_setImageWithURL:[NSURL URLWithString:image] placeholderImage:[UIImage imageNamed:@"tiantu_icon"]];
     }
     
 }

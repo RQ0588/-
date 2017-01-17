@@ -165,6 +165,15 @@
     }
     [self removeFromSuperview];
 }
+
+- (NSMutableArray *)expandArr {
+    if (_expandArr == nil) {
+        _expandArr = [NSMutableArray new];
+    }
+    
+    return _expandArr;
+}
+
 /*
 // Only override drawRect: if you perform custom drawing.
 // An empty implementation adversely affects performance during animation.

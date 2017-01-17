@@ -23,7 +23,7 @@
 @property (weak, nonatomic) IBOutlet UIImageView *goodsIcon;
 @property (weak, nonatomic) IBOutlet UILabel *goodsPrice_lab;
 @property (weak, nonatomic) IBOutlet UILabel *storNumber_lab;
-@property (weak, nonatomic) IBOutlet UILabel *buyNumber_lab;
+
 @property (weak, nonatomic) IBOutlet UIView *midVIew;
 
 - (IBAction)backSuperView:(id)sender;
@@ -148,6 +148,7 @@
     if (self.delegate && [self.delegate respondsToSelector:@selector(popValue:withNumber:)]) {
         [self.delegate popValue:selectedDict withNumber:[self.buyNumber_lab.text intValue]];
         
+        [self.delegate popValue:selectedDict withNumber:[self.buyNumber_lab.text intValue] withIndex:self.indexPath];
     }
     
     [self dismissViewControllerAnimated:YES completion:nil];
@@ -158,6 +159,7 @@
     if (self.delegate && [self.delegate respondsToSelector:@selector(popValue:withNumber:)]) {
         [self.delegate popValue:selectedDict withNumber:[self.buyNumber_lab.text intValue]];
         
+        [self.delegate popValue:selectedDict withNumber:[self.buyNumber_lab.text intValue] withIndex:self.indexPath];
     }
     
     [self dismissViewControllerAnimated:YES completion:nil];
@@ -220,7 +222,7 @@
             
         } else {
             //失败
-            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+//            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
         }
         
     } failure:^(NSError *error) {
@@ -242,7 +244,7 @@
             [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
         } else {
             //失败
-            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+//            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
         }
         
     } failure:^(NSError *error) {

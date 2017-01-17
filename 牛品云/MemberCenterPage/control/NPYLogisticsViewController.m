@@ -13,6 +13,8 @@
 #import "CommonDefine.h"
 #import "TimeModel.h"
 
+#define ExpressUrl @"/index.php/app/Order/get_express"
+
 @interface NPYLogisticsViewController () <UITableViewDelegate,UITableViewDataSource> {
     UIView  *topView;
     UIImageView *goodsImgView;
@@ -84,33 +86,40 @@
 //数据
 -(void)setData
 {
-    self.dataList=[NSMutableArray arrayWithCapacity:0];
-    NSDictionary *dic=@{@"timeStr":@"2016-07-20 16:49:39",@"titleStr":@"[苏州市]江苏省苏州市高新区科技城分部公司 已签收 签收人：本人 感谢使用顺丰快递，期待再次为您服务",@"detailSrtr":@"",@"isTop":@"YES"};
-    TimeModel *model=[[TimeModel alloc]initData:dic];
-    [self.dataList addObject:model];
+//    self.dataList=[NSMutableArray arrayWithCapacity:0];
+//    NSDictionary *dic=@{@"timeStr":@"2016-07-20 16:49:39",@"titleStr":@"[苏州市]江苏省苏州市高新区科技城分部公司 已签收 签收人：本人 感谢使用顺丰快递，期待再次为您服务",@"detailSrtr":@"",@"isTop":@"YES"};
+//    TimeModel *model=[[TimeModel alloc]initData:dic];
+//    [self.dataList addObject:model];
+//    
+//    NSDictionary *dic2=@{@"timeStr":@"2016-07-21",@"titleStr":@"[苏州市]江苏省苏州市高新区科技城分部公司 已签收 签收人：本人 感谢使用顺丰快递，期待再次为您服务"};
+//    TimeModel *model2=[[TimeModel alloc]initData:dic2];
+//    [self.dataList addObject:model2];
+//    
+//    NSDictionary *dic3=@{@"timeStr":@"2016-07-22",@"titleStr":@"[苏州市]江苏省苏州市高新区科技城分部公司 已签收 签收人：本人 感谢使用顺丰快递，期待再次为您服务",};
+//    TimeModel *model3=[[TimeModel alloc]initData:dic3];
+//    [self.dataList addObject:model3];
+//    
+//    NSDictionary *dic4=@{@"timeStr":@"2016-07-23",@"titleStr":@"[苏州市]江苏省苏州市高新区科技城分部公司 已签收 签收人：本人 感谢使用顺丰快递，期待再次为您服务"};
+//    TimeModel *model4=[[TimeModel alloc]initData:dic4];
+//    [self.dataList addObject:model4];
+//    
+//    NSDictionary *dic5=@{@"timeStr":@"2016-07-24",@"titleStr":@"[苏州市]江苏省苏州市高新区科技城分部公司 已签收 签收人：本人 感谢使用顺丰快递，期待再次为您服务"};
+//    TimeModel *model5=[[TimeModel alloc]initData:dic5];
+//    [self.dataList addObject:model5];
+//    NSDictionary *dic6=@{@"timeStr":@"2016-07-25",@"titleStr":@"[苏州市]江苏省苏州市高新区科技城分部公司 已签收 签收人：本人 感谢使用顺丰快递，期待再次为您服务"};
+//    TimeModel *model6=[[TimeModel alloc]initData:dic6];
+//    [self.dataList addObject:model6];
+//    NSDictionary *dic7=@{@"timeStr":@"2016-07-26",@"titleStr":@"[苏州市]江苏省苏州市高新区科技城分部公司 已签收 签收人：本人 感谢使用顺丰快递，期待再次为您服务",@"isEnd":@"YES"};
+//    TimeModel *model7=[[TimeModel alloc]initData:dic7];
+//    [self.dataList addObject:model7];
+//    [self.listTableview reloadData];
     
-    NSDictionary *dic2=@{@"timeStr":@"2016-07-21",@"titleStr":@"[苏州市]江苏省苏州市高新区科技城分部公司 已签收 签收人：本人 感谢使用顺丰快递，期待再次为您服务"};
-    TimeModel *model2=[[TimeModel alloc]initData:dic2];
-    [self.dataList addObject:model2];
+    NSDictionary *dic = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+    NPYLoginMode *model = [NPYLoginMode mj_objectWithKeyValues:dic[@"data"]];
     
-    NSDictionary *dic3=@{@"timeStr":@"2016-07-22",@"titleStr":@"[苏州市]江苏省苏州市高新区科技城分部公司 已签收 签收人：本人 感谢使用顺丰快递，期待再次为您服务",};
-    TimeModel *model3=[[TimeModel alloc]initData:dic3];
-    [self.dataList addObject:model3];
+    NSDictionary *request = [NSDictionary dictionaryWithObjectsAndKeys:[dic valueForKey:@"sign"],@"sign",model.user_id,@"user_id",self.order_id,@"order_id", nil];
     
-    NSDictionary *dic4=@{@"timeStr":@"2016-07-23",@"titleStr":@"[苏州市]江苏省苏州市高新区科技城分部公司 已签收 签收人：本人 感谢使用顺丰快递，期待再次为您服务"};
-    TimeModel *model4=[[TimeModel alloc]initData:dic4];
-    [self.dataList addObject:model4];
-    
-    NSDictionary *dic5=@{@"timeStr":@"2016-07-24",@"titleStr":@"[苏州市]江苏省苏州市高新区科技城分部公司 已签收 签收人：本人 感谢使用顺丰快递，期待再次为您服务"};
-    TimeModel *model5=[[TimeModel alloc]initData:dic5];
-    [self.dataList addObject:model5];
-    NSDictionary *dic6=@{@"timeStr":@"2016-07-25",@"titleStr":@"[苏州市]江苏省苏州市高新区科技城分部公司 已签收 签收人：本人 感谢使用顺丰快递，期待再次为您服务"};
-    TimeModel *model6=[[TimeModel alloc]initData:dic6];
-    [self.dataList addObject:model6];
-    NSDictionary *dic7=@{@"timeStr":@"2016-07-26",@"titleStr":@"[苏州市]江苏省苏州市高新区科技城分部公司 已签收 签收人：本人 感谢使用顺丰快递，期待再次为您服务",@"isEnd":@"YES"};
-    TimeModel *model7=[[TimeModel alloc]initData:dic7];
-    [self.dataList addObject:model7];
-    [self.listTableview reloadData];
+    [self requestLogisticsInfoWithUrlString:ExpressUrl withParames:request];
     
 }
 #pragma mark-----------------------------
@@ -150,7 +159,7 @@
 
 - (void)topViewLoad {
     //topView
-    topView = [[UIView alloc] initWithFrame:CGRectMake(0, 65, WIDTH_SCREEN, 90)];
+    topView = [[UIView alloc] initWithFrame:CGRectMake(0, _isManyOrder ? 0 : 65, WIDTH_SCREEN, 90)];
     topView.backgroundColor = [UIColor whiteColor];
     topView.layer.borderColor = GRAY_BG.CGColor;
     topView.layer.borderWidth = 0.5;
@@ -210,6 +219,64 @@
     if ([self.listTableview respondsToSelector:@selector(setLayoutMargins:)]) {
         [self.listTableview setLayoutMargins:UIEdgeInsetsMake(0,60,0,0)];
     }
+}
+
+- (void)requestLogisticsInfoWithUrlString:(NSString *)urlStr withParames:(NSDictionary *)parame {
+    NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:parame] forKey:@"data"];
+    
+    [[NPYHttpRequest sharedInstance] getWithUrlString:[NSString stringWithFormat:@"%@%@",BASE_URL,urlStr] parameters:paremes success:^(id responseObject) {
+        NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+        
+        if ([dataDict[@"r"] intValue] == 1) {
+            //成功
+            NSDictionary *tpDict = dataDict[@"data"];
+            
+            courierL.text = [tpDict valueForKey:@"courier_company"];//快递公司
+            
+            if ([tpDict valueForKey:@"status"]) {
+                logisticsStateL.text = @"已签收";
+            } else {
+                logisticsStateL.text = @"运输中";
+            }
+            
+//            NSDictionary *dic=@{@"timeStr":@"2016-07-20 16:49:39",@"titleStr":@"[苏州市]江苏省苏州市高新区科技城分部公司 已签收 签收人：本人 感谢使用顺丰快递，期待再次为您服务",@"detailSrtr":@"",@"isTop":@"YES"};
+            //    TimeModel *model=[[TimeModel alloc]initData:dic];
+            
+            self.dataList=[NSMutableArray arrayWithCapacity:0];
+            
+            NSArray *tpArr = [[tpDict valueForKey:@"list"] copy];
+            for (int i = 0; i < tpArr.count; i++) {
+                NSDictionary *tpData = tpArr[i];
+                TimeModel *model;
+                if (i == 0) {
+                    NSDictionary *dic=@{@"timeStr":[tpData valueForKey:@"time"],@"titleStr":[tpData valueForKey:@"context"],@"isTop":@"YES"};
+                    model=[[TimeModel alloc]initData:dic];
+                    
+                } else if (i == tpArr.count - 1) {
+                    NSDictionary *dic=@{@"timeStr":[tpData valueForKey:@"time"],@"titleStr":[tpData valueForKey:@"context"],@"isEnd":@"YES"};
+                    model=[[TimeModel alloc]initData:dic];
+                    
+                } else {
+                    NSDictionary *dic=@{@"timeStr":[tpData valueForKey:@"time"],@"titleStr":[tpData valueForKey:@"context"]};
+                   model =[[TimeModel alloc]initData:dic];
+                    
+                }
+                
+                [self.dataList addObject:model];
+            }
+            
+            [self.listTableview reloadData];
+            
+        } else {
+            //失败
+//            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+            
+        }
+        
+    } failure:^(NSError *error) {
+        NSLog(@"%@",error);
+        
+    }];
 }
 
 - (void)didReceiveMemoryWarning {

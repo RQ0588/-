@@ -118,6 +118,7 @@ NSString *const kSDTimeLineCellOperationButtonClickedNotification = @"SDTimeLine
     
     
     _operationMenu = [SDTimeLineCellOperationMenu new];
+    
     __weak typeof(self) weakSelf = self;
     [_operationMenu setLikeButtonClickedOperation:^{
         if ([weakSelf.delegate respondsToSelector:@selector(didClickLikeButtonInCell:)]) {
@@ -195,9 +196,9 @@ NSString *const kSDTimeLineCellOperationButtonClickedNotification = @"SDTimeLine
     .LeeAddBackgroundColor(DAY , [UIColor whiteColor])
     .LeeAddBackgroundColor(NIGHT , [UIColor blackColor]);
     
-//    _contentLabel.lee_theme
-//    .LeeAddTextColor(DAY , [UIColor blackColor])
-//    .LeeAddTextColor(NIGHT , [UIColor grayColor]);
+    _contentLabel.lee_theme
+    .LeeAddTextColor(DAY , [UIColor blackColor])
+    .LeeAddTextColor(NIGHT , [UIColor grayColor]);
 
     _timeLabel.lee_theme
     .LeeAddTextColor(DAY , [UIColor lightGrayColor])
@@ -251,6 +252,8 @@ NSString *const kSDTimeLineCellOperationButtonClickedNotification = @"SDTimeLine
         bottomView = _commentView;
     }
     
+//    bottomView.backgroundColor = [UIColor whiteColor];
+    
     [self setupAutoHeightWithBottomView:bottomView bottomMargin:15];
     
 //    _timeLabel.text = _model.time;
@@ -264,6 +267,14 @@ NSString *const kSDTimeLineCellOperationButtonClickedNotification = @"SDTimeLine
     [self calutTimeFromeDate:_model.time To:timeString];
     
 //    [self getBabyDetailAge:_model.time];
+    
+    //判断是否有删除按钮
+    NSDictionary *userDict = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+    NPYLoginMode *userModel = [NPYLoginMode mj_objectWithKeyValues:userDict[@"data"]];
+    if ([userModel.user_id isEqualToString:model.user_id]) {
+        _operationMenu.isShowDeleterButton = YES;
+        
+    }
 }
 
 - (NSString *)timeWithTimeIntervalString:(NSString *)timeString

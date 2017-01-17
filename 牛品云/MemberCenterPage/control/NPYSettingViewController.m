@@ -13,18 +13,22 @@
 #import "NPYLoginViewController.h"
 #import "NPYRetrievePWDetailViewController.h"
 #import "NPYSettingDetailViewController.h"
+#import "NPYAddressViewController.h"
 
 #define Updata_Image_Url @"/index.php/app/User/update_img"
+#define Updata_UserName_Url @"/index.php/app/User/update_name"
 
-@interface NPYSettingViewController () <UITableViewDataSource,UITableViewDelegate,UIActionSheetDelegate,UIImagePickerControllerDelegate,UINavigationControllerDelegate> {
+@interface NPYSettingViewController () <UITableViewDataSource,UITableViewDelegate,UIActionSheetDelegate,UIImagePickerControllerDelegate,UINavigationControllerDelegate,ZHTextAlertDelegate> {
     UITableView     *mainTableView;
     NSInteger   row;
     CGFloat     hegiht,topSep;
     NSArray     *dataArray;
+    NSString *newName;
 }
 
 @property (nonatomic, strong) NPYLoginViewController    *loginVC;
 @property (nonatomic, strong) NPYRetrievePWDetailViewController     *pwVC;
+@property (nonatomic, strong) NPYAddressViewController              *addressVC;
 
 @property (nonatomic, strong) UIImage *headerImg;
 
@@ -198,9 +202,13 @@
                 
             }
         }
-        
+        //修改用户名
         if (indexPath.row == 1) {
-            
+            ZHTextAlertView *textAlertView = [ZHTextAlertView alertViewDefault];
+            textAlertView.titleLabel.text = @"修改用户名";
+            textAlertView.textField.placeholder = @"输入新的用户名";
+            textAlertView.delegate = self;
+            [textAlertView show];
         }
         
         if (indexPath.row == 2) {
@@ -208,9 +216,10 @@
             self.pwVC.titleName = @"修改登录密码";
             [self.navigationController pushViewController:self.pwVC animated:YES];
         }
-        
+        //地址管理
         if (indexPath.row == 3) {
-            
+            self.addressVC = [[NPYAddressViewController alloc] init];
+            [self.navigationController pushViewController:self.addressVC animated:YES];
         }
         
         if (indexPath.row == 4) {
@@ -223,6 +232,19 @@
         
         
     }
+}
+
+- (void)alertView:(ZHTextAlertView *)alertView clickedCustomButtonAtIndex:(NSInteger)buttonIndex alertText:(NSString*)alertText {
+    NSDictionary *dic = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+    NPYLoginMode *model = [NPYLoginMode mj_objectWithKeyValues:dic[@"data"]];
+    NSDictionary *request = [NSDictionary dictionaryWithObjectsAndKeys:[dic valueForKey:@"sign"],@"sign",model.user_id,@"user_id",alertText,@"new_name", nil];
+    newName = alertText;
+    if (buttonIndex == 0) {
+        return;
+    } else {
+        [self requestUpdataUserNameWithUrlString:Updata_UserName_Url withParames:request];
+    }
+    
 }
 
 #pragma mark - 更改tableView的分割线顶格显示
@@ -261,7 +283,7 @@
         
         if ([dataDict[@"r"] intValue] == 1) {
             //成功
-            [ZHProgressHUD showMessage:@"请求成功" inView:self.view];
+//            [ZHProgressHUD showMessage:@"请求成功" inView:self.view];
             NPYHomeModel *model = [[NPYHomeModel alloc] init];
             model.shopArr = dataDict[@"data"];
             [model toDetailModel];
@@ -271,7 +293,43 @@
             
         } else {
             //失败
-            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+//            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+        }
+        
+        [mainTableView reloadData];
+        
+    } failure:^(NSError *error) {
+        NSLog(@"%@",error);
+        
+    }];
+    
+}
+
+- (void)requestUpdataUserNameWithUrlString:(NSString *)urlStr withParames:(NSDictionary *)parame {
+    NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:parame] forKey:@"data"];
+    
+    [[NPYHttpRequest sharedInstance] getWithUrlString:[NSString stringWithFormat:@"%@%@",BASE_URL,urlStr] parameters:paremes success:^(id responseObject) {
+        NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+        
+        if ([dataDict[@"r"] intValue] == 1) {
+            //成功
+//            [ZHProgressHUD showMessage:dataDict[@"data"] inView:mainTableView];
+            
+            NSMutableDictionary *userDict = [[NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local] mutableCopy];
+            NPYLoginMode *userModel = [NPYLoginMode mj_objectWithKeyValues:userDict[@"data"]];
+            userModel.user_name = newName;
+            
+            [userDict removeObjectForKey:@"data"];
+            
+            NSDictionary *tp = [NSDictionary dictionaryWithObjectsAndKeys:userModel.integral,@"integral",userModel.type,@"type",userModel.user_id,@"user_id",userModel.user_name,@"user_name",userModel.user_phone,@"user_phone",userModel.user_portrait,@"user_portrait",userModel.user_time,@"user_time",userModel.r,@"r",userModel.sign,@"sign", nil];
+            
+            [userDict setObject:tp forKey:@"data"];
+            
+            [NPYSaveGlobalVariable saveValueAtLocal:userDict withKey:LoginData_Local];
+            
+        } else {
+            //失败
+//            [ZHProgressHUD showMessage:dataDict[@"data"] inView:mainTableView];
         }
         
         [mainTableView reloadData];
@@ -419,6 +477,15 @@
 - (void)outLoginButtonPressed:(UIButton *)btn {
     //退出登录
 //    NSLog(@"退出登录...");
+    //从阿里推送移除别名
+    NSDictionary *dic = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+    NPYLoginMode *model = [NPYLoginMode mj_objectWithKeyValues:dic[@"data"]];
+    [CloudPushSDK removeAlias:model.user_id withCallback:^(CloudPushCallbackResult *res) {
+        if (res.success) {
+            NSLog(@"removeAlias success");
+        }
+    }];
+    
     self.loginVC = [[NPYLoginViewController alloc] init];
     [self.navigationController pushViewController:self.loginVC animated:YES];
 }

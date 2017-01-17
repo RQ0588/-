@@ -9,9 +9,22 @@
 #import <UIKit/UIKit.h>
 #import "NPYMyOrderModel.h"
 
+@protocol MyOrederTableViewCellDelegate <NSObject>
+@optional
+- (void)cellButtonEventWithType:(int)typeValue withIndexPath:(NSIndexPath *)path;
+
+- (void)cellLeftButtonEventWithType:(int)typeValue withIndexPath:(NSIndexPath *)path;
+
+@end
+
 @interface NPYTableViewCell : UITableViewCell
 
+@property (nonatomic, weak) id<MyOrederTableViewCellDelegate>delegate;
+@property (nonatomic, strong) NSIndexPath *cellPath;
+
 @property (nonatomic, strong) NPYMyOrderModel *model;
+
+@property (nonatomic, assign) BOOL isManyOrder;
 
 @property (weak, nonatomic) IBOutlet UIImageView *shopIcon;
 @property (weak, nonatomic) IBOutlet UILabel *shopName;

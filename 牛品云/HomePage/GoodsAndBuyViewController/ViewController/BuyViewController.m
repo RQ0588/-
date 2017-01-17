@@ -36,6 +36,8 @@
 #define TopTabBarH [global pxTopt:100]
 #define NaviBarH 64.0
 
+#define Share_Url @"/index.php/app/User/share"
+
 @interface BuyViewController ()<UIScrollViewDelegate,UITableViewDataSource,UITableViewDelegate,MyOrderTopTabBarDelegate,MidViewDelegate,popValueToSuperViewDelegate> {
     
     NSInteger selectedTag;
@@ -57,6 +59,8 @@
     BOOL isCollection;
     
     NSInteger cellHeight;
+    
+    NSDictionary *shareInfo;
 }
 
 @property(nonatomic,weak)MyOrderTopTabBar* TopTabBar;
@@ -109,12 +113,20 @@
     self.navigationController.navigationBar.translucent = YES;
     
     self.tabBarController.tabBar.hidden = YES;
+    
+    NSDictionary *userDict = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+    userModel = [NPYLoginMode mj_objectWithKeyValues:userDict[@"data"]];
+    userModel.sign = [userDict valueForKey:@"sign"];
+    //分享的数据
+    NSDictionary *shareRequest = [NSDictionary dictionaryWithObjectsAndKeys:[userDict valueForKey:@"sign"],@"sign",self.goodsModel.goods_id,@"goods_id",userModel.user_id,@"user_id", nil];
+    [self requestShareInfoWithUrlString:Share_Url withParames:shareRequest];
+    
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
     
-    self.navigationController.navigationBar.translucent = NO;
+//    self.navigationController.navigationBar.translucent = NO;
     
 //    self.tabBarController.tabBar.hidden = NO;
 }
@@ -122,12 +134,12 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     //self.TopViewScale = 1.0;
+    
+    shareInfo = [NSDictionary new];
+    
     [self initView];
     [self addNavBarView];//提示,要在最后添加
     
-    NSDictionary *userDict = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
-    userModel = [NPYLoginMode mj_objectWithKeyValues:userDict[@"data"]];
-    userModel.sign = [userDict valueForKey:@"sign"];
     //主页面网络请求
     NSDictionary *requestDic = [NSDictionary dictionaryWithObjectsAndKeys:@"npy_we874646sf",@"key",self.goodsModel.goods_id,@"goods_id",userModel.user_id,@"user_id", nil];
     [self requestHomeDataWithUrlString:GoodsDetail_url withKeyValueParemes:requestDic];
@@ -135,6 +147,7 @@
     //评论页网络请求
     NSDictionary *appraiseDic = [NSDictionary dictionaryWithObjectsAndKeys:@"npy_we874646sf",@"key",self.goodsModel.goods_id,@"goods_id",@"1",@"num", nil];
     [self requestGoodsAppraiseDataWithUrlString:GoodsAppraise_url withGoodsID:appraiseDic];
+    
 }
 
 /**
@@ -227,7 +240,19 @@
     selectedSpecDict = [NSDictionary dictionaryWithDictionary:dataDict];
     addGoodsNumber = number;
     
+    [self.goodsModel setPromotion_price:[dataDict valueForKey:@"price"]];
+    
+    [self.topView setGoodsModel:self.goodsModel];
+    
+    //[NSString stringWithFormat:@"%f",[[dataDict valueForKey:@"price"] doubleValue] * number];//获取规格后的价格
+    
     self.middleView.showSelectedSpec.text = [NSString stringWithFormat:@"已选择 %@ 规格",[dataDict valueForKey:@"name"]];
+    
+    
+}
+
+- (void)popValue:(NSDictionary *)dataDict withNumber:(int)number withIndex:(NSIndexPath *)indexPath {
+    
 }
 
 //底部按钮点击
@@ -256,6 +281,11 @@
                                    self.goodsModel.goods_id,@"goods_id",
                                    userModel.user_id,@"user_id", nil];
     
+    if (btn.tag == 3011 || btn.tag == 3012 || btn.tag == 3013) {
+        [(AppDelegate *)[UIApplication sharedApplication].delegate verifyLoginWithViewController:self];
+        
+    }
+    
     switch (btn.tag) {
         case 3010:
             //跳转到店铺
@@ -280,6 +310,15 @@
         case 3013:
             //立即购买
             self.orderVC = [[NPYOrderViewController alloc] init];
+            self.orderVC.goods_id = self.goodsModel.goods_id;
+            self.orderVC.shop_id = shopModel.shop_id;
+            self.orderVC.user_id = userModel.user_id;
+            self.orderVC.sign = userModel.sign;
+            self.orderVC.buyNumber = addGoodsNumber;
+            self.orderVC.goodsSpe = selectedSpecDict;
+            self.orderVC.goodsModel = self.goodsModel;
+            self.orderVC.shopModel = shopModel;
+            
             [self.navigationController pushViewController:self.orderVC animated:YES];
             break;
             
@@ -312,28 +351,33 @@
     firstPageView.frame = CGRectMake(0, 0, screenW, screenH - BottomH);
     BuyTopView* topView = [BuyTopView view];
     self.topView = topView;
+    self.topView.goodsModel = self.goodsModel;
     
-    NSMutableArray *imgs = [NSMutableArray new];
-    for (NSString *urlStr in titleImgs) {
-        UIImageView *imgView = [UIImageView new];
-        [imgView sd_setImageWithURL:[NSURL URLWithString:urlStr] placeholderImage:[UIImage imageNamed:@"tiantu_icon"]];
-        [imgs addObject:imgView.image];
-    }
+//    NSMutableArray *imgs = [NSMutableArray new];
+//    for (NSString *urlStr in titleImgs) {
+//        UIImageView *imgView = [UIImageView new];
+//        [imgView sd_setImageWithURL:[NSURL URLWithString:urlStr] placeholderImage:[UIImage imageNamed:@"tiantu_icon"]];
+//        [imgs addObject:imgView.image];
+//    }
 
 //    topView.images = @[@"commidity_upimage",@"one.jpg",@"two.jpg",@"three.jpg",@"four.jpg",@"five.jpg"];//设置顶部Collectionview的图片数据
-    topView.images = imgs;
-    __weak UINavigationController* NaviController = self.navigationController;
-    self.topView.rightRefresh.block = ^{
-        BGGoodsDetailController* bggc = [[BGGoodsDetailController alloc] init];
-        [NaviController pushViewController:bggc animated:YES];
-    };
+    topView.images = titleImgs;
+//    __weak UINavigationController* NaviController = self.navigationController;
+//    self.topView.rightRefresh.block = ^{
+//        BGGoodsDetailController* bggc = [[BGGoodsDetailController alloc] init];
+//        [NaviController pushViewController:bggc animated:YES];
+//    };
     topView.frame = CGRectMake(0,0, screenW, TopViewH);
     [firstPageView addSubview:topView];
     BuyMiddleView* middleView = [BuyMiddleView view];
     middleView.delegate = self;
-    self.middleView = middleView;
     middleView.frame = CGRectMake(0,CGRectGetMaxY(topView.frame) + 6, screenW, MiddleViewH);
+    
+    self.middleView = middleView;
+    self.middleView.shopModel = shopModel;
+    self.middleView.goodsID = self.goodsModel.goods_id;
     [firstPageView addSubview:middleView];
+    
     BuyBottomView* bottomView = [BuyBottomView view];
     self.bottomView = bottomView;
     CGFloat bottomViewY = 0.0;
@@ -345,11 +389,14 @@
     bottomView.frame = CGRectMake(0,bottomViewY, screenW, BottomH);
     [firstPageView addSubview:bottomView];
     [self.MyScrollView addSubview:firstPageView];
+    
     [self initBottomView];
+    
     //初始化第二个页面
     [self addSecondPageTopTabBar];
     // 设置scrollview内容区域大小
     self.MyScrollView.contentSize = CGSizeMake(screenW, (screenH - BottomH)*2);
+    
 }
 /**
  添加第二个页面顶部tabBar
@@ -391,7 +438,7 @@
             });
         }];
     };
-
+    
     [secondPageView addSubview:tableview];
     [self.MyScrollView addSubview:secondPageView];
 }
@@ -500,10 +547,10 @@
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
     if (selectedTag == 0) {
         UIImageView *tm = [UIImageView new];
-        [tm sd_setImageWithURL:[NSURL URLWithString:detailImgs[indexPath.row]]];
+        [tm sd_setImageWithURL:[NSURL URLWithString:detailImgs[indexPath.row]] placeholderImage:[UIImage imageNamed:@"tiantu_icon"]];
         cellHeight = tm.image.size.height / (tm.image.size.height / WIDTH_SCREEN == 0 ? 1 : tm.image.size.height / WIDTH_SCREEN);
         if (cellHeight == 0) {
-            [self.detailTableview reloadData];
+//            [self.detailTableview reloadData];
         }
     }
     
@@ -513,10 +560,9 @@
         [tm sd_setImageWithURL:[NSURL URLWithString:self.goodsModel.parameter_img]];
         cellHeight = tm.image.size.height / (tm.image.size.height / WIDTH_SCREEN == 0 ? 1 : tm.image.size.height / WIDTH_SCREEN);
         if (cellHeight == 0) {
-//            [self.detailTableview reloadData];
+            
         }
-        
-//        cellHeight = 250;
+
     }
     
     if (selectedTag == 2) {
@@ -573,16 +619,20 @@
                 isCollection = NO;
             }
             
+            [self.topView removeFromSuperview];
+            self.topView = nil;
+            
+            [self.middleView removeFromSuperview];
+            self.middleView = nil;
+            
+            [self.bottomView removeFromSuperview];
+            self.bottomView = nil;
+            
             [self initView];
            
-            self.topView.goodsModel = self.goodsModel;
-            self.middleView.shopModel = shopModel;
-            self.middleView.goodsID = self.goodsModel.goods_id;
-            
-            
         } else {
             //失败
-            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+//            [ZHProgressHUD showMessage:[NSString stringWithFormat:@"%@",dataDict[@"data"]] inView:self.view];
         }
         
     } failure:^(NSError *error) {
@@ -613,7 +663,7 @@
             
         } else {
             //失败
-            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+//            [ZHProgressHUD showMessage:[NSString stringWithFormat:@"%@",dataDict[@"data"]] inView:self.view];
         }
         
     } failure:^(NSError *error) {
@@ -632,10 +682,10 @@
         if ([dataDict[@"r"] intValue] == 1) {
             //成功
 //            NSDictionary *tpDict = dataDict[@"data"];
-            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+            [ZHProgressHUD showMessage:[NSString stringWithFormat:@"%@",dataDict[@"data"]] inView:self.view];
         } else {
             //失败
-            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+//            [ZHProgressHUD showMessage:[NSString stringWithFormat:@"%@",dataDict[@"data"]] inView:self.view];
         }
         
     } failure:^(NSError *error) {
@@ -653,10 +703,36 @@
         
         if ([dataDict[@"r"] intValue] == 1) {
             //成功
-            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+            [ZHProgressHUD showMessage:[NSString stringWithFormat:@"%@",dataDict[@"data"]] inView:self.view];
         } else {
             //失败
-            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+//            [ZHProgressHUD showMessage:[NSString stringWithFormat:@"%@",dataDict[@"data"]] inView:self.view];
+        }
+        
+    } failure:^(NSError *error) {
+        NSLog(@"%@",error);
+        
+    }];
+    
+}
+
+- (void)requestShareInfoWithUrlString:(NSString *)url withParames:(NSDictionary *)pareme {
+    
+    NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:pareme] forKey:@"data"];
+    
+    [[NPYHttpRequest sharedInstance] getWithUrlString:[NSString stringWithFormat:@"%@%@",BASE_URL,url] parameters:paremes success:^(id responseObject) {
+        NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+        
+        if ([dataDict[@"r"] intValue] == 1) {
+            //成功
+            //            [ZHProgressHUD showMessage:@"请求成功" inView:self.view];
+            NSDictionary *tpDict = dataDict[@"data"];
+            
+            shareInfo = [NSDictionary dictionaryWithObjectsAndKeys:[tpDict valueForKey:@"img"],@"img",[tpDict valueForKey:@"text"],@"text",[tpDict valueForKey:@"url"],@"url", nil];
+            
+        } else {
+            //失败
+            //            [ZHProgressHUD showMessage:[NSString stringWithFormat:@"%@",dataDict[@"data"]] inView:self.view];
         }
         
     } failure:^(NSError *error) {
@@ -670,6 +746,7 @@
 //    [ZHProgressHUD showMessage:@"跳到规格选择页" inView:self.view];
     NPYSpecViewController *specVC = [[NPYSpecViewController alloc] initWithNibName:@"NPYSpecViewController" bundle:nil];
     specVC.goodsID = goodsID;
+    specVC.goodsIconUrl = self.goodsModel.goods_img;
     specVC.sign = userModel.sign;
     specVC.userID = userModel.user_id;
     specVC.storNumber = self.goodsModel.inventory;
@@ -691,11 +768,23 @@
     [self.navigationController popViewControllerAnimated:YES];
 }
 
+- (NPYHomeGoodsModel *)goodsModel {
+    if (_goodsModel == nil) {
+        _goodsModel = [[NPYHomeGoodsModel alloc] init];
+    }
+    
+    return _goodsModel;
+}
+
 - (void)shareButtonPressed:(UIButton *)sender {
     //分享
     [ShareObject shareDefault];
     
-    [[ShareObject shareDefault] sendMessageWithTitle:@"share" withContent:@"test" withUrl:@"" withImages:detailImgs result:^(NSString *result, UIAlertViewStyle style) {
+    if (shareInfo == nil) {
+        return;
+    }
+    
+    [[ShareObject shareDefault] sendMessageWithTitle:[shareInfo valueForKey:@"text"] withContent:[shareInfo valueForKey:@"text"] withUrl:[shareInfo valueForKey:@"url"] withImages:[NSArray arrayWithObjects:[shareInfo valueForKey:@"img"], nil] result:^(NSString *result, UIAlertViewStyle style) {
         [ZHProgressHUD showMessage:result inView:self.detailTableview];
     }];
 }

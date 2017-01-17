@@ -18,6 +18,8 @@
 #import "NPYTicketViewController.h"
 #import "AppDelegate.h"
 
+#define ALTERNUMBER @"/index.php/app/User/get_num"
+
 @interface NPYMemberCenterPage () <UITableViewDelegate,UITableViewDataSource> {
     UITableView     *mainTableView;
     UIImageView     *headPortrait;
@@ -28,6 +30,8 @@
     NPYLoginMode    *userModel;
     
     UIButton        *firendMsg;
+    
+    NSDictionary    *alertDict;
 }
 
 @property (nonatomic, strong) NPYLoginViewController            *loginVC;//登录界面
@@ -57,10 +61,10 @@
     self.tabBarController.tabBar.hidden = NO;
     
     NSString *isLogin = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginState];
+    loginData = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+    userModel = [NPYLoginMode mj_objectWithKeyValues:loginData[@"data"]];
+    
     if ([isLogin intValue] == 1) {
-        loginData = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
-        userModel = [NPYLoginMode mj_objectWithKeyValues:loginData[@"data"]];
-        
         NSString *portrait = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LocalPortrait];
         if (portrait) {
             [headPortrait sd_setImageWithURL:[NSURL URLWithString:portrait] placeholderImage:[UIImage imageNamed:@"tiantu_icon"]];
@@ -72,6 +76,10 @@
         
         userName.text = userModel.user_name;
     }
+    
+    NSDictionary *request = [NSDictionary dictionaryWithObjectsAndKeys:[loginData valueForKey:@"sign"],@"sign",userModel.user_id,@"user_id", nil];
+    [self requestMemberCenterMessageNumberWithUrlString:ALTERNUMBER withParames:request];
+    
 }
 
 - (void)viewDidLoad {
@@ -83,6 +91,8 @@
     [self navigationViewLoad];
     
     [self mainViewLoad];
+    
+    [(AppDelegate *)[UIApplication sharedApplication].delegate verifyLoginWithViewController:self];
     
 }
 
@@ -100,7 +110,7 @@
     //右侧消息按钮
     UIButton *rightMesg = [[UIButton alloc] init];
     [rightMesg setFrame:CGRectMake(0, 0, 50, 20)];
-    [rightMesg setTitle:@"信息" forState:0];
+    [rightMesg setTitle:@"消息" forState:0];
     [rightMesg setTitleColor:[UIColor whiteColor] forState:0];
     rightMesg.titleLabel.font = [UIFont systemFontOfSize:15.0];
     [rightMesg addTarget:self action:@selector(rightMessageButtonPressed:) forControlEvents:7];
@@ -123,16 +133,25 @@
 #pragma mark - UITableView
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return 3;
+    return 4;
+    
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     if (section == 0) {
         return 2;
+        
     } else if (section == 1) {
         return 1;
+        
+    } else if (section == 2) {
+        return 4;
+        
+    } else {
+        return 1;
+        
     }
-    return 4;
+    
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -159,7 +178,7 @@
     [headerView addSubview:bgImgView];
     //头像
     headPortrait = [[UIImageView alloc] initWithFrame:CGRectMake(0, -10, 70, 70)];
-    [headPortrait sd_setImageWithURL:[NSURL URLWithString:@""] placeholderImage:[UIImage imageNamed:@"touxiang_zc"]];
+    [headPortrait sd_setImageWithURL:[NSURL URLWithString:@""] placeholderImage:[UIImage imageNamed:@"tiantu_icon"]];
     headPortrait.contentMode = UIViewContentModeScaleToFill;
     headPortrait.center = CGPointMake(WIDTH_SCREEN / 2, 100);
     headPortrait.layer.cornerRadius = CGRectGetHeight(headPortrait.frame) / 2;
@@ -186,7 +205,8 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     static NSString *identifier = @"mainCell";
-    UITableViewCell *mainCell = [tableView dequeueReusableCellWithIdentifier:identifier];
+//    UITableViewCell *mainCell = [tableView dequeueReusableCellWithIdentifier:identifier];
+    UITableViewCell *mainCell;
     if (!mainCell) {
         mainCell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:identifier];
         
@@ -222,6 +242,22 @@
                     
                     [funBtn addTarget:self action:@selector(functionButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
                     [mainCell addSubview:funBtn];
+                    
+                    if (alertDict) {
+                        NSString *dicKey = [NSString stringWithFormat:@"%i",i];
+                        NSString *valueStr = [NSString stringWithFormat:@"%@",[alertDict valueForKey:dicKey]];
+                        funBtn.badgeTextColor = [UIColor whiteColor];
+                        funBtn.badgeFont = XNFont(11.0);
+                        funBtn.badgeMaximumBadgeNumber = 99;
+                        funBtn.badgeCenterOffset = CGPointMake(-15, 10);
+                        funBtn.badgeBgColor = [UIColor redColor];
+                        [funBtn showBadgeWithStyle:WBadgeStyleNumber value:[valueStr integerValue] animationType:WBadgeAnimTypeNone];
+                        if ([valueStr intValue] == 0) {
+                            [funBtn clearBadge];
+                        }
+                        
+                    }
+                    
                 }
                 
             }
@@ -232,23 +268,30 @@
             
             if (indexPath.row == 1) {
                 //通知信息
-                firendMsg = [[UIButton alloc] initWithFrame:CGRectMake(WIDTH_SCREEN - 50, (47 - 18) / 2, 18, 18)];
-                [firendMsg setBackgroundImage:[UIImage imageNamed:@"tuoyuan_pyq"] forState:UIControlStateNormal];
-                firendMsg.titleLabel.font = [UIFont systemFontOfSize:10.0];
-                [firendMsg setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-                [firendMsg setTitle:@"3" forState:UIControlStateNormal];
-                [mainCell addSubview:firendMsg];
+//                firendMsg = [[UIButton alloc] initWithFrame:CGRectMake(WIDTH_SCREEN - 50, (47 - 18) / 2, 18, 18)];
+//                [firendMsg setBackgroundImage:[UIImage imageNamed:@"tuoyuan_pyq"] forState:UIControlStateNormal];
+//                firendMsg.titleLabel.font = [UIFont systemFontOfSize:10.0];
+//                [firendMsg setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+//                [firendMsg setTitle:@"3" forState:UIControlStateNormal];
+//                [mainCell addSubview:firendMsg];
             }
             
             mainCell.imageView.image = [UIImage imageNamed:imges[indexPath.row]];
             mainCell.textLabel.text = funNames[indexPath.row];
             
-        } else {
+        } else if (indexPath.section == 1){
             //
             mainCell.imageView.image = [UIImage imageNamed:@"niudou_icon"];
             mainCell.textLabel.text = @"我的牛豆";
-            mainCell.detailTextLabel.text = [NSString stringWithFormat:@"%i牛豆",[userModel.integral intValue]];
+            mainCell.detailTextLabel.text = [NSString stringWithFormat:@"%@牛豆",[alertDict valueForKey:@"integral"]];
+            
+        } else if (indexPath.section == 3) {
+            //众筹订单
+            mainCell.imageView.image = [UIImage imageNamed:@"zhongchou_icon"];
+            mainCell.textLabel.text = @"我的众筹";
+            mainCell.detailTextLabel.text = @"查看全部订单";
         }
+        
     }
     
     mainCell.textLabel.textColor = XNColor(51, 51, 51, 1);
@@ -274,6 +317,7 @@
     if (indexPath.section == 0 && indexPath.row == 0) {
         //我的订单
         self.myOrderVC = [[NPYMyOrderViewController alloc] init];
+        self.myOrderVC.typeString = @"all";
         [self.navigationController pushViewController:self.myOrderVC animated:YES];
     }
     //我的牛豆
@@ -285,6 +329,7 @@
     if (indexPath.section == 2 && indexPath.row == 0) {
         //券管理
         self.ticketVC = [[NPYTicketViewController alloc] init];
+        self.ticketVC.isTicketManage = YES;
         [self.navigationController pushViewController:self.ticketVC animated:YES];
     }
     
@@ -307,6 +352,14 @@
         [self.navigationController pushViewController:self.detailVC animated:YES];
         self.detailVC.titleStr = @"店铺收藏";
        
+    }
+    //我的众筹
+    if (indexPath.section == 3 && indexPath.row == 0) {
+        //我的众筹订单
+        self.myOrderVC = [[NPYMyOrderViewController alloc] init];
+        self.myOrderVC.typeString = @"all";
+        self.myOrderVC.isManyOrder = YES;
+        [self.navigationController pushViewController:self.myOrderVC animated:YES];
     }
     
 }
@@ -338,6 +391,37 @@
 //tag(2000 - 2003)
 - (void)functionButtonPressed:(UIButton *)btn {
     NSLog(@"%li",(long)btn.tag);
+    
+    [btn clearBadge];//清除提示点
+    
+    NSString *typeStr;
+    
+    switch (btn.tag - 2000) {
+        case 0:
+            typeStr = @"0";
+            break;
+            
+        case 1:
+            typeStr = @"1";
+            break;
+            
+        case 2:
+            typeStr = @"2";
+            break;
+            
+        case 3:
+            typeStr = @"3";
+            break;
+            
+        default:
+            break;
+    }
+    
+    //我的订单
+    self.myOrderVC = [[NPYMyOrderViewController alloc] init];
+    self.myOrderVC.menuIndex = (int)btn.tag - 1999;
+    self.myOrderVC.typeString = typeStr;
+    [self.navigationController pushViewController:self.myOrderVC animated:YES];
 }
 
 - (void)settingButtonPressed:(UIButton *)btn {
@@ -359,6 +443,41 @@
 - (void)loginButtonPressed2:(UIButton *)btn {
     self.loginVC = [[NPYLoginViewController alloc] init];
     [self.navigationController pushViewController:self.loginVC animated:YES];
+    
+}
+
+#pragma mark - 
+
+- (void)requestMemberCenterMessageNumberWithUrlString:(NSString *)urlStr withParames:(NSDictionary *)parame {
+    NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:parame] forKey:@"data"];
+    
+    [[NPYHttpRequest sharedInstance] getWithUrlString:[NSString stringWithFormat:@"%@%@",BASE_URL,urlStr] parameters:paremes success:^(id responseObject) {
+        NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+        
+        if ([dataDict[@"r"] intValue] == 1) {
+            //成功
+//            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+            NSDictionary *tpDict = [[NSDictionary alloc] initWithDictionary:dataDict[@"data"]];
+                                    
+            alertDict = [NSDictionary dictionaryWithObjectsAndKeys:
+                         [tpDict valueForKey:@"type0"],@"0",
+                         [tpDict valueForKey:@"type1"],@"1",
+                         [tpDict valueForKey:@"type2"],@"2",
+                         [tpDict valueForKey:@"type3"],@"3",
+                         [tpDict valueForKey:@"integral"],@"integral", nil];
+            
+            [mainTableView reloadData];
+            
+        } else {
+            //失败
+//            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+            
+        }
+        
+    } failure:^(NSError *error) {
+        NSLog(@"%@",error);
+        
+    }];
     
 }
 

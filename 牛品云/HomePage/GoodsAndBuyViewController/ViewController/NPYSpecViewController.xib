@@ -8,7 +8,11 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="NPYSpecViewController">
             <connections>
+                <outlet property="addBtn" destination="9lY-t1-CJz" id="LRp-Rd-yq0"/>
+                <outlet property="buyNumberL" destination="0wB-Lf-5kK" id="gNs-xO-68u"/>
+                <outlet property="buyNumberShow" destination="0wB-Lf-5kK" id="KtA-3s-zoY"/>
                 <outlet property="buyNumber_lab" destination="7Co-Cg-cSK" id="1kY-SQ-TMu"/>
+                <outlet property="cutBtn" destination="MBx-8h-iAK" id="H8c-dy-JaR"/>
                 <outlet property="goodsIcon" destination="rFy-D5-wt9" id="Cxv-Ln-Nza"/>
                 <outlet property="goodsPrice_lab" destination="MlC-QX-qr5" id="VZ6-7b-fOj"/>
                 <outlet property="midVIew" destination="TCE-X0-Gjk" id="yTE-lu-7vI"/>
@@ -119,7 +123,7 @@
                                 <action selector="addNumber:" destination="-1" eventType="touchUpInside" id="wUG-mz-mAB"/>
                             </connections>
                         </button>
-                        <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="KMZ-FV-7cI">
+                        <button hidden="YES" opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="KMZ-FV-7cI">
                             <frame key="frameInset" minY="354" width="189" height="49"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <state key="normal" title="加入购物车" backgroundImage="guige_gouwu">
@@ -129,7 +133,7 @@
                                 <action selector="addShoppingCar:" destination="-1" eventType="touchUpInside" id="M6N-Ur-IqF"/>
                             </connections>
                         </button>
-                        <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="XjT-Ij-EuN">
+                        <button hidden="YES" opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="XjT-Ij-EuN">
                             <frame key="frameInset" minX="189" minY="354" width="186" height="49"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <fontDescription key="fontDescription" type="system" pointSize="18"/>

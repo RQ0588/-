@@ -10,6 +10,16 @@
 
 @implementation NPYSupporTopTableViewCell
 
+- (void)setModel:(NPYAddressModel *)model {
+    _model = model;
+    
+    self.nameL.text = model.receiver;
+    
+    self.phoneL.text = model.phone;
+    
+    self.addressL.text = model.detailed;
+}
+
 - (void)awakeFromNib {
     [super awakeFromNib];
     // Initialization code

@@ -38,6 +38,10 @@
 
 #import "NPYBaseConstant.h"
 
+#import "NPYCIFilterViewController.h"
+#import "NPYSweepViewController.h"
+#import "NPYFriendMomentViewController.h"
+
 @interface SDContactsTableViewController () <UISearchBarDelegate>
 
 @property (nonatomic, strong) UISearchController *searchController;
@@ -49,6 +53,12 @@
 @end
 
 @implementation SDContactsTableViewController
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    
+    [self.tableView.mj_header beginRefreshing];
+}
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -231,6 +241,35 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     
+    if (indexPath.section == 0 && indexPath.row == 0) {
+        //我得二维码
+//        NSLog(@"我的二维码%i-%i",indexPath.section,indexPath.row);
+        NPYCIFilterViewController *ciFVC = [[NPYCIFilterViewController alloc] init];
+        [self.navigationController pushViewController:ciFVC animated:YES];
+        
+    }
+    
+    if (indexPath.section == 0 && indexPath.row == 1) {
+        //扫一扫
+//        NSLog(@"扫一扫%i-%i",indexPath.section,indexPath.row);
+        NPYSweepViewController *sweepVC = [[NPYSweepViewController alloc] init];
+        [self.navigationController pushViewController:sweepVC animated:YES];
+        
+    }
+    
+    if (indexPath.section != 0) {
+        NSDictionary *userDic = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+        NPYLoginMode *userModel = [NPYLoginMode mj_objectWithKeyValues:userDic[@"data"]];
+        
+        SDContactModel *model = self.sectionArray[indexPath.section][indexPath.row];
+        NPYFriendMomentViewController *friendMomentVC = [[NPYFriendMomentViewController alloc] init];
+        friendMomentVC.sign = [userDic valueForKey:@"sign"];
+        friendMomentVC.user_id = userModel.user_id;
+        friendMomentVC.friends_user_id = model.friend_id;
+        friendMomentVC.friendName = model.name;
+        [self.navigationController pushViewController:friendMomentVC animated:YES];
+    }
+    
 }
 
 #pragma mark - 更改tableView的分割线顶格显示
@@ -263,7 +302,7 @@
         
         if ([dataDict[@"r"] intValue] == 1) {
             //成功
-            [ZHProgressHUD showMessage:@"请求成功" inView:self.view];
+//            [ZHProgressHUD showMessage:@"请求成功" inView:self.view];
             
             [self.dataArray removeAllObjects];
             
@@ -283,7 +322,7 @@
             
         } else {
             //失败
-            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+//            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
         }
         
         

@@ -69,8 +69,8 @@
                         <constraint firstItem="o6p-lK-F95" firstAttribute="top" secondItem="zMJ-V7-IiD" secondAttribute="top" id="8re-EQ-R6r"/>
                         <constraint firstItem="Xgg-NO-JW8" firstAttribute="top" secondItem="zMJ-V7-IiD" secondAttribute="top" id="HqK-Vb-0PF"/>
                         <constraint firstAttribute="bottom" secondItem="Xgg-NO-JW8" secondAttribute="bottom" id="Mtd-GQ-r8k"/>
-                        <constraint firstItem="Xgg-NO-JW8" firstAttribute="leading" secondItem="o6p-lK-F95" secondAttribute="trailing" id="Plx-bc-QC1"/>
-                        <constraint firstItem="Xgg-NO-JW8" firstAttribute="leading" secondItem="o6p-lK-F95" secondAttribute="trailing" id="Th4-hd-fPS"/>
+                        <constraint firstItem="Xgg-NO-JW8" firstAttribute="leading" secondItem="o6p-lK-F95" secondAttribute="trailing" constant="-120" id="Plx-bc-QC1"/>
+                        <constraint firstItem="Xgg-NO-JW8" firstAttribute="leading" secondItem="o6p-lK-F95" secondAttribute="trailing" constant="-120" id="Th4-hd-fPS"/>
                         <constraint firstAttribute="height" constant="49" id="Ziv-8v-bzP"/>
                         <constraint firstAttribute="trailing" secondItem="Ib5-Xo-POz" secondAttribute="trailing" id="hmJ-vS-XIa"/>
                         <constraint firstAttribute="trailing" secondItem="Xgg-NO-JW8" secondAttribute="trailing" id="ibU-LC-mtg"/>

@@ -10,4 +10,9 @@
 
 @interface NPYMyOrderViewController : UIViewController
 
+@property (nonatomic, assign) BOOL isManyOrder;
+
+@property (nonatomic, assign) int menuIndex;
+@property (nonatomic, strong) NSString *typeString;
+
 @end

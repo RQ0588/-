@@ -10,11 +10,17 @@
 #import "NPYPlaceHolderTextView.h"
 #import "NPYBaseConstant.h"
 
-@interface NPYAfter_SalesViewController () {
+#define AFTER_SALES_URL @"/index.php/app/Order/set_return"
+
+@interface NPYAfter_SalesViewController () <UITextViewDelegate> {
     UIImageView *proIcon;
     UILabel *proName,*proCountL,*proPriceL;
     
     UIView *topView,*midView;
+    
+    UILabel *typeStrL;
+    
+    UIView *typeView;
 }
 
 @property (nonatomic, strong) NPYPlaceHolderTextView    *wordView;
@@ -61,12 +67,13 @@
     [self.view addSubview:topView];
     //
     proIcon = [[UIImageView alloc] initWithFrame:CGRectMake(14, 10, 80, 80)];
-    proIcon.image = [UIImage imageNamed:@"anli1_gouwu"];
+//    proIcon.image = [UIImage imageNamed:@"anli1_gouwu"];
+    [proIcon sd_setImageWithURL:[NSURL URLWithString:self.model.goods_img] placeholderImage:[UIImage imageNamed:@"tiantu_icon"]];
     proIcon.contentMode = UIViewContentModeScaleToFill;
     [topView addSubview:proIcon];
     //
     proName = [[UILabel alloc] initWithFrame:CGRectMake(CGRectGetMaxX(proIcon.frame) + 13, CGRectGetMinY(proIcon.frame), WIDTH_SCREEN - CGRectGetMaxX(proIcon.frame) - 28, 30)];
-    proName.text = @"八杂市 2016年新米东北五常稻花香大米2.5kg黑龙江五常粳米5斤";
+    proName.text = self.model.goods_name;//@"八杂市 2016年新米东北五常稻花香大米2.5kg黑龙江五常粳米5斤";
     proName.textColor = XNColor(35, 35, 35, 1);
     proName.font = [UIFont systemFontOfSize:12.0];
     proName.numberOfLines = 0;
@@ -82,11 +89,11 @@
     proPriceL.frame = CGRectMake(WIDTH_SCREEN - 80, CGRectGetMaxY(proIcon.frame) - 20, 80, 20);
     proPriceL.adjustsFontSizeToFitWidth = YES;
     proPriceL.numberOfLines = 0;
-    proPriceL.attributedText = [self attributedStringWithSegmentationString:@"￥" withOriginalString:[NSString stringWithFormat:@"￥%.2f",38.80] withOneColor:XNColor(248, 31, 31, 1) withTwoColor:XNColor(248, 31, 31, 1) withOneFontSize:11.0 twoFontSize:17.0];
+    proPriceL.attributedText = [self attributedStringWithSegmentationString:@"￥" withOriginalString:[NSString stringWithFormat:@"￥%@",self.model.price] withOneColor:XNColor(248, 31, 31, 1) withTwoColor:XNColor(248, 31, 31, 1) withOneFontSize:11.0 twoFontSize:17.0];
     [topView addSubview:proPriceL];
     //
     proCountL = [[UILabel alloc] initWithFrame:CGRectMake(CGRectGetMinX(proName.frame), CGRectGetMinY(proPriceL.frame), 100, 20)];
-    proCountL.text = [NSString stringWithFormat:@"共%i件商品",1];
+    proCountL.text = [NSString stringWithFormat:@"共%@件商品",self.model.num];
     proCountL.textColor = XNColor(153, 153, 153, 1);
     proCountL.font = XNFont(11.0);
     [topView addSubview:proCountL];
@@ -106,13 +113,13 @@
     [selectedBtn addTarget:self action:@selector(selectedWithModel:) forControlEvents:UIControlEventTouchUpInside];
     [midView addSubview:selectedBtn];
     
-    UILabel *tmpL = [[UILabel alloc] initWithFrame:CGRectMake(28, CGRectGetMinY(selectedBtn.frame) + 10, 200, 20)];
-    tmpL.text = @"—选择售后类型—";
-    tmpL.textColor = XNColor(153, 153, 153, 1);
-    tmpL.font = XNFont(14.0);
-    [midView addSubview:tmpL];
+    typeStrL = [[UILabel alloc] initWithFrame:CGRectMake(28, CGRectGetMinY(selectedBtn.frame) + 10, 200, 20)];
+    typeStrL.text = @"—选择售后类型—";
+    typeStrL.textColor = XNColor(153, 153, 153, 1);
+    typeStrL.font = XNFont(14.0);
+    [midView addSubview:typeStrL];
     
-    UIButton *tmpBtn = [[UIButton alloc] initWithFrame:CGRectMake(WIDTH_SCREEN - 40, CGRectGetMinY(tmpL.frame) + 4, 12, 12)];
+    UIButton *tmpBtn = [[UIButton alloc] initWithFrame:CGRectMake(WIDTH_SCREEN - 40, CGRectGetMinY(typeStrL.frame) + 4, 12, 12)];
     tmpBtn.tag = 1010;
     UIImage *norImg = [UIImage imageNamed:@"jtxia_zhongchou"];
     UIImage *selImg = [UIImage imageNamed:@"jtshang_zhongchou-"];
@@ -155,6 +162,8 @@
     self.wordView.scrollEnabled = YES;
     self.wordView.autoresizingMask = UIViewAutoresizingFlexibleHeight;
     self.wordView.contentSize = CGSizeMake(0, 0);
+    self.wordView.returnKeyType = UIReturnKeyDone;
+    self.wordView.delegate = self;
     [self.wordView becomeFirstResponder];
     [bottomView addSubview:self.wordView];
 }
@@ -207,11 +216,111 @@
     UIButton *tpBtn = [midView viewWithTag:1010];
     tpBtn.selected = !tpBtn.selected;
     
+    if (tpBtn.selected) {
+        typeView = [[UIView alloc] initWithFrame:CGRectMake(14, midView.frame.size.height + midView.frame.origin.y - 20, WIDTH_SCREEN - 28, 50)];
+        typeView.backgroundColor = GRAY_BG;
+        [self.view addSubview:typeView];
+        
+        UIButton *btn = [[UIButton alloc] initWithFrame:CGRectMake(0, 5, WIDTH_SCREEN - 28, 20)];
+        [btn setTitle:@"退款" forState:UIControlStateNormal];
+        [btn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+        btn.titleLabel.font = XNFont(12.0);
+        [btn addTarget:self action:@selector(selectedType:) forControlEvents:UIControlEventTouchUpInside];
+        [typeView addSubview:btn];
+        
+        UIImageView *imgView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 25, WIDTH_SCREEN, 1)];
+//        imgView.image = [UIImage imageNamed:@"750huixian_92"];
+        imgView.backgroundColor = [UIColor whiteColor];
+        [typeView addSubview:imgView];
+        
+        UIButton *btn2 = [[UIButton alloc] initWithFrame:CGRectMake(0, 25, WIDTH_SCREEN - 28, 20)];
+        [btn2 setTitle:@"换货" forState:UIControlStateNormal];
+        btn2.titleLabel.font = XNFont(12.0);
+        [btn2 setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+        [btn2 addTarget:self action:@selector(selectedType:) forControlEvents:UIControlEventTouchUpInside];
+        [typeView addSubview:btn2];
+        
+    } else {
+        [UIView animateWithDuration:1.0 delay:0 usingSpringWithDamping:0 initialSpringVelocity:0 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
+            typeView.hidden = YES;
+            [typeView removeFromSuperview];
+            
+        } completion:^(BOOL finished) {
+            
+        }];
+    }
+}
+
+- (void)selectedType:(UIButton *)btn {
+    typeStrL.text = btn.currentTitle;
+    
+    [UIView animateWithDuration:1.0 delay:0 usingSpringWithDamping:0 initialSpringVelocity:0 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
+        typeView.hidden = YES;
+        [typeView removeFromSuperview];
+        
+    } completion:^(BOOL finished) {
+        
+    }];
+    
 }
 
 - (void)submitButtonPressed:(UIButton *)sender {
     //
+    if (typeStrL.text.length <= 0 || self.wordView.text.length <= 0) {
+        [ZHProgressHUD showMessage:@"请填写完整" inView:self.view];
+        return;
+    }
     
+    NSString *typeStr = [typeStrL.text isEqualToString:@"换货"] ? @"1" : @"0";
+    NSDictionary *dic = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+    NPYLoginMode *model = [NPYLoginMode mj_objectWithKeyValues:dic[@"data"]];
+    
+    NSDictionary *request = [NSDictionary dictionaryWithObjectsAndKeys:[dic valueForKey:@"sign"],@"sign",model.user_id,@"user_id",self.model.order_id,@"order_id",self.wordView.text,@"text",typeStr,@"type", nil];
+    
+    [self requestAfterSalesInfoWithUrlString:AFTER_SALES_URL withParames:request];
+}
+
+- (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text{
+    if ([text isEqualToString:@"\n"]){ //判断输入的字是否是回车，即按下return
+        //在这里做你响应return键的代码
+        [self.wordView resignFirstResponder];
+        
+        return NO; //这里返回NO，就代表return键值失效，即页面上按下return，不会出现换行，如果为yes，则输入页面会换行
+    }
+    
+    return YES;
+}
+
+- (NPYMyOrderModel *)model {
+    if (_model == nil) {
+        _model = [[NPYMyOrderModel alloc] init];
+    }
+    
+    return _model;
+}
+
+- (void)requestAfterSalesInfoWithUrlString:(NSString *)urlStr withParames:(NSDictionary *)parame {
+    NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:parame] forKey:@"data"];
+    
+    [[NPYHttpRequest sharedInstance] getWithUrlString:[NSString stringWithFormat:@"%@%@",BASE_URL,urlStr] parameters:paremes success:^(id responseObject) {
+        NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+        
+        if ([dataDict[@"r"] intValue] == 1) {
+            //成功
+            [ZHProgressHUD showMessage:@"提交成功" inView:self.view];
+            
+            [self.navigationController popViewControllerAnimated:YES];
+            
+        } else {
+            //失败
+//            [ZHProgressHUD showMessage:[NSString stringWithFormat:@"%@",dataDict[@"data"]] inView:self.view];
+            
+        }
+        
+    } failure:^(NSError *error) {
+        NSLog(@"%@",error);
+        
+    }];
 }
 
 - (void)didReceiveMemoryWarning {

@@ -13,11 +13,15 @@
 #import "CollectionViewCell.h"
 #import "starView.h"
 
+#define Appraise_Url @"/index.php/app/Order/set_appraise"
+
 @interface NPYDiscusViewController () <TZImagePickerControllerDelegate,UICollectionViewDelegate,UICollectionViewDataSource> {
     CGFloat _itemWH;
     CGFloat _margin;
     CGRect  editFrame;
     UILabel *addL;
+    
+    starView *star;
 }
 
 @property (nonatomic, strong) NPYPlaceHolderTextView    *wordView;
@@ -175,7 +179,7 @@
 #pragma mark - 满意度 评星
 
 - (void)starViewLoad {
-    starView *star = [[starView alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(editFrame) + 10, WIDTH_SCREEN, 50)];
+    star = [[starView alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(editFrame) + 10, WIDTH_SCREEN, 50)];
     [self.view addSubview:star];
 }
 
@@ -191,7 +195,17 @@
 
 - (void)commentButtonPressed:(UIButton *)btn {
     //发表评论按钮点击,提交数据并返回
-    [self.navigationController popViewControllerAnimated:YES];
+    if (self.wordView.text.length <= 0) {
+        [ZHProgressHUD showMessage:@"填写评语" inView:self.view];
+        return;
+    }
+    
+    NSDictionary *dic = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+    NPYLoginMode *model = [NPYLoginMode mj_objectWithKeyValues:dic[@"data"]];
+    
+    NSDictionary *request = [NSDictionary dictionaryWithObjectsAndKeys:[dic valueForKey:@"sign"],@"sign",model.user_id,@"user_id",self.order_id,@"order_id",star.number_label.text,@"score",self.wordView.text,@"content", nil];
+    
+    [self requestAppraiseInfoWithUrlString:Appraise_Url withParames:request];
 }
 
 #pragma mark - 懒加载
@@ -232,6 +246,61 @@
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
     [self.wordView resignFirstResponder];
     [self.view resignFirstResponder];
+}
+
+- (void)requestAppraiseInfoWithUrlString:(NSString *)urlStr withParames:(NSDictionary *)parame {
+    if (parame == nil) {
+        return;
+    }
+    
+    NSMutableDictionary *paremes = [[NSMutableDictionary alloc] init];
+    [paremes setObject:[NPYChangeClass dictionaryToJson:parame] forKey:@"data"];
+    //    [paremes setObject:imageData forKey:@"img"];
+    
+    AFHTTPSessionManager *manager = [AFHTTPSessionManager manager];
+    //接收类型不一致请替换一致text/html或别的
+    manager.responseSerializer.acceptableContentTypes = [NSSet setWithObjects:@"application/json",
+                                                         @"text/html",
+                                                         @"image/jpeg",
+                                                         @"image/png",
+                                                         @"application/octet-stream",
+                                                         @"text/json",
+                                                         nil];
+    
+    NSURLSessionDataTask *task = [manager POST:[NSString stringWithFormat:@"%@%@",BASE_URL,urlStr] parameters:paremes constructingBodyWithBlock:^(id<AFMultipartFormData> _Nonnull formData) {
+        
+        NSArray *imgNames = @[@"img1",@"img2",@"img3"];
+        for (int i = 0; i < _photosArray.count; i++) {
+            NSData *imageData =UIImageJPEGRepresentation(_photosArray[i],1);
+            NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+            formatter.dateFormat =@"yyyyMMddHHmmss";
+            NSString *str = [formatter stringFromDate:[NSDate date]];
+            NSString *fileName = [NSString stringWithFormat:@"%@.jpg", str];
+            
+            //上传的参数(上传图片，以文件流的格式)
+            [formData appendPartWithFileData:imageData
+                                        name:imgNames[i]
+                                    fileName:fileName
+                                    mimeType:@"image/jpeg"];
+            
+        }
+        
+        
+    } progress:^(NSProgress *_Nonnull uploadProgress) {
+        //打印下上传进度
+        NSLog(@"");
+        
+    } success:^(NSURLSessionDataTask *_Nonnull task, id _Nullable responseObject) {
+        //上传成功
+        [ZHProgressHUD showMessage:[responseObject valueForKey:@"data"] inView:self.view];
+        
+        [self.navigationController popViewControllerAnimated:YES];
+        
+    } failure:^(NSURLSessionDataTask *_Nullable task, NSError * _Nonnull error) {
+        //上传失败
+        NSLog(@"%@",error);
+        
+    }];
 }
 
 - (void)backItem:(UIButton *)sender {

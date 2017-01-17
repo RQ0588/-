@@ -137,7 +137,7 @@
     
     orderIDL = [[UILabel alloc] initWithFrame:CGRectMake(CGRectGetMaxX(orderId.frame), CGRectGetMinY(orderId.frame), 200, 20)];
     [headerView addSubview:orderIDL];
-    orderIDL.text = @"6546565652300";
+    orderIDL.text = self.order_id;
     orderIDL.textColor = XNColor(17, 17, 17, 1);
     orderIDL.textAlignment = NSTextAlignmentCenter;
     orderIDL.font = [UIFont systemFontOfSize:15.0];
@@ -151,7 +151,7 @@
     
     payAmountL = [[UILabel alloc] initWithFrame:orderIDL.frame];
     [headerView addSubview:payAmountL];
-    payAmountL.text = @"￥38.80";
+    payAmountL.text = [NSString stringWithFormat:@"￥%@",self.price];
     payAmountL.textColor = XNColor(17, 17, 17, 1);
     payAmountL.textAlignment = NSTextAlignmentCenter;
     payAmountL.font = [UIFont systemFontOfSize:15.0];
@@ -203,6 +203,7 @@
 - (void)selectButtonChangePaymentWay:(UIButton *)btn {
     if (oldSelectBtnTag == btn.tag) {
 //        NSLog(@"选择微信支付");
+        [ZHProgressHUD showMessage:@"暂未开通，敬请期待" inView:self.view];
         return;
     }
     
@@ -227,6 +228,7 @@
         request.nonceStr = @"随机串，防重发";
         request.timeStamp = [@"时间戳，防重发" intValue];
         [WXApi sendReq:request];
+        [ZHProgressHUD showMessage:@"暂未开通，敬请期待" inView:self.view];
     }
     
     if (oldSelectBtnTag == 1002) {
@@ -244,7 +246,6 @@
         switch(response.errCode){
             caseWXSuccess:
                 //服务器端查询支付通知或查询API返回的结果再提示成功
-                
                 NSLog(@"支付成功");
                 break;
                 
@@ -278,31 +279,35 @@
     }
 }
 #pragma mark - ...
-//http://npy.cq-vip.com/pay/pay.php
+
 - (void)requestAliOrderString {
-    
-    NSDictionary *requestDic = [NSDictionary dictionaryWithObjectsAndKeys:@"1482829585443033",@"sign",@"14",@"user_id", nil];
+    NSDictionary *requestDic = [NSDictionary dictionaryWithObjectsAndKeys:self.sign,@"sign",self.user_id,@"user_id",self.order_type,@"order_type",self.order_id,@"order_id", nil];
     NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:requestDic] forKey:@"data"];
     
-   [[NPYHttpRequest sharedInstance] getWithUrlString:@"http://npy.cq-vip.com/index.php/app/Alipay/home" parameters:nil success:^(id responseObject) {
+   [[NPYHttpRequest sharedInstance] getWithUrlString:@"http://npy.cq-vip.com/index.php/app/Alipay/home" parameters:paremes success:^(id responseObject) {
        
        NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+       
+       if ([dataDict[@"r"] intValue] != 1) {
+           [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+           return ;
+           
+       }
        
        NSString *appScheme = @"com.npy.niupinyun";    //应用注册scheme，在info。plist定义URL types
        NSString *orderString = [dataDict valueForKey:@"data"];
        
        // NOTE: 调用支付结果开始支付
        [[AlipaySDK defaultService] payOrder:orderString fromScheme:appScheme callback:^(NSDictionary *resultDic) {
-           NSLog(@"reslut = %@",resultDic);
            
-           NSString *jsonStr = [self dictionaryToJson:resultDic];
+           if ([[resultDic objectForKey:@"resultStatus"] intValue] == 9000) {
+               self.sucPayVC = [[NPYSuccessPaymentViewController alloc] init];
+               [self.navigationController pushViewController:self.sucPayVC animated:YES];
+               
+           }
            
-           NSDictionary *reslutData = [self dictionaryWithJsonString:jsonStr];
-           
-           NSLog(@"reslut 字典 = %@",reslutData);
        }];
        
-        NSLog(@"******");
        
    } failure:^(NSError *error) {
        

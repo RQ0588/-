@@ -7,9 +7,17 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "NPYDicMainCellModel.h"
 
 @interface NPYSupportViewController : UIViewController
 
 @property (weak, nonatomic) IBOutlet UITableView *mainTableView;
+
+@property (nonatomic, strong) NPYDicMainCellModel *model;
+
+@property (nonatomic, assign) int supportNumber;
+
+@property (weak, nonatomic) IBOutlet UILabel *totalPriceL;
+- (IBAction)supportButtonPressed:(id)sender;
 
 @end

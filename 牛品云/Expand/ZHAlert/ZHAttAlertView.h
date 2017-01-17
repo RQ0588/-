@@ -20,6 +20,8 @@
 
 @interface ZHAttAlertView : UIView
 
+@property (nonatomic, copy) NSMutableArray *expandArr;
+
 /** 标题(默认“提示”)*/
 @property (nonatomic, copy) NSString    *title;
 /** 内容 */

@@ -20,6 +20,14 @@
 #define GoodsAppraise_url @"/index.php/app/Getgoods/get_appraise"//商品评论地址
 
 /**
+ *  阿里云推送
+ */
+#import <CloudPushSDK/CloudPushSDK.h>
+#define CCPDidReceiveMessageNotification @"CCPDidReceiveMessageNotification"
+
+#import <UserNotifications/UserNotifications.h>
+
+/**
  *  保存登录信息到本地的key
  */
 #define LoginData_Local   @"LoginData_Local"

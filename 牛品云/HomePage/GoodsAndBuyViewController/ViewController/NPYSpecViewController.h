@@ -12,9 +12,18 @@
 
 - (void)popValue:(NSDictionary *)dataDict withNumber:(int)number;
 
+- (void)popValue:(NSDictionary *)dataDict withNumber:(int)number withIndex:(NSIndexPath *)indexPath;
+
 @end
 
 @interface NPYSpecViewController : UIViewController
+
+@property (weak, nonatomic) IBOutlet UILabel *buyNumberShow;
+@property (nonatomic, strong) NSIndexPath *indexPath;
+@property (weak, nonatomic) IBOutlet UILabel *buyNumberL;
+@property (weak, nonatomic) IBOutlet UILabel *buyNumber_lab;
+@property (weak, nonatomic) IBOutlet UIButton *cutBtn;
+@property (weak, nonatomic) IBOutlet UIButton *addBtn;
 
 @property (nonatomic, strong) NSString *sign;
 @property (nonatomic, strong) NSString *userID;

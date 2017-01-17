@@ -195,6 +195,12 @@
     } else {
         [self.tableDatas addObject:textField.text];
         
+        self.goodsListVC = [[NPYGoodsListViewController alloc] init];
+        self.goodsListVC.isMore = NO;
+        self.goodsListVC.searchStr = textField.text;
+        self.goodsListVC.dataUrl = searchUrl;
+        [self.navigationController pushViewController:self.goodsListVC animated:YES];
+        
         [self.mainTabelView reloadData];
         
         return YES;
