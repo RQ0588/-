@@ -163,7 +163,7 @@
                     </imageView>
                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="idv-jT-v46">
                         <connections>
-                            <action selector="lookImageButtonPressed:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="An0-dE-eOf"/>
+                            <action selector="lookImageButtonPressed:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="s0s-Og-4JG"/>
                         </connections>
                     </button>
                 </subviews>
@@ -207,7 +207,7 @@
                 <outlet property="cllectPrice" destination="yIz-Gf-qPs" id="ii1-OH-Wmr"/>
                 <outlet property="day" destination="eah-8L-WiB" id="lZA-q1-Ror"/>
                 <outlet property="endTime" destination="5XD-gx-LN7" id="V0r-mL-gkq"/>
-                <outlet property="lookImg" destination="idv-jT-v46" id="sww-PU-ura"/>
+                <outlet property="lookImg" destination="idv-jT-v46" id="zSd-jD-SAJ"/>
                 <outlet property="name" destination="3RZ-Ab-Lh6" id="Y0m-pA-Ywj"/>
                 <outlet property="personIcon" destination="38N-9y-ugE" id="G8K-0n-ktj"/>
                 <outlet property="personNumber" destination="IaD-V6-iB4" id="uik-TT-zQH"/>
@@ -216,7 +216,7 @@
                 <outlet property="title" destination="0Yv-nD-boM" id="x1Q-kZ-OPA"/>
                 <outlet property="topADImg" destination="rwV-Gx-ZPp" id="PjS-Tx-DgP"/>
             </connections>
-            <point key="canvasLocation" x="-343" y="293"/>
+            <point key="canvasLocation" x="-521" y="295"/>
         </tableViewCell>
     </objects>
     <resources>

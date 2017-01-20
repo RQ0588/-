@@ -53,7 +53,7 @@
  *  appKey && appSecret
  */
 - (void)initCloudPush {
-    [CloudPushSDK asyncInit:@"23538701" appSecret:@"8c738b653cf549c2f424b3beb5c4ea23" callback:^(CloudPushCallbackResult *res) {
+    [CloudPushSDK asyncInit:@"23564166" appSecret:@"19a0f3447166b312ebb9f121aba4b4c1" callback:^(CloudPushCallbackResult *res) {
         if (res.success) {
             NSLog(@"Push SDK init success,deviceld:%@",[CloudPushSDK getDeviceId]);
             

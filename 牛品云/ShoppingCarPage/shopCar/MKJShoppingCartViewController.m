@@ -644,9 +644,8 @@ static NSString *relatedHeaderID = @"RelatedHeaderCollectionReusableView";
     NSDictionary *userDict = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
     NPYLoginMode *userModel = [NPYLoginMode mj_objectWithKeyValues:userDict[@"data"]];
     
-    NSDictionary *editDict = [NSDictionary dictionaryWithObjectsAndKeys:
-                              buyID,@"shopping_id",
-                              product.count,@"number",
+    NSDictionary *editDict = [NSDictionary dictionaryWithObjectsAndKeys:[NSString stringWithFormat:@"%@",buyID],@"shopping_id",
+                              [NSString stringWithFormat:@"%li",product.count],@"number",
                               product.remark,@"goods_spec", nil];
     
     NSArray *listArr = [NSArray arrayWithObject:editDict];

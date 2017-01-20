@@ -46,7 +46,6 @@
         UIImageView *lineImgView = [[UIImageView alloc] init];
         lineImgView.frame = CGRectMake(0, (i +1 ) * 20, bgView.frame.size.width, 1);
         lineImgView.backgroundColor = GRAY_BG;
-//        lineImgView.image = [UIImage imageNamed:@"placeholder"];
         [bgView addSubview:lineImgView];
     }
     
@@ -56,7 +55,6 @@
     UIImageView *h_lineImgView = [[UIImageView alloc] init];
     h_lineImgView.frame = CGRectMake(70, 0, 1, bgView.frame.size.height);
     h_lineImgView.backgroundColor = GRAY_BG;
-    //    lineImgView.image = [UIImage imageNamed:@"placeholder"];
     [bgView addSubview:h_lineImgView];
 }
 

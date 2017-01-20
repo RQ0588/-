@@ -20,6 +20,7 @@
 @implementation BGDetailViewCell
 
 - (void)awakeFromNib {
+    [super awakeFromNib];
     // Initialization code
 }
 

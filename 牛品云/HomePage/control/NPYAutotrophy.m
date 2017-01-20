@@ -299,9 +299,9 @@
     UIButton *oneImg = [[UIButton alloc] init];
     oneImg.tag = 2010;
     oneImg.frame = CGRectMake(10, 5, CGRectGetWidth(advertView.frame) - 20, (CGRectGetHeight(advertView.frame) - 20) / 2);
-    UIImage *imgOne = [UIImage imageNamed:@"tiantu_icon"];
-    [oneImg setImage:imgOne forState:UIControlStateNormal];
-    [oneImg setImageEdgeInsets:UIEdgeInsetsMake(height_Space / 2, height_Space, height_Space / 2, height_Space)];
+//    UIImage *imgOne = [UIImage imageNamed:@"tiantu_icon"];
+//    [oneImg setImage:imgOne forState:UIControlStateNormal];
+//    [oneImg setImageEdgeInsets:UIEdgeInsetsMake(height_Space / 2, height_Space, height_Space / 2, height_Space)];
     [oneImg addTarget:self action:@selector(adButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     [advertView addSubview:oneImg];
     oneAD = oneImg;
@@ -312,9 +312,9 @@
     UIButton *twoImg = [[UIButton alloc] init];
     twoImg.tag = 2020;
     twoImg.frame = CGRectMake(10, CGRectGetMaxY(oneImg.frame) + 10, CGRectGetWidth(advertView.frame) - 20, (CGRectGetHeight(advertView.frame) - 20) / 2);
-    UIImage *imgTwo = [UIImage imageNamed:@"tiantu_icon"];
-    [twoImg setImage:imgTwo forState:UIControlStateNormal];
-    [twoImg setImageEdgeInsets:UIEdgeInsetsMake(height_Space / 2, height_Space, height_Space / 2, height_Space)];
+//    UIImage *imgTwo = [UIImage imageNamed:@"tiantu_icon"];
+//    [twoImg setImage:imgTwo forState:UIControlStateNormal];
+//    [twoImg setImageEdgeInsets:UIEdgeInsetsMake(height_Space / 2, height_Space, height_Space / 2, height_Space)];
     [twoImg addTarget:self action:@selector(adButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     [advertView addSubview:twoImg];
     twoAD = twoImg;
@@ -466,10 +466,13 @@
             addressL2.text = shopModel.address;
             
             NPYHomeADModel *ad1Model = [NPYHomeADModel mj_objectWithKeyValues:tpDict[@"ad1"]];
-            [oneAD.imageView sd_setImageWithURL:[NSURL URLWithString:ad1Model.img] placeholderImage:[UIImage imageNamed:@"tiantu_icon"]];
+            UIImageView *tp = [UIImageView new];
+            [tp sd_setImageWithURL:[NSURL URLWithString:ad1Model.img] placeholderImage:[UIImage imageNamed:@"tiantu_icon"] options:SDWebImageRetryFailed];
+            [oneAD setImage:tp.image forState:UIControlStateNormal];
             
             NPYHomeADModel *ad2Model = [NPYHomeADModel mj_objectWithKeyValues:tpDict[@"ad2"]];
-                [twoAD.imageView sd_setImageWithURL:[NSURL URLWithString:ad2Model.img] placeholderImage:[UIImage imageNamed:@"tiantu_icon"]];
+            [tp sd_setImageWithURL:[NSURL URLWithString:ad2Model.img] placeholderImage:[UIImage imageNamed:@"tiantu_icon"] options:SDWebImageRetryFailed];
+            [twoAD setImage:tp.image forState:UIControlStateNormal];
             
             [self.recommendView reloadData];
             

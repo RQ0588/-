@@ -76,8 +76,8 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     if ([self.titleName isEqualToString:@"通知消息"]) {
         NPYCouponMessageModel *model = dataMArr[indexPath.row];
-        int selectedCellIndex;
-        BOOL isHidenButton;
+        int selectedCellIndex = 0;
+        BOOL isHidenButton = NO;
         switch (model.type) {
             case 1:
                 selectedCellIndex = 1;

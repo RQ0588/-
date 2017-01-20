@@ -13,6 +13,8 @@
 
 #pragma mark - 
 - (void)layoutSubviews {
+    self.lookImg.userInteractionEnabled = YES;
+    
     [self.topADImg sd_setImageWithURL:[NSURL URLWithString:self.homeModel.title_img] placeholderImage:[UIImage imageNamed:@"tiantu_icon"]];
     
     [self.personIcon sd_setImageWithURL:[NSURL URLWithString:self.homeModel.shop_img] placeholderImage:[UIImage imageNamed:@"tiantu_icon"]];
@@ -60,7 +62,7 @@
 }
 
 - (void)awakeFromNib {
-    [super awakeFromNib];
+//    [super awakeFromNib];
     // Initialization code
 }
 

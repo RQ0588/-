@@ -19,7 +19,10 @@
 
 static CGFloat textFieldH = 40;
 
-@interface NPYFriendMomentViewController () <SDTimeLineCellDelegate, UITextFieldDelegate ,UITableViewDelegate, UITableViewDataSource>
+@interface NPYFriendMomentViewController () <SDTimeLineCellDelegate, UITextFieldDelegate ,UITableViewDelegate, UITableViewDataSource> {
+    
+    int         refreshNumber;
+}
 
 @property (nonatomic, strong) UITableView *mainTableView;
 @property (nonatomic, strong) UITextField *textField;
@@ -54,6 +57,7 @@ static CGFloat textFieldH = 40;
     
     self.navigationItem.title = self.friendName;
     
+    [self.mainTableView.mj_header beginRefreshing];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -80,11 +84,34 @@ static CGFloat textFieldH = 40;
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardNotification:) name:UIKeyboardWillChangeFrameNotification object:nil];
     
+    self.mainTableView.mj_header = [MJRefreshNormalHeader headerWithRefreshingBlock:^{
+        NSDictionary *requeatDict = [NSDictionary dictionaryWithObjectsAndKeys:self.sign,@"sign",self.user_id,@"user_id",self.friends_user_id,@"friends_user_id",@"1",@"num", nil];
+        
+        [self requestMomentDataWithUrlString:@"/index.php/app/Moments/friends_get" withParame:requeatDict];
+        
+    }];
+    
+    refreshNumber = 1;
+    self.mainTableView.mj_footer = [MJRefreshBackNormalFooter footerWithRefreshingBlock:^{
+        if (self.dataArray.count % 10 == 0 && self.dataArray.count / 10 == refreshNumber) {
+            refreshNumber++;
+            
+            NSDictionary *requeatDict = [NSDictionary dictionaryWithObjectsAndKeys:self.sign,@"sign",self.user_id,@"user_id",self.friends_user_id,@"friends_user_id",@"1",@"num", nil];
+            
+            [self requestMomentDataWithFootRefreshUrlString:@"/index.php/app/Moments/friends_get" withParame:requeatDict];
+            
+        } else {
+            [self.mainTableView.mj_footer endRefreshing];
+            
+        }
+        
+    }];
+    
 }
 
 - (UITableView *)mainTableView {
     if (_mainTableView == nil) {
-        _mainTableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, WIDTH_SCREEN, HEIGHT_SCREEN) style:UITableViewStylePlain];
+        _mainTableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, WIDTH_SCREEN, HEIGHT_SCREEN + 50) style:UITableViewStylePlain];
         _mainTableView.delegate = self;
         _mainTableView.dataSource = self;
         _mainTableView.tableFooterView = [UIView new];
@@ -389,13 +416,73 @@ static CGFloat textFieldH = 40;
                 [self.dataArray addObject:model];
             }
 
-//            [self.tableView.mj_header endRefreshing];
+            [self.mainTableView.mj_header endRefreshing];
             
             [self.mainTableView reloadData];
             
         } else {
             //请求失败
             //            [ZHProgressHUD showMessage:[NSString stringWithFormat:@"%@",dataDict[@"data"]] inView:self.view];
+        }
+        
+        
+    } failure:^(NSError *error) {
+        NSLog(@"%@",error);
+        
+    }];
+    
+}
+
+/*上拉刷新请求数据*/
+- (void)requestMomentDataWithFootRefreshUrlString:(NSString *)urlStr withParame:(NSDictionary *)parame {
+    NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:parame] forKey:@"data"];
+    
+    [[NPYHttpRequest sharedInstance] getWithUrlString:[NSString stringWithFormat:@"%@%@",BASE_URL,urlStr] parameters:paremes success:^(id responseObject) {
+        NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+        if ([dataDict[@"r"] intValue] == 1) {
+            //成功
+            NSArray *tpDataArr = [NSArray arrayWithArray:dataDict[@"data"]];
+            /*moments_id，朋友圈id  text，朋友圈内容  img1，朋友圈图片  reply_json，该条的评论*/
+            //            [self.dataArray removeAllObjects];
+            for (int i = 0; i < tpDataArr.count; i++) {
+                NSDictionary *tpDict = tpDataArr[i];
+                //发布信息模型
+                SDTimeLineCellModel *model = [SDTimeLineCellModel new];
+                model.moments_id = [tpDict valueForKey:@"moments_id"];
+                model.user_id = [tpDict valueForKey:@"user_id"];
+                model.name = [tpDict valueForKey:@"user_name"];
+                model.iconName = [tpDict valueForKey:@"user_portrait"];
+                model.msgContent = [tpDict valueForKey:@"text"];
+                model.picNamesArray = [NSArray arrayWithObjects:[tpDict valueForKey:@"img1"],[tpDict valueForKey:@"img2"],[tpDict valueForKey:@"img3"], nil];
+                model.time = [tpDict valueForKey:@"time"];
+                
+                NSArray *commentArr = [tpDict valueForKey:@"reply_json"];
+                NSMutableArray *tempComments = [NSMutableArray new];
+                for (int i = 0; i < commentArr.count; i++) {
+                    NSDictionary *commentDict = commentArr[i];
+                    //评论模型
+                    SDTimeLineCellCommentItemModel *commentItemModel = [SDTimeLineCellCommentItemModel new];
+                    commentItemModel.firstUserId = [commentDict valueForKey:@"user_id"];
+                    commentItemModel.firstUserName = [commentDict valueForKey:@"user_name"];
+                    commentItemModel.commentString = [commentDict valueForKey:@"text"];
+                    commentItemModel.secondUserId = [commentDict valueForKey:@"be_user_id"];
+                    commentItemModel.secondUserName = [commentDict valueForKey:@"be_user_name"];
+                    
+                    [tempComments addObject:commentItemModel];
+                }
+                
+                model.commentItemsArray = [tempComments copy];
+                
+                [self.dataArray addObject:model];
+            }
+            
+            [self.mainTableView reloadData];
+            
+            [self.mainTableView.mj_footer endRefreshing];
+            
+        } else {
+            //请求失败
+            //            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
         }
         
         

@@ -365,11 +365,11 @@
             [mainCell.contentView addSubview:bg2];
             
             NSArray *names = @[@"运费",@"优惠券"];
-            CGRect rect11 ;
+//            CGRect rect11 ;
             for (int i = 0; i < names.count; i++) {
                 
                 UILabel *nameL = [[UILabel alloc] initWithFrame:CGRectMake(14, CGRectGetMaxY(bg2.frame) + 5 + i * 40, WIDTH_SCREEN, 20)];
-                rect11 = nameL.frame;
+//                rect11 = nameL.frame;
                 nameL.text = names[i];
                 nameL.font = XNFont(15.0);
                 nameL.textColor = XNColor(17, 17, 17, 1);
@@ -557,7 +557,7 @@
 //5000 (➖)，5001（➕）
 - (void)cutAndAddButtonPressed:(UIButton *)btn {
     //
-    UILabel *lab1 = [self.view viewWithTag:btn.tag - (btn.tag >= 5000 ? 5000 : 4000) + 500];
+//    UILabel *lab1 = [self.view viewWithTag:btn.tag - (btn.tag >= 5000 ? 5000 : 4000) + 500];
     //proPrice.attributedText = [self attributedStringWithSegmentationString:@"￥" withOriginalString:[NSString stringWithFormat:@"￥%.2f",pro.price] withOneColor:XNColor(248, 31, 31, 1) withTwoColor:XNColor(248, 31, 31, 1) withOneFontSize:12.0 twoFontSize:17.0];
     UILabel *lab2 = [self.view viewWithTag:btn.tag - (btn.tag >= 5000 ? 5000 : 4000) + 600];
     //proCount.text = [NSString stringWithFormat:@"%li",(long)pro.count];

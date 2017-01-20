@@ -24,7 +24,7 @@
 @implementation BGLRRefresh
 
 -(void)awakeFromNib{
-    
+    [super awakeFromNib];
 }
 
 + (instancetype)view

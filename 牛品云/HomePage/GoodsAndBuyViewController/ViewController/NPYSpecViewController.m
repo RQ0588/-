@@ -91,8 +91,8 @@
         [specBtn setImage:[UIImage imageNamed:@"guige_hui"] forState:UIControlStateNormal];
         [specBtn setImage:[UIImage imageNamed:@"guige_cheng"] forState:UIControlStateSelected];
         
-        specBtn.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
-        specBtn.contentHorizontalAlignment = UIControlContentHorizontalAlignmentCenter;
+        specBtn.contentVerticalAlignment = UIControlContentVerticalAlignmentFill;
+        specBtn.contentHorizontalAlignment = UIControlContentVerticalAlignmentFill;
         
         if (i == _isSlected) {
             specBtn.selected = YES;

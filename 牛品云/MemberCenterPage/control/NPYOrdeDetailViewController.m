@@ -626,7 +626,7 @@
 }
 
 - (NSArray *)orderStateString {
-    NSArray *StringArr = [NSArray new];
+    NSArray *StringArr;
     NSString *str = @"";
     NSString *btnTitle = @"";
     NSString *btnTitle2 = @"";

@@ -9,7 +9,9 @@
 #import "NPYVacciniaViewController.h"
 #import "NPYBaseConstant.h"
 
-@interface NPYVacciniaViewController ()
+@interface NPYVacciniaViewController () {
+    NSDictionary *shareDict;
+}
 
 @end
 
@@ -19,6 +21,13 @@
     [super viewWillAppear:animated];
     
     self.tabBarController.tabBar.hidden = YES;
+    
+    NSDictionary *userDict = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+    NPYLoginMode *userModel = [NPYLoginMode mj_objectWithKeyValues:userDict[@"data"]];
+    userModel.sign = [userDict valueForKey:@"sign"];
+    //分享的数据
+    NSDictionary *shareRequest = [NSDictionary dictionaryWithObjectsAndKeys:[userDict valueForKey:@"sign"],@"sign",userModel.user_id,@"user_id", nil];
+    [self requestShareInfoWithUrlString:@"/index.php/app/User/share_user" withParames:shareRequest];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -53,7 +62,10 @@
 //fenxiang
 - (IBAction)shareButtonPressed:(id)sender {
     ShareObject *share = [ShareObject shareDefault];
-    [share sendMessageWithTitle:@"share" withContent:@"shareDetail" withUrl:@"" withImages:[NSArray new] result:^(NSString *result, UIAlertViewStyle style) {
+    if (!shareDict) {
+        return;
+    }
+    [share sendMessageWithTitle:[shareDict valueForKey:@"text"] withContent:[shareDict valueForKey:@"text"] withUrl:[shareDict valueForKey:@"url"] withImages:[shareDict valueForKey:@"img"] result:^(NSString *result, UIAlertViewStyle style) {
        
         [ZHProgressHUD showMessage:result inView:self.view];
         
@@ -72,6 +84,32 @@
 }
 - (IBAction)wbClick:(id)sender {
     //weibo
+    
+}
+
+- (void)requestShareInfoWithUrlString:(NSString *)url withParames:(NSDictionary *)pareme {
+    
+    NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:pareme] forKey:@"data"];
+    
+    [[NPYHttpRequest sharedInstance] getWithUrlString:[NSString stringWithFormat:@"%@%@",BASE_URL,url] parameters:paremes success:^(id responseObject) {
+        NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+        
+        if ([dataDict[@"r"] intValue] == 1) {
+            //成功
+            //            [ZHProgressHUD showMessage:@"请求成功" inView:self.view];
+            NSDictionary *tpDict = dataDict[@"data"];
+            
+            shareDict = [NSDictionary dictionaryWithObjectsAndKeys:[tpDict valueForKey:@"img"],@"img",[tpDict valueForKey:@"text"],@"text",[tpDict valueForKey:@"url"],@"url", nil];
+            
+        } else {
+            //失败
+            //            [ZHProgressHUD showMessage:[NSString stringWithFormat:@"%@",dataDict[@"data"]] inView:self.view];
+        }
+        
+    } failure:^(NSError *error) {
+        NSLog(@"%@",error);
+        
+    }];
     
 }
 

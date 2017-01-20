@@ -9,12 +9,6 @@
 #import "NPYSweepViewController.h"
 #import <AVFoundation/AVFoundation.h>
 
-#import "ZHTextAlertView.h"
-#import "ZHAttAlertView.h"
-#import "ZHProgressHUD.h"
-#import "ZHActionSheet.h"
-#import "ZHActionSheetView.h"
-
 #import "NPYBaseConstant.h"
 
 #define ADDFRIEND_URL @"/index.php/app/Moments/set_friends"

@@ -138,7 +138,6 @@
             cell.funName.text = dataArray[indexPath.row];
             
             if (indexPath.row == 0) {
-//                [cell.headPortrait sd_setImageWithURL:[NSURL URLWithString:@""] placeholderImage:[UIImage imageNamed:@"placeholder"]];
                 cell.headPortrait.image = self.headerImg;
             } else {
                 cell.headPortrait.hidden = YES;

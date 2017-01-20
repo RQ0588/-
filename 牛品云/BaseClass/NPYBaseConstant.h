@@ -9,8 +9,9 @@
 #ifndef NPYBaseConstant_h
 #define NPYBaseConstant_h
 
-//服务器基地址
-#define BASE_URL    @"http://npy.cq-vip.com"
+//服务器基地址(114.55.112.9)
+//#define BASE_URL    @"http://npy.cq-vip.com"
+#define BASE_URL    @"http://114.55.112.9"
 
 #define Verification_url    @"/index.php/app/Login/send"//验证码请求地址
 #define Register_url    @"/index.php/app/Login/register"//注册请求地址
@@ -107,15 +108,6 @@
 #import "UITabBar+NPYBadge.h"
 
 #import "AppDelegate.h"
-
-//日志输出
-#ifdef DEBUG
-#define NSLog(...)  NSLog(__VA_ARGS__)
-#define debugMethod()   NSLog(@"%s",__func__)
-#else
-#deine NSLog(...)
-#define debugMethod()
-#endif
 
 //屏幕宽度、高度
 #define WIDTH_SCREEN        [UIScreen mainScreen].bounds.size.width //屏幕宽度

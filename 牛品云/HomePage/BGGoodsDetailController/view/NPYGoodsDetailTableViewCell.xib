@@ -47,19 +47,19 @@
                         <color key="textColor" red="0.066666666666666666" green="0.066666666666666666" blue="0.066666666666666666" alpha="1" colorSpace="calibratedRGB"/>
                         <nil key="highlightedColor"/>
                     </label>
-                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="0.jpg" translatesAutoresizingMaskIntoConstraints="NO" id="zfg-Tu-bb2">
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="tiantu_icon" translatesAutoresizingMaskIntoConstraints="NO" id="zfg-Tu-bb2">
                         <constraints>
                             <constraint firstAttribute="height" constant="90" id="Jx5-C3-dsf"/>
                             <constraint firstAttribute="width" constant="90" id="Tuv-QQ-YV5"/>
                         </constraints>
                     </imageView>
-                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="1.jpg" translatesAutoresizingMaskIntoConstraints="NO" id="wwS-lb-Q8P">
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="tiantu_icon" translatesAutoresizingMaskIntoConstraints="NO" id="wwS-lb-Q8P">
                         <constraints>
                             <constraint firstAttribute="height" constant="90" id="4Ry-O5-gAH"/>
                             <constraint firstAttribute="width" constant="90" id="W3i-HB-VjL"/>
                         </constraints>
                     </imageView>
-                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="2.jpg" translatesAutoresizingMaskIntoConstraints="NO" id="yVh-G9-aN2">
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="tiantu_icon" translatesAutoresizingMaskIntoConstraints="NO" id="yVh-G9-aN2">
                         <constraints>
                             <constraint firstAttribute="height" constant="90" id="SvU-cH-e69"/>
                             <constraint firstAttribute="width" constant="90" id="tlX-Pv-6Hu"/>
@@ -158,10 +158,8 @@
         </tableViewCell>
     </objects>
     <resources>
-        <image name="0.jpg" width="200" height="200"/>
-        <image name="1.jpg" width="220" height="220"/>
-        <image name="2.jpg" width="200" height="200"/>
         <image name="686huxian_gouwu" width="1" height="1"/>
         <image name="huixing_gouwu" width="10" height="10"/>
+        <image name="tiantu_icon" width="40" height="40"/>
     </resources>
 </document>

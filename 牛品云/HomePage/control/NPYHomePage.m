@@ -12,7 +12,6 @@
 #import "NPYAutotrophy.h"
 #import "BuyViewController.h"
 #import "NPYSweepViewController.h"
-#import "ScanViewController.h"
 #import "NPYSearchViewController.h"
 #import "NPYHomeModel.h"
 #import "NPYHomeADModel.h"
@@ -54,7 +53,6 @@
 
 @property (nonatomic, strong) NPYSweepViewController *sweepVC;
 @property (nonatomic, strong) NPYMessageViewController *msgVC;
-@property (nonatomic, strong) ScanViewController *scanVC;
 
 @property (nonatomic, strong) NPYAutotrophy *autorophy;
 @property (nonatomic, strong) NPYFeatureStore *featureStore;
@@ -145,7 +143,7 @@
     NSLog(@"Receive message title:%@, content:%@.",title,body);
     
     topRightBtn.badgeBgColor = [UIColor redColor];
-    topRightBtn.badgeCenterOffset = CGPointMake(5, 0);
+    topRightBtn.badgeCenterOffset = CGPointMake(-10, 3);
     [topRightBtn showBadgeWithStyle:WBadgeStyleRedDot value:0 animationType:WBadgeAnimTypeNone];
     
 }
@@ -216,7 +214,9 @@
     
     UIBarButtonItem *rightBtnItem = [[UIBarButtonItem alloc] initWithCustomView:rightMesg];
     self.navigationItem.rightBarButtonItem = rightBtnItem;
-    
+//    topRightBtn.badgeBgColor = [UIColor redColor];
+//    topRightBtn.badgeCenterOffset = CGPointMake(-10, 3);
+//    [topRightBtn showBadgeWithStyle:WBadgeStyleRedDot value:0 animationType:WBadgeAnimTypeNone];
 }
 
 - (void)topScrollImageViewLoad {

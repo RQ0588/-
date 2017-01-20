@@ -163,7 +163,7 @@ static NSString *dicOpenMainCell = @"Expand";
         self.topCell.delegate = self;
         self.topCell.homeModel = self.homeModel;
         self.topCell.selectionStyle = UITableViewCellSelectionStyleNone;
-        self.topCell.userInteractionEnabled = NO;
+//        self.topCell.userInteractionEnabled = NO;
         return self.topCell;
         
     } else if (indexPath.section == 1) {

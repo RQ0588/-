@@ -15,7 +15,7 @@
                 <frame key="frameInset" width="320" height="199"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="3.jpg" translatesAutoresizingMaskIntoConstraints="NO" id="TKl-cB-72w"/>
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="tiantu_icon" translatesAutoresizingMaskIntoConstraints="NO" id="TKl-cB-72w"/>
                 </subviews>
                 <color key="backgroundColor" red="0.93725490570000003" green="0.93725490570000003" blue="0.95686274770000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                 <constraints>
@@ -32,6 +32,6 @@
         </tableViewCell>
     </objects>
     <resources>
-        <image name="3.jpg" width="200" height="200"/>
+        <image name="tiantu_icon" width="40" height="40"/>
     </resources>
 </document>

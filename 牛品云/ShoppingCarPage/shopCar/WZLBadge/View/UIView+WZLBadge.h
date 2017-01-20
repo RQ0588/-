@@ -43,7 +43,7 @@
  *  @param style WBadgeStyle type
  *  @param value (if 'style' is WBadgeStyleRedDot or WBadgeStyleNew,
         this value will be ignored. In this case, any value will be ok.)
-*   @param aniType
+*   @param aniType 
  */
 - (void)showBadgeWithStyle:(WBadgeStyle)style
                      value:(NSInteger)value

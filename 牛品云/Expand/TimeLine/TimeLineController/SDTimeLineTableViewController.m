@@ -212,6 +212,23 @@ static CGFloat textFieldH = 40;
         [self requestMomentDataWithUrlString:Moments_Url withParame:requeatDict];
     }];
     
+    refreshNumber = 1;
+    self.tableView.mj_footer = [MJRefreshBackNormalFooter footerWithRefreshingBlock:^{
+        if (self.dataArray.count % 10 == 0 && self.dataArray.count / 10 == refreshNumber) {
+            refreshNumber++;
+            NSDictionary *dic = [NPYSaveGlobalVariable readValueFromeLocalWithKey:LoginData_Local];
+            NPYLoginMode *model = [NPYLoginMode mj_objectWithKeyValues:dic[@"data"]];
+            
+            NSDictionary *requeatDict = [NSDictionary dictionaryWithObjectsAndKeys:[dic valueForKey:@"sign"],@"sign",model.user_id,@"user_id",[NSString stringWithFormat:@"%i",refreshNumber],@"num", nil];
+            [self requestMomentDataWithFootRefreshUrlString:Moments_Url withParame:requeatDict];
+            
+        } else {
+            [self.tableView.mj_footer endRefreshing];
+            
+        }
+        
+    }];
+    
 }
 
 - (void)viewDidAppear:(BOOL)animated
@@ -637,7 +654,7 @@ static CGFloat textFieldH = 40;
 }
 
 #pragma mark - 
-
+/*初次请求数据*/
 - (void)requestMomentDataWithUrlString:(NSString *)urlStr withParame:(NSDictionary *)parame {
     NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:parame] forKey:@"data"];
     
@@ -681,9 +698,11 @@ static CGFloat textFieldH = 40;
                 [self.dataArray addObject:model];
             }
             
+            [self.tableView reloadData];
+            
             [self.tableView.mj_header endRefreshing];
             
-            [self.tableView reloadData];
+            
             
         } else {
             //请求失败
@@ -698,6 +717,69 @@ static CGFloat textFieldH = 40;
     
 }
 
+/*上拉刷新请求数据*/
+- (void)requestMomentDataWithFootRefreshUrlString:(NSString *)urlStr withParame:(NSDictionary *)parame {
+    NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:parame] forKey:@"data"];
+    
+    [[NPYHttpRequest sharedInstance] getWithUrlString:[NSString stringWithFormat:@"%@%@",BASE_URL,urlStr] parameters:paremes success:^(id responseObject) {
+        NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+        if ([dataDict[@"r"] intValue] == 1) {
+            //成功
+            NSArray *tpDataArr = [NSArray arrayWithArray:dataDict[@"data"]];
+            /*moments_id，朋友圈id  text，朋友圈内容  img1，朋友圈图片  reply_json，该条的评论*/
+//            [self.dataArray removeAllObjects];
+            for (int i = 0; i < tpDataArr.count; i++) {
+                NSDictionary *tpDict = tpDataArr[i];
+                //发布信息模型
+                SDTimeLineCellModel *model = [SDTimeLineCellModel new];
+                model.moments_id = [tpDict valueForKey:@"moments_id"];
+                model.user_id = [tpDict valueForKey:@"user_id"];
+                model.name = [tpDict valueForKey:@"user_name"];
+                model.iconName = [tpDict valueForKey:@"user_portrait"];
+                model.msgContent = [tpDict valueForKey:@"text"];
+                model.picNamesArray = [NSArray arrayWithObjects:[tpDict valueForKey:@"img1"],[tpDict valueForKey:@"img2"],[tpDict valueForKey:@"img3"], nil];
+                model.time = [tpDict valueForKey:@"time"];
+                
+                NSArray *commentArr = [tpDict valueForKey:@"reply_json"];
+                NSMutableArray *tempComments = [NSMutableArray new];
+                for (int i = 0; i < commentArr.count; i++) {
+                    NSDictionary *commentDict = commentArr[i];
+                    //评论模型
+                    SDTimeLineCellCommentItemModel *commentItemModel = [SDTimeLineCellCommentItemModel new];
+                    commentItemModel.firstUserId = [commentDict valueForKey:@"user_id"];
+                    commentItemModel.firstUserName = [commentDict valueForKey:@"user_name"];
+                    commentItemModel.commentString = [commentDict valueForKey:@"text"];
+                    commentItemModel.secondUserId = [commentDict valueForKey:@"be_user_id"];
+                    commentItemModel.secondUserName = [commentDict valueForKey:@"be_user_name"];
+                    
+                    [tempComments addObject:commentItemModel];
+                }
+                
+                model.commentItemsArray = [tempComments copy];
+                
+                [self.dataArray addObject:model];
+            }
+            
+            [self.tableView reloadData];
+            
+            [self.tableView.mj_footer endRefreshing];
+            
+            
+            
+        } else {
+            //请求失败
+            //            [ZHProgressHUD showMessage:dataDict[@"data"] inView:self.view];
+        }
+        
+        
+    } failure:^(NSError *error) {
+        NSLog(@"%@",error);
+        
+    }];
+    
+}
+
+/*评论回复*/
 - (void)requestReplyMomentsWithUrlString:(NSString *)urlStr withParames:(NSDictionary *)parame {
     NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:parame] forKey:@"data"];
     
@@ -721,6 +803,7 @@ static CGFloat textFieldH = 40;
     
 }
 
+/*删除发布的信息*/
 - (void)requestDeleteMomentsWithUrlString:(NSString *)urlStr withParames:(NSDictionary *)parame {
     NSDictionary *paremes = [NSDictionary dictionaryWithObject:[NPYChangeClass dictionaryToJson:parame] forKey:@"data"];
     

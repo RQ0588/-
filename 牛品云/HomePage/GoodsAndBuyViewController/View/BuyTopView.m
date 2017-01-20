@@ -29,6 +29,8 @@
 @implementation BuyTopView
 
 -(void)awakeFromNib{
+    [super awakeFromNib];
+    
     [self.collect_Btn addTarget:self action:@selector(collectAction:) forControlEvents:UIControlEventTouchUpInside];
     // 注册cell
     self.detailView.dataSource = self;
